@@ -182,8 +182,8 @@ if check_installed; then
         fi
         
         # Download latest configuration files
-        check_and_download "/opt/xiaozhi-server/docker-compose_all.yml" "https://ghfast.top/https://raw.githubusercontent.com/xinnan-tech/xiaozhi-esp32-server/refs/heads/main/main/xiaozhi-server/docker-compose_all.yml"
-        check_and_download "/opt/xiaozhi-server/data/.config.yaml" "https://ghfast.top/https://raw.githubusercontent.com/xinnan-tech/xiaozhi-esp32-server/refs/heads/main/main/xiaozhi-server/config_from_api.yaml"
+        check_and_download "/opt/xiaozhi-server/docker-compose_all.yml" "https://raw.githubusercontent.com/lapy/xiaozhi-esp32-server/main/main/xiaozhi-server/docker-compose_all.yml"
+        check_and_download "/opt/xiaozhi-server/data/.config.yaml" "https://raw.githubusercontent.com/lapy/xiaozhi-esp32-server/main/main/xiaozhi-server/config_from_api.yaml"
         
         # Start Docker services
         echo "Starting latest version services..."
@@ -213,10 +213,10 @@ if ! command -v docker &> /dev/null; then
     echo "------------------------------------------------------------"
     echo "Docker not detected, installing..."
     
-    # Use domestic mirror source instead of official source
+    # Use official Docker source
     DISTRO=$(lsb_release -cs)
-    MIRROR_URL="https://mirrors.aliyun.com/docker-ce/linux/ubuntu"
-    GPG_URL="https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg"
+    MIRROR_URL="https://download.docker.com/linux/ubuntu"
+    GPG_URL="https://download.docker.com/linux/ubuntu/gpg"
     
     # Install basic dependencies
     apt update
@@ -256,12 +256,12 @@ fi
 
 # Docker mirror source configuration
 MIRROR_OPTIONS=(
-    "1" "Xuanyuan Mirror (Recommended)"
-    "2" "Tencent Cloud Mirror"
-    "3" "USTC Mirror"
-    "4" "NetEase 163 Mirror"
-    "5" "Huawei Cloud Mirror"
-    "6" "Alibaba Cloud Mirror"
+    "1" "Docker Hub Official (Recommended)"
+    "2" "Google Container Registry"
+    "3" "Amazon ECR Public"
+    "4" "Microsoft Container Registry"
+    "5" "Quay.io Registry"
+    "6" "GitHub Container Registry"
     "7" "Custom Mirror Source"
     "8" "Skip Configuration"
 )
@@ -273,12 +273,12 @@ MIRROR_CHOICE=$(whiptail --title "Select Docker Mirror Source" --menu "Please se
 }
 
 case $MIRROR_CHOICE in
-    1) MIRROR_URL="https://docker.xuanyuan.me" ;; 
-    2) MIRROR_URL="https://mirror.ccs.tencentyun.com" ;; 
-    3) MIRROR_URL="https://docker.mirrors.ustc.edu.cn" ;; 
-    4) MIRROR_URL="https://hub-mirror.c.163.com" ;; 
-    5) MIRROR_URL="https://05f073ad3c0010ea0f4bc00b7105ec20.mirror.swr.myhuaweicloud.com" ;; 
-    6) MIRROR_URL="https://registry.aliyuncs.com" ;; 
+    1) MIRROR_URL="https://registry-1.docker.io" ;; 
+    2) MIRROR_URL="https://gcr.io" ;; 
+    3) MIRROR_URL="https://public.ecr.aws" ;; 
+    4) MIRROR_URL="https://mcr.microsoft.com" ;; 
+    5) MIRROR_URL="https://quay.io" ;; 
+    6) MIRROR_URL="https://ghcr.io" ;; 
     7) MIRROR_URL=$(whiptail --title "Custom Mirror Source" --inputbox "Please enter the complete mirror source URL:" 10 60 3>&1 1>&2 2>&3) ;; 
     8) MIRROR_URL="" ;; 
 esac
@@ -330,7 +330,7 @@ if [ ! -f "$MODEL_PATH" ]; then
         sleep 0.5
     done
     ) | whiptail --title "Downloading" --gauge "Starting to download speech recognition model..." 10 60 0
-    curl -fL --progress-bar https://modelscope.cn/models/iic/SenseVoiceSmall/resolve/master/model.pt -o "$MODEL_PATH" || {
+    curl -fL --progress-bar https://huggingface.co/iic/SenseVoiceSmall/resolve/main/model.pt -o "$MODEL_PATH" || {
         whiptail --title "Error" --msgbox "model.pt file download failed" 10 50
         exit 1
     }
@@ -340,8 +340,8 @@ fi
 
 # Only execute download if upgrade is not completed
 if [ -z "$UPGRADE_COMPLETED" ]; then
-    check_and_download "/opt/xiaozhi-server/docker-compose_all.yml" "https://ghfast.top/https://raw.githubusercontent.com/xinnan-tech/xiaozhi-esp32-server/refs/heads/main/main/xiaozhi-server/docker-compose_all.yml"
-    check_and_download "/opt/xiaozhi-server/data/.config.yaml" "https://ghfast.top/https://raw.githubusercontent.com/xinnan-tech/xiaozhi-esp32-server/refs/heads/main/main/xiaozhi-server/config_from_api.yaml"
+    check_and_download "/opt/xiaozhi-server/docker-compose_all.yml" "https://raw.githubusercontent.com/lapy/xiaozhi-esp32-server/main/main/xiaozhi-server/docker-compose_all.yml"
+    check_and_download "/opt/xiaozhi-server/data/.config.yaml" "https://raw.githubusercontent.com/lapy/xiaozhi-esp32-server/main/main/xiaozhi-server/config_from_api.yaml"
 fi
 
 # Start Docker service
