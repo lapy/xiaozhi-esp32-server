@@ -377,8 +377,7 @@ INSERT INTO `ai_tts_voice` VALUES
 ('TTS_OpenAITTS_0003','TTS_OpenAITTS','Fable','fable','British English',NULL,NULL,NULL,NULL,3,NULL,NULL,NULL,NULL),
 ('TTS_OpenAITTS_0004','TTS_OpenAITTS','Onyx','onyx','American English',NULL,NULL,NULL,NULL,4,NULL,NULL,NULL,NULL),
 ('TTS_OpenAITTS_0005','TTS_OpenAITTS','Nova','nova','American English',NULL,NULL,NULL,NULL,5,NULL,NULL,NULL,NULL),
-('TTS_OpenAITTS_0006','TTS_OpenAITTS','Shimmer','shimmer','American English',NULL,NULL,NULL,NULL,6,NULL,NULL,NULL,NULL),
-;
+('TTS_OpenAITTS_0006','TTS_OpenAITTS','Shimmer','shimmer','American English',NULL,NULL,NULL,NULL,6,NULL,NULL,NULL,NULL);
 
 --
 -- Table structure for table `ai_voiceprint`
