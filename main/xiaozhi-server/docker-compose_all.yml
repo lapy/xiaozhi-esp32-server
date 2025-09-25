@@ -4,7 +4,9 @@ version: '3'
 services:
   # Server module
   xiaozhi-esp32-server:
-    build: Dockerfile-server
+    build:
+      context: .
+      dockerfile: Dockerfile-server
     container_name: xiaozhi-esp32-server
     depends_on:
       - xiaozhi-esp32-server-db
@@ -29,7 +31,9 @@ services:
 
   # manager-api and manager-web modules
   xiaozhi-esp32-server-web:
-    build: Dockerfile-web
+    build:
+      context: .
+      dockerfile: Dockerfile-web
     container_name: xiaozhi-esp32-server-web
     restart: always
     networks:
