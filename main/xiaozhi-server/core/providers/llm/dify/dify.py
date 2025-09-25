@@ -14,18 +14,26 @@ class LLMProvider(LLMProviderBase):
         self.api_key = config["api_key"]
         self.mode = config.get("mode", "chat-messages")
         self.base_url = config.get("base_url", "https://api.dify.ai/v1").rstrip("/")
-        self.session_conversation_map = {}  # 存储session_id和conversation_id的映射
+        self.session_conversation_map = {}  # Store mapping of session_id and conversation_id
+        
+        logger.debug(
+            f"Intent recognition parameters initialized: mode={self.mode}, base_url={self.base_url}"
+        )
+        
         model_key_msg = check_model_key("DifyLLM", self.api_key)
         if model_key_msg:
             logger.bind(tag=TAG).error(model_key_msg)
 
     def response(self, session_id, dialogue, **kwargs):
+        logger.bind(tag=TAG).debug(f"Sending request to Dify with mode: {self.mode}, dialogue length: {len(dialogue)}")
         try:
-            # 取最后一条用户消息
+            # Get last user message
             last_msg = next(m for m in reversed(dialogue) if m["role"] == "user")
             conversation_id = self.session_conversation_map.get(session_id)
 
-            # 发起流式请求
+            logger.bind(tag=TAG).debug(f"Processing Dify request with conversation_id: {conversation_id}")
+
+            # Make streaming request
             if self.mode == "chat-messages":
                 request_json = {
                     "query": last_msg["content"],
@@ -47,64 +55,84 @@ class LLMProvider(LLMProviderBase):
                     "user": session_id,
                 }
 
+            logger.bind(tag=TAG).debug(f"Making Dify API request to: {self.base_url}/{self.mode}")
+            
             with requests.post(
                 f"{self.base_url}/{self.mode}",
                 headers={"Authorization": f"Bearer {self.api_key}"},
                 json=request_json,
                 stream=True,
             ) as r:
+                logger.bind(tag=TAG).debug(f"Received Dify response with status: {r.status_code}")
+                
                 if self.mode == "chat-messages":
                     for line in r.iter_lines():
                         if line.startswith(b"data: "):
                             event = json.loads(line[6:])
-                            # 如果没有找到conversation_id，则获取此次conversation_id
+                            logger.bind(tag=TAG).debug(f"Received Dify event: {event.get('event', 'unknown')}")
+                            
+                            # If conversation_id is not found, get this conversation_id
                             if not conversation_id:
                                 conversation_id = event.get("conversation_id")
                                 self.session_conversation_map[session_id] = (
-                                    conversation_id  # 更新映射
+                                    conversation_id  # Update mapping
                                 )
-                            # 过滤 message_replace 事件，此事件会全量推一次
+                                logger.bind(tag=TAG).debug(f"Updated conversation_id: {conversation_id}")
+                            
+                            # Filter message_replace event, this event pushes all content once
                             if event.get("event") != "message_replace" and event.get(
                                 "answer"
                             ):
+                                logger.bind(tag=TAG).debug(f"Yielding Dify answer content")
                                 yield event["answer"]
                 elif self.mode == "workflows/run":
                     for line in r.iter_lines():
                         if line.startswith(b"data: "):
                             event = json.loads(line[6:])
+                            logger.bind(tag=TAG).debug(f"Received Dify workflow event: {event.get('event', 'unknown')}")
+                            
                             if event.get("event") == "workflow_finished":
                                 if event["data"]["status"] == "succeeded":
+                                    logger.bind(tag=TAG).debug(f"Yielding Dify workflow result")
                                     yield event["data"]["outputs"]["answer"]
                                 else:
-                                    yield "【服务响应异常】"
+                                    logger.bind(tag=TAG).error(f"Dify workflow failed: {event['data']['status']}")
+                                    yield "【Service response exception】"
                 elif self.mode == "completion-messages":
                     for line in r.iter_lines():
                         if line.startswith(b"data: "):
                             event = json.loads(line[6:])
-                            # 过滤 message_replace 事件，此事件会全量推一次
+                            logger.bind(tag=TAG).debug(f"Received Dify completion event: {event.get('event', 'unknown')}")
+                            
+                            # Filter message_replace event, this event pushes all content once
                             if event.get("event") != "message_replace" and event.get(
                                 "answer"
                             ):
+                                logger.bind(tag=TAG).debug(f"Yielding Dify completion answer content")
                                 yield event["answer"]
 
         except Exception as e:
             logger.bind(tag=TAG).error(f"Error in response generation: {e}")
-            yield "【服务响应异常】"
+            yield "【Service response exception】"
 
     def response_with_functions(self, session_id, dialogue, functions=None):
+        logger.bind(tag=TAG).debug(f"Sending function request to Dify with mode: {self.mode}, dialogue length: {len(dialogue)}")
+        
         if len(dialogue) == 2 and functions is not None and len(functions) > 0:
-            # 第一次调用llm， 取最后一条用户消息，附加tool提示词
+            # First call to LLM, get last user message, append tool prompt
             last_msg = dialogue[-1]["content"]
             function_str = json.dumps(functions, ensure_ascii=False)
             modify_msg = get_system_prompt_for_function(function_str) + last_msg
             dialogue[-1]["content"] = modify_msg
+            logger.bind(tag=TAG).debug(f"Modified dialogue with function prompt for Dify")
 
-        # 如果最后一个是 role="tool"，附加到user上
+        # If the last one is role="tool", append to user
         if len(dialogue) > 1 and dialogue[-1]["role"] == "tool":
             assistant_msg = "\ntool call result: " + dialogue[-1]["content"] + "\n\n"
             while len(dialogue) > 1:
                 if dialogue[-1]["role"] == "user":
                     dialogue[-1]["content"] = assistant_msg + dialogue[-1]["content"]
+                    logger.bind(tag=TAG).debug(f"Appended tool result to user message for Dify")
                     break
                 dialogue.pop()
 

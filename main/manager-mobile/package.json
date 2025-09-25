@@ -4,20 +4,20 @@
   "version": "3.4.0",
   "unibest-version": "3.4.0",
   "packageManager": "pnpm@10.10.0",
-  "description": "xiaozhi-esp32-server的移动端管理后台",
+  "description": "Mobile management backend for xiaozhi-esp32-server",
   "generate-time": "2025-08-04",
   "author": {
     "name": "huangjunsen",
-    "zhName": "黄俊森",
+    "zhName": "Huang Junsen",
     "email": "huangjunsen@xiaozhi.com",
     "github": "https://github.com/huangjunsen0406",
     "gitee": "https://gitee.com/huang-jun-sen"
   },
   "license": "MIT",
-  "homepage": "https://github.com/xinnan-tech/xiaozhi-esp32-server",
-  "repository": "https://github.com/xinnan-tech/xiaozhi-esp32-server",
+  "homepage": "https://github.com/lapy/xiaozhi-esp32-server",
+  "repository": "https://github.com/lapy/xiaozhi-esp32-server",
   "bugs": {
-    "url": "https://github.com/xinnan-tech/xiaozhi-esp32-server/issues"
+    "url": "https://github.com/lapy/xiaozhi-esp32-server/issues"
   },
   "engines": {
     "node": ">=18",
@@ -153,7 +153,7 @@
     "vue-tsc": "^2.2.10"
   },
   "resolutions": {
-    "bin-wrapper": "npm:bin-wrapper-china"
+    "bin-wrapper": "npm:bin-wrapper"
   },
   "lint-staged": {
     "*": "eslint --fix"

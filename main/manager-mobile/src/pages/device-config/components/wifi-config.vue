@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useToast } from 'wot-design-uni'
 
-// 类型定义
+// Type definitions
 interface WiFiNetwork {
   ssid: string
   rssi: number
@@ -18,13 +18,13 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Toast 实例
+// Toast instance
 const toast = useToast()
 
-// 响应式数据
+// Reactive data
 const configuring = ref(false)
 
-// 计算属性
+// Computed properties
 const canSubmit = computed(() => {
   if (!props.selectedNetwork)
     return false
@@ -33,7 +33,7 @@ const canSubmit = computed(() => {
   return true
 })
 
-// ESP32连接检查
+// ESP32 connection check
 async function checkESP32Connection() {
   try {
     const response = await uni.request({
@@ -44,25 +44,25 @@ async function checkESP32Connection() {
     return response.statusCode === 200
   }
   catch (error) {
-    console.log('ESP32连接检查失败:', error)
+    console.log('ESP32 connection check failed:', error)
     return false
   }
 }
 
-// 提交配网
+// Submit network configuration
 async function submitConfig() {
   if (!props.selectedNetwork)
     return
 
-  // 检查ESP32连接
+  // Check ESP32 connection
   const connected = await checkESP32Connection()
   if (!connected) {
-    toast.error('请先连接xiaozhi热点')
+    toast.error('Please connect to xiaozhi hotspot first')
     return
   }
 
   configuring.value = true
-  console.log('开始WiFi配网:', props.selectedNetwork.ssid)
+  console.log('Start WiFi configuration:', props.selectedNetwork.ssid)
 
   try {
     const response = await uni.request({
@@ -78,19 +78,19 @@ async function submitConfig() {
       timeout: 15000,
     })
 
-    console.log('WiFi配网响应:', response)
+    console.log('WiFi configuration response:', response)
 
     if (response.statusCode === 200 && (response.data as any)?.success) {
-      toast.success(`配网成功！设备将连接到 ${props.selectedNetwork.ssid}，设备会自动重启。请断开xiaozhi热点连接。`)
+      toast.success(`Configuration successful! Device will connect to ${props.selectedNetwork.ssid}, device will restart automatically. Please disconnect xiaozhi hotspot connection.`)
     }
     else {
-      const errorMsg = (response.data as any)?.error || '配网失败'
+      const errorMsg = (response.data as any)?.error || 'Configuration failed'
       toast.error(errorMsg)
     }
   }
   catch (error) {
-    console.error('WiFi配网失败:', error)
-    toast.error('配网失败，请检查网络连接')
+    console.error('WiFi configuration failed:', error)
+    toast.error('Configuration failed, please check network connection')
   }
   finally {
     configuring.value = false
@@ -100,24 +100,24 @@ async function submitConfig() {
 
 <template>
   <view class="wifi-config">
-    <!-- 选中的网络信息 -->
+    <!-- Selected network information -->
     <view v-if="props.selectedNetwork" class="selected-network">
       <view class="network-info">
         <view class="network-name">
-          选中网络: {{ props.selectedNetwork.ssid }}
+          Selected Network: {{ props.selectedNetwork.ssid }}
         </view>
         <view class="network-details">
           <text class="network-signal">
-            信号: {{ props.selectedNetwork.rssi }}dBm
+            Signal: {{ props.selectedNetwork.rssi }}dBm
           </text>
           <text class="network-security">
-            {{ props.selectedNetwork.authmode === 0 ? '开放网络' : '加密网络' }}
+            {{ props.selectedNetwork.authmode === 0 ? 'Open Network' : 'Encrypted Network' }}
           </text>
         </view>
       </view>
     </view>
 
-    <!-- 配网按钮 -->
+    <!-- Configuration button -->
     <view class="submit-section">
       <wd-button
         type="primary"
@@ -127,30 +127,30 @@ async function submitConfig() {
         :disabled="!canSubmit"
         @click="submitConfig"
       >
-        {{ configuring ? '配网中...' : '开始WiFi配网' }}
+        {{ configuring ? 'Configuring...' : 'Start WiFi Configuration' }}
       </wd-button>
     </view>
 
-    <!-- 使用说明 -->
+    <!-- Usage instructions -->
     <view class="help-section">
       <view class="help-title">
-        WiFi配网说明
+        WiFi Configuration Instructions
       </view>
       <view class="help-content">
         <text class="help-item">
-          1. 手机连接xiaozhi热点 (xiaozhi-XXXXXX)
+          1. Connect phone to xiaozhi hotspot (xiaozhi-XXXXXX)
         </text>
         <text class="help-item">
-          2. 选择要配网的目标WiFi网络
+          2. Select target WiFi network to configure
         </text>
         <text class="help-item">
-          3. 输入WiFi密码（如果需要）
+          3. Enter WiFi password (if required)
         </text>
         <text class="help-item">
-          4. 点击开始配网，等待设备连接
+          4. Click start configuration and wait for device connection
         </text>
         <text class="help-tip">
-          配网成功后设备会自动重启并连接目标WiFi
+          After successful network configuration, the device will automatically restart and connect to the target WiFi
         </text>
       </view>
     </view>

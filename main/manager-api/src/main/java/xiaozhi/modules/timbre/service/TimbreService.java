@@ -11,57 +11,57 @@ import xiaozhi.modules.timbre.entity.TimbreEntity;
 import xiaozhi.modules.timbre.vo.TimbreDetailsVO;
 
 /**
- * 音色的业务层的定义
+ * Timbre business layer definition
  * 
  * @author zjy
  * @since 2025-3-21
  */
 public interface TimbreService extends BaseService<TimbreEntity> {
     /**
-     * 分页获取音色指定tts的下的音色
+     * Get paginated timbres under specified TTS
      * 
-     * @param dto 分页查找参数
-     * @return 音色列表分页数据
+     * @param dto Pagination search parameters
+     * @return Paginated timbre list data
      */
     PageData<TimbreDetailsVO> page(TimbrePageDTO dto);
 
     /**
-     * 获取音色指定id的详情信息
+     * Get timbre details by specified ID
      * 
-     * @param timbreId 音色表id
-     * @return 音色信息
+     * @param timbreId Timbre table ID
+     * @return Timbre information
      */
     TimbreDetailsVO get(String timbreId);
 
     /**
-     * 保存音色信息
+     * Save timbre information
      * 
-     * @param dto 需要保存数据
+     * @param dto Data to be saved
      */
     void save(TimbreDataDTO dto);
 
     /**
-     * 保存音色信息
+     * Save timbre information
      * 
-     * @param timbreId 需要修改的id
-     * @param dto      需要修改的数据
+     * @param timbreId ID that needs to be modified
+     * @param dto      Data that needs to be modified
      */
     void update(String timbreId, TimbreDataDTO dto);
 
     /**
-     * 批量删除音色
+     * Batch delete timbres
      * 
-     * @param ids 需要被删除的音色id列表
+     * @param ids List of timbre IDs to be deleted
      */
     void delete(String[] ids);
 
     List<VoiceDTO> getVoiceNames(String ttsModelId, String voiceName);
 
     /**
-     * 根据ID获取音色名称
+     * Get timbre name by ID
      * 
-     * @param id 音色ID
-     * @return 音色名称
+     * @param id Timbre ID
+     * @return Timbre name
      */
     String getTimbreNameById(String id);
 }

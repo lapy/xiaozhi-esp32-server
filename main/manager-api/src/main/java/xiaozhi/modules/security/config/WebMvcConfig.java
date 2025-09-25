@@ -48,15 +48,15 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        // 特殊用途的转换器
+        // Special purpose converter
         converters.add(new ByteArrayHttpMessageConverter());
         converters.add(new ResourceHttpMessageConverter());
 
-        // 通用转换器
+        // General converter
         converters.add(new StringHttpMessageConverter());
         converters.add(new AllEncompassingFormHttpMessageConverter());
 
-        // JSON 转换器
+        // JSON converter
         converters.add(jackson2HttpMessageConverter());
     }
 
@@ -65,13 +65,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
         ObjectMapper mapper = new ObjectMapper();
 
-        // 忽略未知属性
+        // Ignore unknown properties
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        // 设置时区
+        // Set timezone
         mapper.setTimeZone(TimeZone.getTimeZone("GMT+8"));
 
-        // 配置Java8日期时间序列化
+        // Configure Java8 date time serialization
         JavaTimeModule javaTimeModule = new JavaTimeModule();
         javaTimeModule.addSerializer(java.time.LocalDateTime.class, new LocalDateTimeSerializer(
                 java.time.format.DateTimeFormatter.ofPattern(DateUtils.DATE_TIME_PATTERN)));
@@ -87,11 +87,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 new LocalTimeDeserializer(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")));
         mapper.registerModule(javaTimeModule);
 
-        // 配置java.util.Date的序列化和反序列化
+        // Configure java.util.Date serialization and deserialization
         SimpleDateFormat dateFormat = new SimpleDateFormat(DateUtils.DATE_TIME_PATTERN);
         mapper.setDateFormat(dateFormat);
 
-        // Long类型转String类型
+        // Convert Long type to String type
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
         simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
@@ -102,7 +102,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     }
     
     /**
-     * 国际化配置 - 根据请求头中的Accept-Language设置语言环境
+     * Internationalization configuration - Set locale based on Accept-Language header
      */
     @Bean
     public LocaleResolver localeResolver() {
@@ -114,30 +114,23 @@ public class WebMvcConfig implements WebMvcConfigurer {
                     return Locale.getDefault();
                 }
                 
-                // 解析Accept-Language请求头中的首选语言
+                // Parse preferred language from Accept-Language header
                 String[] languages = acceptLanguage.split(",");
                 if (languages.length > 0) {
-                    // 提取第一个语言代码，去除可能的质量值(q=...)
+                    // Extract first language code, remove possible quality values (q=...)
                     String[] parts = languages[0].split(";" + "\\s*");
                     String primaryLanguage = parts[0].trim();
                      
-                    // 根据前端发送的语言代码直接创建Locale对象
-                    if (primaryLanguage.equals("zh-CN")) {
-                        return Locale.SIMPLIFIED_CHINESE;
-                    } else if (primaryLanguage.equals("zh-TW")) {
-                        return Locale.TRADITIONAL_CHINESE;
-                    } else if (primaryLanguage.equals("en-US")) {
+                    // Create Locale object directly based on frontend language code
+                    if (primaryLanguage.equals("en-US")) {
                         return Locale.US;
-                    } else if (primaryLanguage.startsWith("zh")) {
-                        // 对于其他中文变体，默认使用简体中文
-                        return Locale.SIMPLIFIED_CHINESE;
                     } else if (primaryLanguage.startsWith("en")) {
-                        // 对于其他英文变体，默认使用美式英语
+                        // For other English variants, default to American English
                         return Locale.US;
                     }
                 }
                 
-                // 如果没有匹配的语言，使用默认语言
+                // If no matching language, use default language
                 return Locale.getDefault();
             }
         };

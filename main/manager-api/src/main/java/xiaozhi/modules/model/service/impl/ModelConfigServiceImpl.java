@@ -65,7 +65,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                         .eq("is_enabled", 1)
                         .like(StringUtils.isNotBlank(modelName), "model_name", "%" + modelName + "%")
                         .select("id", "model_name", "config_json"));
-        // 处理获取到的内容
+        // Process retrieved content
         return entities.stream().map(item -> {
             LlmModelBasicInfoDTO dto = new LlmModelBasicInfoDTO();
             dto.setId(item.getId());
@@ -82,16 +82,16 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
         params.put(Constant.PAGE, page);
         params.put(Constant.LIMIT, limit);
         
-        // 不再使用默认的getPage方法，而是直接创建Page对象并自定义排序
+        // No longer use default getPage method, directly create Page object and customize sorting
         long curPage = Long.parseLong(page);
         long pageSize = Long.parseLong(limit);
         Page<ModelConfigEntity> pageInfo = new Page<>(curPage, pageSize);
         
-        // 添加排序规则：先按is_enabled降序，再按sort升序
+        // Add sorting rules: first by is_enabled descending, then by sort ascending
         pageInfo.addOrder(OrderItem.desc("is_enabled"));
         pageInfo.addOrder(OrderItem.asc("sort"));
         
-        // 执行分页查询
+        // Execute pagination query
         IPage<ModelConfigEntity> modelConfigEntityIPage = modelConfigDao.selectPage(
                 pageInfo,
                 new QueryWrapper<ModelConfigEntity>()
@@ -103,7 +103,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
 
     @Override
     public ModelConfigDTO add(String modelType, String provideCode, ModelConfigBodyDTO modelConfigBodyDTO) {
-        // 先验证有没有供应器
+        // First verify if provider exists
         if (StringUtils.isBlank(modelType) || StringUtils.isBlank(provideCode)) {
             throw new RenException(ErrorCode.MODEL_TYPE_PROVIDE_CODE_NOT_NULL);
         }
@@ -112,7 +112,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
             throw new RenException(ErrorCode.MODEL_PROVIDER_NOT_EXIST);
         }
 
-        // 再保存供应器提供的模型
+        // Then save the model provided by the provider
         ModelConfigEntity modelConfigEntity = ConvertUtils.sourceToTarget(modelConfigBodyDTO, ModelConfigEntity.class);
         modelConfigEntity.setModelType(modelType);
         modelConfigEntity.setIsDefault(0);
@@ -122,7 +122,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
 
     @Override
     public ModelConfigDTO edit(String modelType, String provideCode, String id, ModelConfigBodyDTO modelConfigBodyDTO) {
-        // 先验证有没有供应器
+        // First verify if provider exists
         if (StringUtils.isBlank(modelType) || StringUtils.isBlank(provideCode)) {
             throw new RenException(ErrorCode.MODEL_TYPE_PROVIDE_CODE_NOT_NULL);
         }
@@ -140,30 +140,30 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                 throw new RenException(ErrorCode.LLM_NOT_EXIST);
             }
             String type = modelConfigEntity.getConfigJson().get("type").toString();
-            // 如果查询大语言模型是openai或者ollama，意图识别选参数都可以
-            if (!"openai".equals(type) && !"ollama".equals(type)) {
+            // If the queried large language model is openai, ollama, or gemini, intent recognition parameters can be selected
+            if (!"openai".equals(type) && !"ollama".equals(type) && !"gemini".equals(type)) {
                 throw new RenException(ErrorCode.INVALID_LLM_TYPE);
             }
         }
 
-        // 再更新供应器提供的模型
+        // Then update the model provided by the provider
         ModelConfigEntity modelConfigEntity = ConvertUtils.sourceToTarget(modelConfigBodyDTO, ModelConfigEntity.class);
         modelConfigEntity.setId(id);
         modelConfigEntity.setModelType(modelType);
         modelConfigDao.updateById(modelConfigEntity);
-        // 清除缓存
+        // Clear cache
         redisUtils.delete(RedisKeys.getModelConfigById(modelConfigEntity.getId()));
         return ConvertUtils.sourceToTarget(modelConfigEntity, ModelConfigDTO.class);
     }
 
     @Override
     public void delete(String id) {
-        // 查看是否是默认
+        // Check if it is default
         ModelConfigEntity modelConfig = modelConfigDao.selectById(id);
         if (modelConfig != null && modelConfig.getIsDefault() == 1) {
             throw new RenException(ErrorCode.DEFAULT_MODEL_DELETE_ERROR);
         }
-        // 验证是否有引用
+        // Verify if there are references
         checkAgentReference(id);
         checkIntentConfigReference(id);
 
@@ -171,9 +171,9 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 检查智能体配置是否有引用
+     * Check if agent configuration has references
      * 
-     * @param modelId 模型ID
+     * @param modelId Model ID
      */
     private void checkAgentReference(String modelId) {
         List<AgentEntity> agents = agentDao.selectList(
@@ -200,9 +200,9 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 检查意图识别配置是否有引用
+     * Check if intent recognition configuration has references
      * 
-     * @param modelId 模型ID
+     * @param modelId Model ID
      */
     private void checkIntentConfigReference(String modelId) {
         ModelConfigEntity modelConfig = modelConfigDao.selectById(modelId);

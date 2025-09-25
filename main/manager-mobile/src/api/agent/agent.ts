@@ -7,7 +7,7 @@ import type {
 } from './types'
 import { http } from '@/http/request/alova'
 
-// 获取智能体详情
+// Get agent details
 export function getAgentDetail(id: string) {
   return http.Get<AgentDetail>(`/agent/${id}`, {
     meta: {
@@ -20,7 +20,7 @@ export function getAgentDetail(id: string) {
   })
 }
 
-// 获取角色模板列表
+// Get role template list
 export function getRoleTemplates() {
   return http.Get<RoleTemplate[]>('/agent/template', {
     meta: {
@@ -33,7 +33,7 @@ export function getRoleTemplates() {
   })
 }
 
-// 获取模型选项
+// Get model options
 export function getModelOptions(modelType: string, modelName: string = '') {
   return http.Get<ModelOption[]>('/models/names', {
     params: {
@@ -50,7 +50,7 @@ export function getModelOptions(modelType: string, modelName: string = '') {
   })
 }
 
-// 获取智能体列表
+// Get agent list
 export function getAgentList() {
   return http.Get<Agent[]>('/agent/list', {
     meta: {
@@ -63,7 +63,7 @@ export function getAgentList() {
   })
 }
 
-// 创建智能体
+// Create agent
 export function createAgent(data: AgentCreateData) {
   return http.Post<string>('/agent', data, {
     meta: {
@@ -73,7 +73,7 @@ export function createAgent(data: AgentCreateData) {
   })
 }
 
-// 删除智能体
+// Delete agent
 export function deleteAgent(id: string) {
   return http.Delete(`/agent/${id}`, {
     meta: {
@@ -83,7 +83,7 @@ export function deleteAgent(id: string) {
   })
 }
 
-// 获取TTS音色列表
+// Get TTS voice list
 export function getTTSVoices(ttsModelId: string, voiceName: string = '') {
   return http.Get<{ id: string, name: string }[]>(`/models/${ttsModelId}/voices`, {
     params: {
@@ -99,7 +99,7 @@ export function getTTSVoices(ttsModelId: string, voiceName: string = '') {
   })
 }
 
-// 更新智能体
+// Update agent
 export function updateAgent(id: string, data: Partial<AgentDetail>) {
   return http.Put(`/agent/${id}`, data, {
     meta: {
@@ -112,7 +112,7 @@ export function updateAgent(id: string, data: Partial<AgentDetail>) {
   })
 }
 
-// 获取插件列表
+// Get plugin list
 export function getPluginFunctions() {
   return http.Get<any[]>(`/models/provider/plugin/names`, {
     meta: {
@@ -125,7 +125,7 @@ export function getPluginFunctions() {
   })
 }
 
-// 获取mcp接入点
+// Get MCP access point
 export function getMcpAddress(agentId: string) {
   return http.Get<string>(`/agent/mcp/address/${agentId}`, {
     meta: {
@@ -135,7 +135,7 @@ export function getMcpAddress(agentId: string) {
   })
 }
 
-// 获取mcp工具
+// Get MCP tools
 export function getMcpTools(agentId: string) {
   return http.Get<string[]>(`/agent/mcp/tools/${agentId}`, {
     meta: {
@@ -148,7 +148,7 @@ export function getMcpTools(agentId: string) {
   })
 }
 
-// 获取声纹列表
+// Get voiceprint list
 export function getVoicePrintList(agentId: string) {
   return http.Get<any[]>(`/agent/voice-print/list/${agentId}`, {
     meta: {
@@ -161,7 +161,7 @@ export function getVoicePrintList(agentId: string) {
   })
 }
 
-// 获取语音对话记录
+// Get voice conversation records
 export function getChatHistoryUser(agentId: string) {
   return http.Get<any[]>(`/agent/${agentId}/chat-history/user`, {
     meta: {
@@ -174,7 +174,7 @@ export function getChatHistoryUser(agentId: string) {
   })
 }
 
-// 新增声纹说话人
+// Add voiceprint speaker
 export function createVoicePrint(data: { agentId: string, audioId: string, sourceName: string, introduce: string }) {
   return http.Post('/agent/voice-print', data, {
     meta: {

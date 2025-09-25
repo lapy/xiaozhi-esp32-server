@@ -11,14 +11,14 @@ import xiaozhi.modules.agent.entity.AgentPluginMapping;
 import java.util.List;
 
 /**
- * Agent信息返回体VO
- * 这里直接extend了Agent实体类AgentEntity，后续需要规范返回字段可以copy字段出来
+ * Agent information response body VO
+ * This directly extends the Agent entity class AgentEntity, fields can be copied out later if return fields need to be standardized
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class AgentInfoVO extends AgentEntity
 {
-    @Schema(description = "插件列表Id")
+    @Schema(description = "Plugin list ID")
     @TableField(typeHandler = JacksonTypeHandler.class)
     private List<AgentPluginMapping> functions;
 }

@@ -4,22 +4,22 @@ package xiaozhi.modules.agent.service;
 import java.util.List;
 
 /**
- * 智能体Mcp接入点处理service
+ * Agent MCP access point processing service
  *
  * @author zjy
  */
 public interface AgentMcpAccessPointService {
     /**
-     * 获取智能体的mcp接入点地址
-     * @param id 智能体id
-     * @return mcp接入点地址
+     * Get agent MCP access point address
+     * @param id Agent id
+     * @return MCP access point address
      */
    String getAgentMcpAccessAddress(String id);
 
     /**
-     * 获取智能体的mcp接入点已有的工具列表
-     * @param id 智能体id
-     * @return 工具列表
+     * Get the existing tool list for the agent's MCP access point
+     * @param id Agent id
+     * @return Tool list
      */
    List<String> getAgentMcpToolsList(String id);
 }

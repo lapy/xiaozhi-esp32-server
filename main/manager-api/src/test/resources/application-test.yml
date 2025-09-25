@@ -1,0 +1,87 @@
+spring:
+  datasource:
+    druid:
+      # H2 Database for testing
+      driver-class-name: org.h2.Driver
+      url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+      username: sa
+      password: 
+      initial-size: 1
+      max-active: 5
+      min-idle: 1
+      max-wait: 6000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      stat-view-servlet:
+        enabled: false
+      filter:
+        stat:
+          log-slow-sql: false
+          slow-sql-millis: 1000
+          merge-sql: false
+        wall:
+          config:
+            multi-statement-allow: true
+  # Initialize database schema
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      continue-on-error: true
+  # Disable Liquibase for testing
+  liquibase:
+    enabled: false
+  # Disable Redis for testing - will be mocked
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 10s
+      lettuce:
+        pool:
+          min-idle: 0
+          max-idle: 8
+          max-active: 8
+          max-wait: -1ms
+  # H2 console for debugging (optional)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# Disable Redis for testing
+renren:
+  redis:
+    open: false
+
+# MyBatis Plus configuration for testing
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  typeAliasesPackage: xiaozhi.modules.*.entity
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+    banner: false
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+    jdbc-type-for-null: 'null'
+  configuration-properties:
+    prefix:
+    blobType: BLOB
+    boolValue: TRUE
+
+# Logging configuration for testing
+logging:
+  level:
+    xiaozhi.modules.device: DEBUG
+    org.springframework.data.redis: WARN
+    org.springframework.boot.autoconfigure: WARN
+    com.alibaba.druid: WARN

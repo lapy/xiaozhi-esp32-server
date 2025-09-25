@@ -154,13 +154,9 @@ main/manager-web/node_modules
 .env.development
 
 # model files
-main/xiaozhi-server/models/SenseVoiceSmall/model.pt
 main/xiaozhi-server/models/sherpa-onnx*
 /main/xiaozhi-server/audio_ref/
 /audio_ref/
-/asr-models/iic/SenseVoiceSmall/
-/main/xiaozhi-server/asr-models/iic/SenseVoiceSmall/
-/models/SenseVoiceSmall/model.pt
 my_wakeup_words.mp3
 !main/xiaozhi-server/config/assets/bind_code.wav
 !main/xiaozhi-server/config/assets/wakeup_words.wav
@@ -183,3 +179,5 @@ uploadfile
 !main/manager-mobile/**/env/
 !main/manager-mobile/**/.env*
 !main/manager-mobile/**/*.json
+
+original-server

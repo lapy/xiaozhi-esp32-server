@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import xiaozhi.modules.agent.entity.AgentChatHistoryEntity;
 
 /**
- * {@link AgentChatHistoryEntity} 智能体聊天历史记录Dao对象
+ * {@link AgentChatHistoryEntity} Agent chat history record Dao object
  *
  * @author Goody
  * @version 1.0, 2025/4/30
@@ -16,23 +16,23 @@ import xiaozhi.modules.agent.entity.AgentChatHistoryEntity;
 @Mapper
 public interface AiAgentChatHistoryDao extends BaseMapper<AgentChatHistoryEntity> {
     /**
-     * 根据智能体ID删除音频
+     * Delete audio by agent ID
      *
-     * @param agentId 智能体ID
+     * @param agentId Agent ID
      */
     void deleteAudioByAgentId(String agentId);
 
     /**
-     * 根据智能体ID删除聊天历史记录
+     * Delete chat history records by agent ID
      *
-     * @param agentId 智能体ID
+     * @param agentId Agent ID
      */
     void deleteHistoryByAgentId(String agentId);
 
     /**
-     * 根据智能体ID删除音频ID
+     * Delete audio by agent IDID
      *
-     * @param agentId 智能体ID
+     * @param agentId Agent ID
      */
     void deleteAudioIdByAgentId(String agentId);
 }

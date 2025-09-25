@@ -1,0 +1,61 @@
+# Production environment configuration
+knife4j:
+  production: false
+  enable: true
+  basic:
+    enable: false
+    username: renren
+    password: 2ZABCDEUgF
+  setting:
+    enableFooter: false
+
+spring:
+  datasource:
+    druid:
+      # MySQL - Production database configuration
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: ${SPRING_DATASOURCE_DRUID_URL:jdbc:mysql://mysql:3306/xiaozhi_esp32_server?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&nullCatalogMeansCurrent=true}
+      username: ${SPRING_DATASOURCE_DRUID_USERNAME:xiaozhi}
+      password: ${SPRING_DATASOURCE_DRUID_PASSWORD:xiaozhi123}
+      initial-size: 20
+      max-active: 200
+      min-idle: 20
+      max-wait: 60000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      stat-view-servlet:
+        enabled: false
+      filter:
+        stat:
+          log-slow-sql: true
+          slow-sql-millis: 2000
+          merge-sql: false
+        wall:
+          config:
+            multi-statement-allow: true
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+      database: 0
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 20
+          min-idle: 5
+        shutdown-timeout: 100ms
+
+# Production logging configuration
+logging:
+  level:
+    xiaozhi: INFO
+    org.springframework.web: ERROR
+    org.springboot.sample: ERROR
+    root: INFO

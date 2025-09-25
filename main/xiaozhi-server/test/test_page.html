@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en-US">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小智服务器测试页面</title>
+    <title>Xiaozhi Server Test Page</title>
     <link rel="stylesheet" href="test_page.css">
     <style>
         #fileProtocolWarning {
@@ -58,23 +58,23 @@
         }
     </style>
     <script>
-        // 检测是否使用file://协议打开
+        // Check if opened using file:// protocol
         if (window.location.protocol === 'file:') {
             document.addEventListener('DOMContentLoaded', function () {
-                // 创建警告框
+                // Create warning box
                 const warningDiv = document.createElement('div');
                 warningDiv.id = 'fileProtocolWarning';
                 warningDiv.innerHTML = `
-                    <h2>⚠️ 警告：请使用HTTP服务器打开此页面</h2>
-                    <p>您当前使用的是本地文件方式打开页面（file://协议），这可能导致页面功能异常。</p>
-                    <p>您可以使用nginx映射启动测试页面，也可以请按照以下步骤使用python启动测试http服务：</p>
+                    <h2>⚠️ Warning: Please use HTTP server to open this page</h2>
+                    <p>You are currently opening the page using local file method (file:// protocol), which may cause page functionality issues.</p>
+                    <p>You can use nginx mapping to start the test page, or follow these steps to use python to start the test http service:</p>
                     <ol>
-                        <li>打开命令行终端</li>
-                        <li>命令行进入到 xiaozhi-server/test 目录</li>
-                        <li>执行以下命令启动HTTP服务器：</li>
+                        <li>Open command line terminal</li>
+                        <li>Navigate to xiaozhi-server/test directory in command line</li>
+                        <li>Execute the following command to start HTTP server:</li>
                     </ol>
                     <pre>python -m http.server 8006</pre>
-                    <p>然后在浏览器中访问：<strong>http://localhost:8006/test_page.html</strong></p>
+                    <p>Then access in browser: <strong>http://localhost:8006/test_page.html</strong></p>
                 `;
                 document.body.appendChild(warningDiv);
             });
@@ -84,39 +84,39 @@
 
 <body>
     <div class="container">
-        <h1>小智服务器测试页面</h1>
+        <h1>Xiaozhi Server Test Page</h1>
 
         <div id="scriptStatus" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-            正在加载Opus库...
+            Loading Opus library...
         </div>
 
-        <!-- 添加配置面板 -->
+        <!-- Add configuration panel -->
         <div class="section">
             <h2>
-                设备配置
+                Device Configuration
                 <span class="device-info">
                     <span>MAC: <strong id="displayMac"></strong></span>
-                    <span>客户端: <strong id="displayClient">web_test_client</strong></span>
+                    <span>Client: <strong id="displayClient">web_test_client</strong></span>
                 </span>
-                <button class="toggle-button" id="toggleConfig">编辑</button>
+                <button class="toggle-button" id="toggleConfig">Edit</button>
             </h2>
             <div class="config-panel" id="configPanel">
                 <div class="control-panel">
                     <div class="config-item">
-                        <label for="deviceMac">设备MAC:</label>
-                        <input type="text" id="deviceMac" placeholder="设备MAC地址">
+                        <label for="deviceMac">Device MAC:</label>
+                        <input type="text" id="deviceMac" placeholder="Device MAC address">
                     </div>
                     <div class="config-item">
-                        <label for="deviceName">设备名称:</label>
-                        <input type="text" id="deviceName" value="Web测试设备" placeholder="设备名称">
+                        <label for="deviceName">Device Name:</label>
+                        <input type="text" id="deviceName" value="Web Test Device" placeholder="Device name">
                     </div>
                     <div class="config-item">
-                        <label for="clientId">客户端ID:</label>
-                        <input type="text" id="clientId" value="web_test_client" placeholder="客户端ID">
+                        <label for="clientId">Client ID:</label>
+                        <input type="text" id="clientId" value="web_test_client" placeholder="Client ID">
                     </div>
                     <div class="config-item">
-                        <label for="token">认证Token:</label>
-                        <input type="text" id="token" value="your-token1" placeholder="认证Token">
+                        <label for="token">Authentication Token:</label>
+                        <input type="text" id="token" value="your-token1" placeholder="Authentication token">
                     </div>
                 </div>
             </div>
@@ -124,55 +124,55 @@
 
         <div class="section">
             <h2>
-                连接信息
+                Connection Information
                 <span class="connection-status">
-                    <span>OTA: <span id="otaStatus" class="status">ota未连接</span></span>
-                    <span>WS: <span id="connectionStatus" class="status">ws未连接</span></span>
+                    <span>OTA: <span id="otaStatus" class="status">ota not connected</span></span>
+                    <span>WS: <span id="connectionStatus" class="status">ws not connected</span></span>
                 </span>
             </h2>
             <div class="connection-controls">
                 <input type="text" id="otaUrl" value="http://127.0.0.1:8002/xiaozhi/ota/"
-                    placeholder="OTA服务器地址，如：http://127.0.0.1:8002/xiaozhi/ota/" />
+                    placeholder="OTA server address, e.g.: http://127.0.0.1:8002/xiaozhi/ota/" />
                 <input type="text" id="serverUrl" value="ws://127.0.0.1:8000/xiaozhi/v1/"
-                    placeholder="WebSocket服务器地址，如：ws://127.0.0.1:8000/xiaozhi/v1/" />
-                <button id="connectButton">连接</button>
-                <button id="authTestButton">测试认证</button>
+                    placeholder="WebSocket server address, e.g.: ws://127.0.0.1:8000/xiaozhi/v1/" />
+                <button id="connectButton">Connect</button>
+                <button id="authTestButton">Test Auth</button>
             </div>
         </div>
 
         <div class="section">
             <div class="tabs">
-                <button class="tab active" data-tab="text">文本消息</button>
-                <button class="tab" data-tab="voice">语音消息</button>
+                <button class="tab active" data-tab="text">Text Message</button>
+                <button class="tab" data-tab="voice">Voice Message</button>
             </div>
 
             <div class="tab-content active" id="textTab">
                 <div class="message-input">
-                    <input type="text" id="messageInput" placeholder="输入消息..." disabled>
-                    <button id="sendTextButton" disabled>发送</button>
+                    <input type="text" id="messageInput" placeholder="Enter message..." disabled>
+                    <button id="sendTextButton" disabled>Send</button>
                 </div>
             </div>
 
             <div class="tab-content" id="voiceTab">
                 <div class="audio-controls">
-                    <button id="recordButton" class="record-button" disabled>开始录音</button>
+                    <button id="recordButton" class="record-button" disabled>Start Recording</button>
                 </div>
                 <canvas id="audioVisualizer" class="audio-visualizer"></canvas>
             </div>
         </div>
 
         <div class="section">
-            <h2>会话记录</h2>
+            <h2>Conversation History</h2>
             <div class="flex-container">
                 <div id="conversation" class="conversation"></div>
                 <div id="logContainer">
-                    <div class="log-entry log-info">准备就绪，请连接服务器开始测试...</div>
+                    <div class="log-entry log-info">Ready, please connect to the server to start testing...</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Opus解码库 -->
+    <!-- Opus decoding library -->
     <script src="libopus.js"></script>
 
     <script type="module">
@@ -182,10 +182,10 @@
         import { addMessage } from './js/document.js'
         import BlockingQueue from './js/utils/BlockingQueue.js'
         import { createStreamingContext } from './js/StreamingContext.js'
-        // 需要加载的脚本列表 - 移除Opus依赖
+        // List of scripts to load - remove Opus dependency
         const scriptFiles = [];
 
-        // 脚本加载状态
+        // Script loading status
         const scriptStatus = {
             loading: 0,
             loaded: 0,
@@ -193,7 +193,7 @@
             total: scriptFiles.length
         };
 
-        // 全局变量
+        // Global variables
         let websocket = null;
         let mediaRecorder = null;
         let audioContext = null;
@@ -204,23 +204,23 @@
         let visualizerContext = visualizerCanvas.getContext('2d');
         let audioQueue = [];
         let isPlaying = false;
-        let opusDecoder = null; // Opus解码器
-        let visualizationRequest = null; // 动画帧请求ID
+        let opusDecoder = null; // Opus decoder
+        let visualizationRequest = null; // Animation frame request ID
 
-        // 音频流缓冲相关
-        let audioBuffers = []; // 用于存储接收到的所有音频数据
-        let totalAudioSize = 0; // 跟踪累积的音频大小
+        // Audio stream buffering related
+        let audioBuffers = []; // Used to store all received audio data
+        let totalAudioSize = 0; // Track accumulated audio size
 
-        let audioBufferQueue = [];     // 存储接收到的音频包
-        let isAudioPlaying = false;    // 是否正在播放音频
-        const BUFFER_THRESHOLD = 3;    // 缓冲包数量阈值，至少累积3个包再开始播放
-        const MIN_AUDIO_DURATION = 0.1; // 最小音频长度(秒)，小于这个长度的音频会被合并
-        let streamingContext = null;   // 音频流上下文
-        const SAMPLE_RATE = 16000;     // 采样率
-        const CHANNELS = 1;            // 声道数
-        const FRAME_SIZE = 960;        // 帧大小
+        let audioBufferQueue = [];     // Store received audio packets
+        let isAudioPlaying = false;    // Whether currently playing audio
+        const BUFFER_THRESHOLD = 3;    // Buffer packet count threshold, accumulate at least 3 packets before starting playback
+        const MIN_AUDIO_DURATION = 0.1; // Minimum audio length (seconds), audio shorter than this will be merged
+        let streamingContext = null;   // Audio stream context
+        const SAMPLE_RATE = 16000;     // Sample rate
+        const CHANNELS = 1;            // Number of channels
+        const FRAME_SIZE = 960;        // Frame size
 
-        // DOM元素
+        // DOM elements
         const connectButton = document.getElementById('connectButton');
         const serverUrlInput = document.getElementById('serverUrl');
         const connectionStatus = document.getElementById('connectionStatus');
@@ -237,12 +237,12 @@
                     sampleRate: SAMPLE_RATE,
                     latencyHint: 'interactive'
                 });
-                log('创建音频上下文，采样率: ' + SAMPLE_RATE + 'Hz', 'debug');
+                log('Created audio context, sample rate: ' + SAMPLE_RATE + 'Hz', 'debug');
             }
             return audioContext;
         }
 
-        // 初始化可视化器
+        // Initialize visualizer
         function initVisualizer() {
             visualizerCanvas.width = visualizerCanvas.clientWidth;
             visualizerCanvas.height = visualizerCanvas.clientHeight;
@@ -250,7 +250,7 @@
             visualizerContext.fillRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
         }
 
-        // 绘制音频可视化效果
+        // Draw audio visualization effect
         function drawVisualizer(dataArray) {
             visualizationRequest = requestAnimationFrame(() => drawVisualizer(dataArray));
 
@@ -277,30 +277,30 @@
 
         const queue = new BlockingQueue();
 
-        // 启动缓存进程
+        // Start buffering process
         async function startAudioBuffering() {
-            log("开始音频缓冲...", 'info');
+            log("Starting audio buffering...", 'info');
 
-            // 先尝试初始化解码器，以便在播放时已准备好
+            // Try to initialize decoder first, so it's ready when playing
             initOpusDecoder().catch(error => {
-                log(`预初始化Opus解码器失败: ${error.message}`, 'warning');
-                // 继续缓冲，我们会在播放时再次尝试初始化
+                log(`Pre-initialization of Opus decoder failed: ${error.message}`, 'warning');
+                // Continue buffering, we'll try to initialize again when playing
             });
             const timeout = 300;
             while (true) {
-                // 每次数据空的时候等三条数据
+                // Wait for three data packets when data is empty
                 const packets = await queue.dequeue(
-                    3,                       // 至少 3 条
-                    timeout,                     // 最多等 300 ms
-                    (count) => {             // 超时额外回调
-                        log(`缓冲超时，当前缓冲包数: ${count}，开始播放`, 'info');
+                    3,                       // At least 3 packets
+                    timeout,                     // Wait at most 300 ms
+                    (count) => {             // Timeout callback
+                        log(`Buffer timeout, current buffered packets: ${count}, starting playback`, 'info');
                     }
                 );
                 if (packets.length) {
-                    log(`已缓冲 ${packets.length} 个音频包，开始播放`, 'info');
+                    log(`Buffered ${packets.length} audio packets, starting playback`, 'info');
                     streamingContext.pushAudioBuffer(packets)
                 }
-                // 50毫秒里，有多少给多少
+                // Within 50ms, give whatever is available
                 while (true) {
                     const data = await queue.dequeue(99, 50)
                     if (data.length) {
@@ -312,30 +312,30 @@
             }
         }
 
-        // 播放已缓冲的音频
+        // Play buffered audio
         async function playBufferedAudio() {
-            // 确保Opus解码器已初始化
+            // Ensure Opus decoder is initialized
             try {
-                // 确保音频上下文存在
+                // Ensure audio context exists
                 audioContext = getAudioContextInstance();
 
-                // 确保解码器已初始化
+                // Ensure decoder is initialized
                 if (!opusDecoder) {
-                    log('初始化Opus解码器...', 'info');
+                    log('Initializing Opus decoder...', 'info');
                     try {
                         opusDecoder = await initOpusDecoder();
                         if (!opusDecoder) {
-                            throw new Error('解码器初始化失败');
+                            throw new Error('Decoder initialization failed');
                         }
-                        log('Opus解码器初始化成功', 'success');
+                        log('Opus decoder initialized successfully', 'success');
                     } catch (error) {
-                        log('Opus解码器初始化失败: ' + error.message, 'error');
+                        log('Opus decoder initialization failed: ' + error.message, 'error');
                         isAudioPlaying = false;
                         return;
                     }
                 }
 
-                // 创建流式播放上下文
+                // Create streaming playback context
                 if (!streamingContext) {
                     streamingContext = createStreamingContext(opusDecoder, audioContext, SAMPLE_RATE, CHANNELS, MIN_AUDIO_DURATION);
                 }
@@ -344,7 +344,7 @@
                 streamingContext.startPlaying();
 
             } catch (error) {
-                log(`播放已缓冲的音频出错: ${error.message}`, 'error');
+                log(`Error playing buffered audio: ${error.message}`, 'error');
                 isAudioPlaying = false;
                 streamingContext = null;
             }
@@ -352,47 +352,47 @@
 
 
 
-        // 初始化Opus解码器 - 确保完全初始化完成后才返回
+        // Initialize Opus decoder - ensure complete initialization before returning
         async function initOpusDecoder() {
-            if (opusDecoder) return opusDecoder; // 已经初始化
+            if (opusDecoder) return opusDecoder; // Already initialized
 
             try {
-                // 检查ModuleInstance是否存在
+                // Check if ModuleInstance exists
                 if (typeof window.ModuleInstance === 'undefined') {
                     if (typeof Module !== 'undefined') {
-                        // 使用全局Module作为ModuleInstance
+                        // Use global Module as ModuleInstance
                         window.ModuleInstance = Module;
-                        log('使用全局Module作为ModuleInstance', 'info');
+                        log('Using global Module as ModuleInstance', 'info');
                     } else {
-                        throw new Error('Opus库未加载，ModuleInstance和Module对象都不存在');
+                        throw new Error('Opus library not loaded, ModuleInstance and Module objects do not exist');
                     }
                 }
 
                 const mod = window.ModuleInstance;
 
-                // 创建解码器对象
+                // Create decoder object
                 opusDecoder = {
                     channels: CHANNELS,
                     rate: SAMPLE_RATE,
                     frameSize: FRAME_SIZE,
                     module: mod,
-                    decoderPtr: null, // 初始为null
+                    decoderPtr: null, // Initially null
 
-                    // 初始化解码器
+                    // Initialize decoder
                     init: function () {
-                        if (this.decoderPtr) return true; // 已经初始化
+                        if (this.decoderPtr) return true; // Already initialized
 
-                        // 获取解码器大小
+                        // Get decoder size
                         const decoderSize = mod._opus_decoder_get_size(this.channels);
-                        log(`Opus解码器大小: ${decoderSize}字节`, 'debug');
+                        log(`Opus decoder size: ${decoderSize} bytes`, 'debug');
 
-                        // 分配内存
+                        // Allocate memory
                         this.decoderPtr = mod._malloc(decoderSize);
                         if (!this.decoderPtr) {
-                            throw new Error("无法分配解码器内存");
+                            throw new Error("Unable to allocate decoder memory");
                         }
 
-                        // 初始化解码器
+                        // Initialize decoder
                         const err = mod._opus_decoder_init(
                             this.decoderPtr,
                             this.rate,
@@ -400,66 +400,66 @@
                         );
 
                         if (err < 0) {
-                            this.destroy(); // 清理资源
-                            throw new Error(`Opus解码器初始化失败: ${err}`);
+                            this.destroy(); // Clean up resources
+                            throw new Error(`Opus decoder initialization failed: ${err}`);
                         }
 
-                        log("Opus解码器初始化成功", 'success');
+                        log("Opus decoder initialized successfully", 'success');
                         return true;
                     },
 
-                    // 解码方法
+                    // Decoding method
                     decode: function (opusData) {
                         if (!this.decoderPtr) {
                             if (!this.init()) {
-                                throw new Error("解码器未初始化且无法初始化");
+                                throw new Error("Decoder not initialized and cannot initialize");
                             }
                         }
 
                         try {
                             const mod = this.module;
 
-                            // 为Opus数据分配内存
+                            // Allocate memory for Opus data
                             const opusPtr = mod._malloc(opusData.length);
                             mod.HEAPU8.set(opusData, opusPtr);
 
-                            // 为PCM输出分配内存
-                            const pcmPtr = mod._malloc(this.frameSize * 2); // Int16 = 2字节
+                            // Allocate memory for PCM output
+                            const pcmPtr = mod._malloc(this.frameSize * 2); // Int16 = 2 bytes
 
-                            // 解码
+                            // Decode
                             const decodedSamples = mod._opus_decode(
                                 this.decoderPtr,
                                 opusPtr,
                                 opusData.length,
                                 pcmPtr,
                                 this.frameSize,
-                                0 // 不使用FEC
+                                0 // Do not use FEC
                             );
 
                             if (decodedSamples < 0) {
                                 mod._free(opusPtr);
                                 mod._free(pcmPtr);
-                                throw new Error(`Opus解码失败: ${decodedSamples}`);
+                                throw new Error(`Opus decoding failed: ${decodedSamples}`);
                             }
 
-                            // 复制解码后的数据
+                            // Copy decoded data
                             const decodedData = new Int16Array(decodedSamples);
                             for (let i = 0; i < decodedSamples; i++) {
                                 decodedData[i] = mod.HEAP16[(pcmPtr >> 1) + i];
                             }
 
-                            // 释放内存
+                            // Free memory
                             mod._free(opusPtr);
                             mod._free(pcmPtr);
 
                             return decodedData;
                         } catch (error) {
-                            log(`Opus解码错误: ${error.message}`, 'error');
+                            log(`Opus decoding error: ${error.message}`, 'error');
                             return new Int16Array(0);
                         }
                     },
 
-                    // 销毁方法
+                    // Destroy method
                     destroy: function () {
                         if (this.decoderPtr) {
                             this.module._free(this.decoderPtr);
@@ -468,156 +468,156 @@
                     }
                 };
 
-                // 初始化解码器
+                // Initialize decoder
                 if (!opusDecoder.init()) {
-                    throw new Error("Opus解码器初始化失败");
+                    throw new Error("Opus decoder initialization failed");
                 }
 
                 return opusDecoder;
 
             } catch (error) {
-                log(`Opus解码器初始化失败: ${error.message}`, 'error');
-                opusDecoder = null; // 重置为null，以便下次重试
+                log(`Opus decoder initialization failed: ${error.message}`, 'error');
+                opusDecoder = null; // Reset to null for next retry
                 throw error;
             }
         }
 
-        // 初始化音频录制和处理
+        // Initialize audio recording and processing
         async function initAudio() {
             try {
-                // 请求麦克风权限
+                // Request microphone permission
                 const stream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         echoCancellation: true,
                         noiseSuppression: true,
-                        sampleRate: 16000,  // 确保16kHz采样率
-                        channelCount: 1     // 确保单声道
+                        sampleRate: 16000,  // Ensure 16kHz sample rate
+                        channelCount: 1     // Ensure mono channel
                     }
                 });
-                log('已获取麦克风访问权限', 'success');
+                log('Microphone access permission obtained', 'success');
 
-                // 创建音频上下文
+                // Create audio context
                 audioContext = getAudioContextInstance();
                 const source = audioContext.createMediaStreamSource(stream);
 
-                // 获取实际音频轨道设置
+                // Get actual audio track settings
                 const audioTracks = stream.getAudioTracks();
                 if (audioTracks.length > 0) {
                     const track = audioTracks[0];
                     const settings = track.getSettings();
-                    log(`实际麦克风设置 - 采样率: ${settings.sampleRate || '未知'}Hz, 声道数: ${settings.channelCount || '未知'}`, 'info');
+                    log(`Actual microphone settings - Sample rate: ${settings.sampleRate || 'unknown'}Hz, Channels: ${settings.channelCount || 'unknown'}`, 'info');
                 }
 
-                // 创建分析器用于可视化
+                // Create analyzer for visualization
                 analyser = audioContext.createAnalyser();
                 analyser.fftSize = 2048;
                 source.connect(analyser);
 
-                // 尝试初始化MediaRecorder，按优先级尝试不同编码选项
+                // Try to initialize MediaRecorder, try different encoding options by priority
                 try {
-                    // 优先尝试使用Opus编码
+                    // Prefer Opus encoding
                     mediaRecorder = new MediaRecorder(stream, {
                         mimeType: 'audio/webm;codecs=opus',
                         audioBitsPerSecond: 16000
                     });
-                    log('已初始化MediaRecorder (使用Opus编码)', 'success');
-                    log(`选择的编码格式: ${mediaRecorder.mimeType}`, 'info');
+                    log('MediaRecorder initialized (using Opus encoding)', 'success');
+                    log(`Selected encoding format: ${mediaRecorder.mimeType}`, 'info');
                 } catch (e1) {
                     try {
-                        // 如果Opus不支持，尝试MP3
+                        // If Opus is not supported, try MP3
                         mediaRecorder = new MediaRecorder(stream, {
                             mimeType: 'audio/webm',
                             audioBitsPerSecond: 16000
                         });
-                        log('已初始化MediaRecorder (使用WebM标准编码，Opus不支持)', 'warning');
-                        log(`选择的编码格式: ${mediaRecorder.mimeType}`, 'info');
+                        log('MediaRecorder initialized (using WebM standard encoding, Opus not supported)', 'warning');
+                        log(`Selected encoding format: ${mediaRecorder.mimeType}`, 'info');
                     } catch (e2) {
                         try {
-                            // 尝试其他备选格式
+                            // Try other alternative formats
                             mediaRecorder = new MediaRecorder(stream, {
                                 mimeType: 'audio/ogg;codecs=opus',
                                 audioBitsPerSecond: 16000
                             });
-                            log('已初始化MediaRecorder (使用OGG+Opus编码)', 'warning');
-                            log(`选择的编码格式: ${mediaRecorder.mimeType}`, 'info');
+                            log('MediaRecorder initialized (using OGG+Opus encoding)', 'warning');
+                            log(`Selected encoding format: ${mediaRecorder.mimeType}`, 'info');
                         } catch (e3) {
-                            // 最后使用默认编码
+                            // Finally use default encoding
                             mediaRecorder = new MediaRecorder(stream);
-                            log(`已初始化MediaRecorder (使用默认编码: ${mediaRecorder.mimeType})`, 'warning');
+                            log(`MediaRecorder initialized (using default encoding: ${mediaRecorder.mimeType})`, 'warning');
                         }
                     }
                 }
 
-                // 处理录制的数据
+                // Handle recorded data
                 mediaRecorder.ondataavailable = (event) => {
                     if (event.data.size > 0) {
                         audioChunks.push(event.data);
                     }
                 };
 
-                // 录制结束后处理数据
+                // Handle data after recording ends
                 mediaRecorder.onstop = async () => {
-                    // 停止可视化
+                    // Stop visualization
                     if (visualizationRequest) {
                         cancelAnimationFrame(visualizationRequest);
                         visualizationRequest = null;
                     }
 
-                    log(`录音结束，已收集的音频块数量: ${audioChunks.length}`, 'info');
+                    log(`Recording ended, collected audio chunks: ${audioChunks.length}`, 'info');
                     if (audioChunks.length === 0) {
-                        log('警告：没有收集到任何音频数据，请检查麦克风是否工作正常', 'error');
+                        log('Warning: No audio data collected, please check if microphone is working properly', 'error');
                         return;
                     }
 
-                    // 创建完整的录音blob
+                    // Create complete recording blob
                     const blob = new Blob(audioChunks, { type: audioChunks[0].type });
-                    log(`已创建音频Blob，MIME类型: ${audioChunks[0].type}，大小: ${(blob.size / 1024).toFixed(2)} KB`, 'info');
+                    log(`Created audio Blob, MIME type: ${audioChunks[0].type}, size: ${(blob.size / 1024).toFixed(2)} KB`, 'info');
 
-                    // 保存原始块，以防清空后需要调试
+                    // Save original chunks in case debugging is needed after clearing
                     const chunks = [...audioChunks];
                     audioChunks = [];
 
                     try {
-                        // 将blob转换为ArrayBuffer
+                        // Convert blob to ArrayBuffer
                         const arrayBuffer = await blob.arrayBuffer();
                         const uint8Array = new Uint8Array(arrayBuffer);
 
-                        log(`已转换为Uint8Array，准备发送，大小: ${(arrayBuffer.byteLength / 1024).toFixed(2)} KB`, 'info');
+                        log(`Converted to Uint8Array, ready to send, size: ${(arrayBuffer.byteLength / 1024).toFixed(2)} KB`, 'info');
 
-                        // 检查WebSocket状态
+                        // Check WebSocket status
                         if (!websocket) {
-                            log('错误：WebSocket连接不存在', 'error');
+                            log('Error: WebSocket connection does not exist', 'error');
                             return;
                         }
 
                         if (websocket.readyState !== WebSocket.OPEN) {
-                            log(`错误：WebSocket连接未打开，当前状态: ${websocket.readyState}`, 'error');
+                            log(`Error: WebSocket connection not open, current state: ${websocket.readyState}`, 'error');
                             return;
                         }
 
-                        // 直接发送二进制音频数据 - 这是最简单有效的方式
+                        // Send binary audio data directly - this is the simplest and most effective way
                         try {
-                            // 注意：开始和结束消息已在录音开始和结束时发送
-                            // 这里只需要发送音频数据
+                            // Note: Start and end messages have been sent at the beginning and end of recording
+                            // Here we only need to send audio data
                             await new Promise(resolve => setTimeout(resolve, 50));
 
-                            // 处理WebM容器格式，提取纯Opus数据
-                            // 服务器使用opuslib_next.Decoder，需要纯Opus帧
-                            log('正在处理音频数据，提取纯Opus帧...', 'info');
+                            // Process WebM container format, extract pure Opus data
+                            // Server uses opuslib_next.Decoder, needs pure Opus frames
+                            log('Processing audio data, extracting pure Opus frames...', 'info');
                             const opusData = extractOpusFrames(uint8Array);
 
-                            // 记录Opus数据大小
-                            log(`已提取Opus数据，大小: ${(opusData.byteLength / 1024).toFixed(2)} KB`, 'info');
+                            // Record Opus data size
+                            log(`Extracted Opus data, size: ${(opusData.byteLength / 1024).toFixed(2)} KB`, 'info');
 
-                            // 发送音频消息第二步：二进制音频数据
+                            // Send audio message step 2: binary audio data
                             websocket.send(opusData);
-                            log(`已发送Opus音频数据: ${(opusData.byteLength / 1024).toFixed(2)} KB`, 'success');
+                            log(`Sent Opus audio data: ${(opusData.byteLength / 1024).toFixed(2)} KB`, 'success');
                         } catch (error) {
-                            log(`音频数据发送失败: ${error.message}`, 'error');
+                            log(`Audio data sending failed: ${error.message}`, 'error');
 
-                            // 尝试使用base64编码作为备选方案
+                            // Try using base64 encoding as alternative
                             try {
-                                log('尝试使用base64编码方式发送...', 'info');
+                                log('Trying to send using base64 encoding...', 'info');
                                 const base64Data = arrayBufferToBase64(arrayBuffer);
                                 const audioDataMessage = {
                                     type: 'audio',
@@ -630,85 +630,85 @@
                                     data: base64Data
                                 };
                                 websocket.send(JSON.stringify(audioDataMessage));
-                                log(`已使用base64编码发送音频数据: ${(arrayBuffer.byteLength / 1024).toFixed(2)} KB`, 'warning');
+                                log(`Sent audio data using base64 encoding: ${(arrayBuffer.byteLength / 1024).toFixed(2)} KB`, 'warning');
                             } catch (base64Error) {
-                                log(`所有数据发送方式均失败: ${base64Error.message}`, 'error');
+                                log(`All data sending methods failed: ${base64Error.message}`, 'error');
                             }
                         }
                     } catch (error) {
-                        log(`处理录音数据错误: ${error.message}`, 'error');
+                        log(`Error processing recording data: ${error.message}`, 'error');
                     }
                 };
 
-                // 尝试初始化Opus解码器
+                // Try to initialize Opus decoder
                 try {
-                    // 检查ModuleInstance是否存在（本地库导出的全局变量）
+                    // Check if ModuleInstance exists (global variable exported by local library)
                     if (typeof window.ModuleInstance === 'undefined') {
-                        throw new Error('Opus库未加载，ModuleInstance对象不存在');
+                        throw new Error('Opus library not loaded, ModuleInstance object does not exist');
                     }
 
-                    // 简单测试ModuleInstance是否可用
+                    // Simple test to see if ModuleInstance is available
                     if (typeof window.ModuleInstance._opus_decoder_get_size === 'function') {
                         const testSize = window.ModuleInstance._opus_decoder_get_size(1);
-                        log(`Opus解码器测试成功，解码器大小: ${testSize} 字节`, 'success');
+                        log(`Opus decoder test successful, decoder size: ${testSize} bytes`, 'success');
                     } else {
-                        throw new Error('Opus解码函数未找到');
+                        throw new Error('Opus decoding function not found');
                     }
                 } catch (err) {
-                    log(`Opus解码器初始化警告: ${err.message}，将在需要时重试`, 'warning');
+                    log(`Opus decoder initialization warning: ${err.message}, will retry when needed`, 'warning');
                 }
 
-                log('音频系统初始化完成', 'success');
+                log('Audio system initialization completed', 'success');
                 return true;
             } catch (error) {
-                log(`音频初始化错误: ${error.message}`, 'error');
+                log(`Audio initialization error: ${error.message}`, 'error');
                 return false;
             }
         }
 
-        // 开始录音
+        // Start recording
         function startRecording() {
             if (isRecording) return;
 
             try {
-                // 最小录音时长提示
-                log('请至少录制1-2秒钟的音频，确保采集到足够数据', 'info');
+                // Minimum recording duration reminder
+                log('Please record at least 1-2 seconds of audio to ensure sufficient data collection', 'info');
 
-                // 获取服务器类型 - 从URL判断
+                // Get server type - determine from URL
                 const serverUrl = serverUrlInput.value.trim();
                 let isXiaozhiNative = false;
 
-                // 检查是否是小智原生服务器 (根据URL特征判断)
+                // Check if it's Xiaozhi native server (determine by URL characteristics)
                 if (serverUrl.includes('xiaozhi') || serverUrl.includes('localhost') || serverUrl.includes('127.0.0.1')) {
                     isXiaozhiNative = true;
-                    log('检测到小智原生服务器，使用标准listen协议', 'info');
+                    log('Detected Xiaozhi native server, using standard listen protocol', 'info');
                 }
 
-                // 使用直接PCM录音和libopus编码的方式
+                // Use direct PCM recording and libopus encoding approach
                 startDirectRecording();
             } catch (error) {
-                log(`录音启动错误: ${error.message}`, 'error');
+                log(`Recording startup error: ${error.message}`, 'error');
             }
         }
 
-        // 停止录音
+        // Stop recording
         function stopRecording() {
             if (!isRecording) return;
 
             try {
-                // 使用直接PCM录音停止
+                // Use direct PCM recording stop
                 stopDirectRecording();
             } catch (error) {
-                log(`停止录音错误: ${error.message}`, 'error');
+                log(`Stop recording error: ${error.message}`, 'error');
             }
         }
 
-        // 连接WebSocket服务器
+        // Connect to WebSocket server
         async function connectToServer() {
             const url = serverUrlInput.value.trim();
             const config = getConfig();
-            // 先检查OTA状态
-            log('正在检查OTA状态...', 'info');
+            // First check OTA status
+            log('Checking OTA status...', 'info');
             const otaUrl = document.getElementById('otaUrl').value.trim();
             localStorage.setItem('otaUrl', otaUrl);
             localStorage.setItem('wsUrl', url);
@@ -720,18 +720,18 @@
                 }
                 websocket = ws
 
-                // 设置接收二进制数据的类型为ArrayBuffer
+                // Set binary data reception type to ArrayBuffer
                 websocket.binaryType = 'arraybuffer';
 
                 websocket.onopen = async () => {
-                    log(`已连接到服务器: ${url}`, 'success');
-                    connectionStatus.textContent = 'ws已连接';
+                    log(`Connected to server: ${url}`, 'success');
+                    connectionStatus.textContent = 'ws connected';
                     connectionStatus.style.color = 'green';
 
-                    // 连接成功后发送hello消息
+                    // Send hello message after successful connection
                     await sendHelloMessage();
 
-                    connectButton.textContent = '断开';
+                    connectButton.textContent = 'Disconnect';
                     connectButton.removeEventListener('click', connectToServer);
                     connectButton.addEventListener('click', disconnectFromServer);
                     // connectButton.onclick = disconnectFromServer;
@@ -745,11 +745,11 @@
                 };
 
                 websocket.onclose = () => {
-                    log('已断开连接', 'info');
-                    connectionStatus.textContent = 'ws已断开';
+                    log('Disconnected', 'info');
+                    connectionStatus.textContent = 'ws disconnected';
                     connectionStatus.style.color = 'red';
 
-                    connectButton.textContent = '连接';
+                    connectButton.textContent = 'Connect';
                     connectButton.removeEventListener('click', disconnectFromServer);
                     connectButton.addEventListener('click', connectToServer);
                     // connectButton.onclick = connectToServer;
@@ -760,60 +760,60 @@
                 };
 
                 websocket.onerror = (error) => {
-                    log(`WebSocket错误: ${error.message || '未知错误'}`, 'error');
-                    connectionStatus.textContent = 'ws未连接';
+                    log(`WebSocket error: ${error.message || 'Unknown error'}`, 'error');
+                    connectionStatus.textContent = 'ws not connected';
                     connectionStatus.style.color = 'red';
                 };
 
                 websocket.onmessage = function (event) {
                     try {
-                        // 检查是否为文本消息
+                        // Check if it's a text message
                         if (typeof event.data === 'string') {
                             const message = JSON.parse(event.data);
 
                             if (message.type === 'hello') {
-                                log(`服务器回应：${JSON.stringify(message, null, 2)}`, 'success');
+                                log(`Server response: ${JSON.stringify(message, null, 2)}`, 'success');
                             } else if (message.type === 'tts') {
-                                // TTS状态消息
+                                // TTS status message
                                 if (message.state === 'start') {
-                                    log('服务器开始发送语音', 'info');
+                                    log('Server started sending speech', 'info');
                                 } else if (message.state === 'sentence_start') {
-                                    log(`服务器发送语音段: ${message.text}`, 'info');
-                                    // 添加文本到会话记录
+                                    log(`Server sending speech segment: ${message.text}`, 'info');
+                                    // Add text to conversation record
                                     if (message.text) {
                                         addMessage(message.text);
                                     }
                                 } else if (message.state === 'sentence_end') {
-                                    log(`语音段结束: ${message.text}`, 'info');
+                                    log(`Speech segment ended: ${message.text}`, 'info');
                                 } else if (message.state === 'stop') {
-                                    log('服务器语音传输结束', 'info');
-                                    // 结束后更新UI状态
+                                    log('Server speech transmission ended', 'info');
+                                    // Update UI state after ending
                                     if (recordButton.disabled) {
                                         recordButton.disabled = false;
-                                        recordButton.textContent = '开始录音';
+                                        recordButton.textContent = 'Start Recording';
                                         recordButton.classList.remove('recording');
                                     }
                                 }
                             } else if (message.type === 'audio') {
-                                // 音频控制消息
-                                log(`收到音频控制消息: ${JSON.stringify(message)}`, 'info');
+                                // Audio control message
+                                log(`Received audio control message: ${JSON.stringify(message)}`, 'info');
                             } else if (message.type === 'stt') {
-                                // 语音识别结果
-                                log(`识别结果: ${message.text}`, 'info');
-                                // 添加识别结果到会话记录
-                                addMessage(`[语音识别] ${message.text}`, true);
+                                // Speech recognition result
+                                log(`Recognition result: ${message.text}`, 'info');
+                                // Add recognition result to conversation record
+                                addMessage(`[Speech Recognition] ${message.text}`, true);
                             } else if (message.type === 'llm') {
-                                // 大模型回复
-                                log(`大模型回复: ${message.text}`, 'info');
-                                // 添加大模型回复到会话记录
+                                // Large model response
+                                log(`Large model response: ${message.text}`, 'info');
+                                // Add large model response to conversation record
                                 if (message.text && message.text !== '😊') {
                                     addMessage(message.text);
                                 }
                             } else if (message.type === 'mcp') {
                                 const payload = message.payload || {};
-                                log(`服务器下发: ${JSON.stringify(message)}`, 'info');
+                                log(`Server sent: ${JSON.stringify(message)}`, 'info');
                                 if (payload) {
-                                    // 模拟小智客户端行为
+                                    // Simulate Xiaozhi client behavior
                                     if (payload.method === 'tools/list') {
                                         const replay_message = JSON.stringify({
                                             "session_id": "", "type": "mcp", "payload": {
@@ -863,9 +863,9 @@
                                             }
                                         })
                                         websocket.send(replay_message);
-                                        log(`回复MCP消息: ${replay_message}`, 'info');
+                                        log(`Reply MCP message: ${replay_message}`, 'info');
                                     } else if (payload.method === 'tools/call') {
-                                        // 模拟回复
+                                        // Simulate reply
                                         const replay_message = JSON.stringify({
                                             "session_id": "9f261599",
                                             "type": "mcp",
@@ -876,44 +876,44 @@
                                             }
                                         })
                                         websocket.send(replay_message);
-                                        log(`回复MCP消息: ${replay_message}`, 'info');
+                                        log(`Reply MCP message: ${replay_message}`, 'info');
                                     }
                                 }
 
                             } else {
-                                // 未知消息类型
-                                log(`未知消息类型: ${message.type}`, 'info');
+                                // Unknown message type
+                                log(`Unknown message type: ${message.type}`, 'info');
                                 addMessage(JSON.stringify(message, null, 2));
                             }
                         } else {
-                            // 处理二进制数据 - 兼容多种二进制格式
+                            // Handle binary data - compatible with multiple binary formats
                             handleBinaryMessage(event.data);
                         }
                     } catch (error) {
-                        log(`WebSocket消息处理错误: ${error.message}`, 'error');
-                        // 非JSON格式文本消息直接显示
+                        log(`WebSocket message processing error: ${error.message}`, 'error');
+                        // Non-JSON format text messages display directly
                         if (typeof event.data === 'string') {
                             addMessage(event.data);
                         }
                     }
                 };
 
-                connectionStatus.textContent = 'ws未连接';
+                connectionStatus.textContent = 'ws not connected';
                 connectionStatus.style.color = 'orange';
             } catch (error) {
-                log(`连接错误: ${error.message}`, 'error');
-                connectionStatus.textContent = 'ws未连接';
+                log(`Connection error: ${error.message}`, 'error');
+                connectionStatus.textContent = 'ws not connected';
             }
         }
 
-        // 发送hello握手消息
+        // Send hello handshake message
         async function sendHelloMessage() {
             if (!websocket || websocket.readyState !== WebSocket.OPEN) return;
 
             try {
                 const config = getConfig();
 
-                // 设置设备信息
+                // Set device information
                 const helloMessage = {
                     type: 'hello',
                     device_id: config.deviceId,
@@ -925,42 +925,42 @@
                     }
                 };
 
-                log('发送hello握手消息', 'info');
+                log('Sending hello handshake message', 'info');
                 websocket.send(JSON.stringify(helloMessage));
 
-                // 等待服务器响应
+                // Wait for server response
                 return new Promise(resolve => {
-                    // 5秒超时
+                    // 5 second timeout
                     const timeout = setTimeout(() => {
-                        log('等待hello响应超时', 'error');
-                        log('提示: 请尝试点击"测试认证"按钮进行连接排查', 'info');
+                        log('Hello response timeout', 'error');
+                        log('Tip: Please try clicking the "Test Auth" button for connection troubleshooting', 'info');
                         resolve(false);
                     }, 5000);
 
-                    // 临时监听一次消息，接收hello响应
+                    // Temporarily listen for one message to receive hello response
                     const onMessageHandler = (event) => {
                         try {
                             const response = JSON.parse(event.data);
                             if (response.type === 'hello' && response.session_id) {
-                                log(`服务器握手成功，会话ID: ${response.session_id}`, 'success');
+                                log(`Server handshake successful, session ID: ${response.session_id}`, 'success');
                                 clearTimeout(timeout);
                                 websocket.removeEventListener('message', onMessageHandler);
                                 resolve(true);
                             }
                         } catch (e) {
-                            // 忽略非JSON消息
+                            // Ignore non-JSON messages
                         }
                     };
 
                     websocket.addEventListener('message', onMessageHandler);
                 });
             } catch (error) {
-                log(`发送hello消息错误: ${error.message}`, 'error');
+                log(`Send hello message error: ${error.message}`, 'error');
                 return false;
             }
         }
 
-        // 断开WebSocket连接
+        // Disconnect WebSocket connection
         function disconnectFromServer() {
             if (!websocket) return;
 
@@ -968,14 +968,14 @@
             stopRecording();
         }
 
-        // 发送文本消息
+        // Send text message
         function sendTextMessage() {
             const message = messageInput.value.trim();
             if (message === '' || !websocket || websocket.readyState !== WebSocket.OPEN) return;
 
 
             try {
-                // 直接发送listen消息，不需要重复发送hello
+                // Send listen message directly, no need to repeat hello
                 const listenMessage = {
                     type: 'listen',
                     mode: 'manual',
@@ -985,15 +985,15 @@
 
                 websocket.send(JSON.stringify(listenMessage));
                 addMessage(message, true);
-                log(`发送文本消息: ${message}`, 'info');
+                log(`Sending text message: ${message}`, 'info');
 
                 messageInput.value = '';
             } catch (error) {
-                log(`发送消息错误: ${error.message}`, 'error');
+                log(`Send message error: ${error.message}`, 'error');
             }
         }
 
-        // 生成随机MAC地址
+        // Generate random MAC address
         function generateRandomMac() {
             const hexDigits = '0123456789ABCDEF';
             let mac = '';
@@ -1006,12 +1006,12 @@
             return mac;
         }
 
-        // 初始化事件监听器
+        // Initialize event listeners
         function initEventListeners() {
             connectButton.addEventListener('click', connectToServer);
             document.getElementById('authTestButton').addEventListener('click', testAuthentication);
 
-            // 设备配置面板折叠/展开
+            // Device configuration panel collapse/expand
             const toggleButton = document.getElementById('toggleConfig');
             const configPanel = document.getElementById('configPanel');
             const deviceMacInput = document.getElementById('deviceMac');
@@ -1019,7 +1019,7 @@
             const displayMac = document.getElementById('displayMac');
             const displayClient = document.getElementById('displayClient');
 
-            // 从localStorage加载MAC地址，如果没有则生成新的
+            // Load MAC address from localStorage, generate new one if not available
             let savedMac = localStorage.getItem('deviceMac');
             if (!savedMac) {
                 savedMac = generateRandomMac();
@@ -1028,20 +1028,20 @@
             deviceMacInput.value = savedMac;
             displayMac.textContent = savedMac;
 
-            // 更新显示的值
+            // Update displayed values
             function updateDisplayValues() {
                 const newMac = deviceMacInput.value;
                 displayMac.textContent = newMac;
                 displayClient.textContent = clientIdInput.value;
-                // 保存MAC地址到localStorage
+                // Save MAC address to localStorage
                 localStorage.setItem('deviceMac', newMac);
             }
 
-            // 监听输入变化
+            // Listen for input changes
             deviceMacInput.addEventListener('input', updateDisplayValues);
             clientIdInput.addEventListener('input', updateDisplayValues);
 
-            // 初始更新显示值
+            // Initial update of displayed values
             updateDisplayValues();
 
             const savedOtaUrl = localStorage.getItem('otaUrl');
@@ -1054,22 +1054,22 @@
                 document.getElementById('serverUrl').value = savedWsUrl;
             }
 
-            // 切换面板显示
+            // Toggle panel display
             toggleButton.addEventListener('click', () => {
                 const isExpanded = configPanel.classList.contains('expanded');
                 configPanel.classList.toggle('expanded');
-                toggleButton.textContent = isExpanded ? '编辑' : '收起';
+                toggleButton.textContent = isExpanded ? 'Edit' : 'Collapse';
             });
 
-            // 标签页切换
+            // Tab switching
             const tabs = document.querySelectorAll('.tab');
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    // 移除所有标签页的active类
+                    // Remove active class from all tabs
                     tabs.forEach(t => t.classList.remove('active'));
                     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
-                    // 添加当前标签页的active类
+                    // Add active class to current tab
                     tab.classList.add('active');
                     document.getElementById(`${tab.dataset.tab}Tab`).classList.add('active');
                 });
@@ -1091,56 +1091,56 @@
             window.addEventListener('resize', initVisualizer);
         }
 
-        // 测试认证
+        // Test authentication
         async function testAuthentication() {
-            log('开始测试认证...', 'info');
+            log('Starting authentication test...', 'info');
 
             const config = getConfig();
 
-            // 显示服务器配置
-            log('-------- 服务器认证配置检查 --------', 'info');
-            log('请确认config.yaml中的auth配置：', 'info');
-            log('1. server.auth.enabled 为 false 或服务器已正确配置认证', 'info');
-            log('2. 如果启用了认证，请确认使用了正确的token', 'info');
-            log(`3. 或者在allowed_devices中添加了测试设备MAC：${config.deviceMac}`, 'info');
+            // Display server configuration
+            log('-------- Server Authentication Configuration Check --------', 'info');
+            log('Please confirm auth configuration in config.yaml:', 'info');
+            log('1. server.auth.enabled is false or server has correct authentication configured', 'info');
+            log('2. If authentication is enabled, please confirm using correct token', 'info');
+            log(`3. Or added test device MAC to allowed_devices: ${config.deviceMac}`, 'info');
 
             const serverUrl = serverUrlInput.value.trim();
             if (!serverUrl) {
-                log('请输入服务器地址', 'error');
+                log('Please enter server address', 'error');
                 return;
             }
 
-            // 测试连接
-            log('尝试不同认证参数的连接：', 'info');
+            // Test connection
+            log('Trying connections with different authentication parameters:', 'info');
 
-            // 测试1: 无参数连接
+            // Test 1: Connection without parameters
             try {
-                log('测试1: 尝试无参数连接...', 'info');
+                log('Test 1: Trying connection without parameters...', 'info');
                 const ws1 = new WebSocket(serverUrl);
 
                 ws1.onopen = () => {
-                    log('测试1成功: 无参数可连接，服务器可能没有启用认证', 'success');
+                    log('Test 1 successful: Connection without parameters works, server may not have authentication enabled', 'success');
                     ws1.close();
                 };
 
                 ws1.onerror = (error) => {
-                    log('测试1失败: 无参数连接被拒绝，服务器可能启用了认证', 'error');
+                    log('Test 1 failed: Connection without parameters rejected, server may have authentication enabled', 'error');
                 };
 
-                // 5秒后关闭测试连接
+                // Close test connection after 5 seconds
                 setTimeout(() => {
                     if (ws1.readyState === WebSocket.CONNECTING || ws1.readyState === WebSocket.OPEN) {
                         ws1.close();
                     }
                 }, 5000);
             } catch (error) {
-                log(`测试1出错: ${error.message}`, 'error');
+                log(`Test 1 error: ${error.message}`, 'error');
             }
 
-            // 测试2: 带参数连接
+            // Test 2: Connection with parameters
             setTimeout(async () => {
                 try {
-                    log('测试2: 尝试带token参数连接...', 'info');
+                    log('Test 2: Trying connection with token parameters...', 'info');
 
                     let url = new URL(serverUrl);
                     url.searchParams.append('token', config.token);
@@ -1150,9 +1150,9 @@
                     const ws2 = new WebSocket(url.toString());
 
                     ws2.onopen = () => {
-                        log('测试2成功: 带token参数可连接', 'success');
+                        log('Test 2 successful: Connection with token parameters works', 'success');
 
-                        // 尝试发送hello消息
+                        // Try to send hello message
                         const helloMsg = {
                             type: 'hello',
                             device_id: config.deviceId,
@@ -1161,38 +1161,38 @@
                         };
 
                         ws2.send(JSON.stringify(helloMsg));
-                        log('已发送hello测试消息', 'info');
+                        log('Sent hello test message', 'info');
 
-                        // 监听响应
+                        // Listen for response
                         ws2.onmessage = (event) => {
                             try {
                                 const response = JSON.parse(event.data);
                                 if (response.type === 'hello' && response.session_id) {
-                                    log(`测试完全成功! 收到hello响应，会话ID: ${response.session_id}`, 'success');
+                                    log(`Test completely successful! Received hello response, session ID: ${response.session_id}`, 'success');
                                     ws2.close();
                                 }
                             } catch (e) {
-                                log(`收到非JSON响应: ${event.data}`, 'info');
+                                log(`Received non-JSON response: ${event.data}`, 'info');
                             }
                         };
 
-                        // 5秒后关闭
+                        // Close after 5 seconds
                         setTimeout(() => ws2.close(), 5000);
                     };
 
                     ws2.onerror = (error) => {
-                        log('测试2失败: 带token参数连接被拒绝', 'error');
-                        log('请检查token是否正确，或服务器是否接受URL参数认证', 'error');
+                        log('Test 2 failed: Connection with token parameters rejected', 'error');
+                        log('Please check if token is correct, or if server accepts URL parameter authentication', 'error');
                     };
                 } catch (error) {
-                    log(`测试2出错: ${error.message}`, 'error');
+                    log(`Test 2 error: ${error.message}`, 'error');
                 }
             }, 6000);
 
-            log('认证测试已启动，请查看测试结果...', 'info');
+            log('Authentication test started, please check test results...', 'info');
         }
 
-        // 帮助函数：ArrayBuffer转Base64
+        // Helper function: ArrayBuffer to Base64
         function arrayBufferToBase64(buffer) {
             let binary = '';
             const bytes = new Uint8Array(buffer);
@@ -1203,33 +1203,33 @@
             return window.btoa(binary);
         }
 
-        // Opus编码器
+        // Opus encoder
         let opusEncoder;
 
-        // 初始化应用
+        // Initialize application
         function initApp() {
             initVisualizer();
             initEventListeners();
 
-            // 检查libopus.js是否正确加载
+            // Check if libopus.js is loaded correctly
             checkOpusLoaded();
 
-            // 初始化Opus编码器
+            // Initialize Opus encoder
             opusEncoder = initOpusEncoder();
 
-            // 预加载Opus解码器
-            log('预加载Opus解码器...', 'info');
+            // Preload Opus decoder
+            log('Preloading Opus decoder...', 'info');
             initOpusDecoder().then(() => {
-                log('Opus解码器预加载成功', 'success');
+                log('Opus decoder preloaded successfully', 'success');
             }).catch(error => {
-                log(`Opus解码器预加载失败: ${error.message}，将在需要时重试`, 'warning');
+                log(`Opus decoder preload failed: ${error.message}, will retry when needed`, 'warning');
             });
             playBufferedAudio()
             startAudioBuffering()
 
         }
 
-        // PCM录音处理器代码 - 会被注入到AudioWorklet中
+        // PCM recording processor code - will be injected into AudioWorklet
         const audioProcessorCode = `
             class AudioRecorderProcessor extends AudioWorkletProcessor {
                 constructor() {
@@ -1240,7 +1240,7 @@
                     this.bufferIndex = 0;
                     this.isRecording = false;
 
-                    // 监听来自主线程的消息
+                    // Listen for messages from main thread
                     this.port.onmessage = (event) => {
                         if (event.data.command === 'start') {
                             this.isRecording = true;
@@ -1248,7 +1248,7 @@
                         } else if (event.data.command === 'stop') {
                             this.isRecording = false;
 
-                            // 发送剩余的缓冲区
+                            // Send remaining buffer
                             if (this.bufferIndex > 0) {
                                 const finalBuffer = this.buffer.slice(0, this.bufferIndex);
                                 this.port.postMessage({
@@ -1266,13 +1266,13 @@
                 process(inputs, outputs, parameters) {
                     if (!this.isRecording) return true;
 
-                    const input = inputs[0][0]; // 获取第一个输入通道
+                    const input = inputs[0][0]; // Get first input channel
                     if (!input) return true;
 
-                    // 将浮点采样转换为16位整数并存储
+                    // Convert float samples to 16-bit integers and store
                     for (let i = 0; i < input.length; i++) {
                         if (this.bufferIndex >= this.frameSize) {
-                            // 缓冲区已满，发送给主线程并重置
+                            // Buffer is full, send to main thread and reset
                             this.port.postMessage({
                                 type: 'buffer',
                                 buffer: this.buffer.slice(0)
@@ -1280,7 +1280,7 @@
                             this.bufferIndex = 0;
                         }
 
-                        // 转换为16位整数 (-32768到32767)
+                        // Convert to 16-bit integer (-32768 to 32767)
                         this.buffer[this.bufferIndex++] = Math.max(-32768, Math.min(32767, Math.floor(input[i] * 32767)));
                     }
 
@@ -1291,57 +1291,57 @@
             registerProcessor('audio-recorder-processor', AudioRecorderProcessor);
         `;
 
-        // 创建音频处理器
+        // Create audio processor
         async function createAudioProcessor() {
             audioContext = getAudioContextInstance();
 
             try {
-                // 检查是否支持AudioWorklet
+                // Check if AudioWorklet is supported
                 if (audioContext.audioWorklet) {
-                    // 注册音频处理器
+                    // Register audio processor
                     const blob = new Blob([audioProcessorCode], { type: 'application/javascript' });
                     const url = URL.createObjectURL(blob);
                     await audioContext.audioWorklet.addModule(url);
                     URL.revokeObjectURL(url);
 
-                    // 创建音频处理节点
+                    // Create audio processing node
                     const audioProcessor = new AudioWorkletNode(audioContext, 'audio-recorder-processor');
 
-                    // 设置音频处理消息处理
+                    // Set up audio processing message handling
                     audioProcessor.port.onmessage = (event) => {
                         if (event.data.type === 'buffer') {
-                            // 收到PCM缓冲区数据
+                            // Received PCM buffer data
                             processPCMBuffer(event.data.buffer);
                         }
                     };
 
-                    log('使用AudioWorklet处理音频', 'success');
+                    log('Using AudioWorklet for audio processing', 'success');
                     return { node: audioProcessor, type: 'worklet' };
                 } else {
-                    // 使用旧版ScriptProcessorNode作为回退方案
-                    log('AudioWorklet不可用，使用ScriptProcessorNode作为回退方案', 'warning');
+                    // Use legacy ScriptProcessorNode as fallback
+                    log('AudioWorklet not available, using ScriptProcessorNode as fallback', 'warning');
 
-                    const frameSize = 4096; // ScriptProcessorNode缓冲区大小
+                    const frameSize = 4096; // ScriptProcessorNode buffer size
                     const scriptProcessor = audioContext.createScriptProcessor(frameSize, 1, 1);
 
-                    // 将audioProcess事件设置为处理音频数据
+                    // Set audioProcess event to handle audio data
                     scriptProcessor.onaudioprocess = (event) => {
                         if (!isRecording) return;
 
                         const input = event.inputBuffer.getChannelData(0);
                         const buffer = new Int16Array(input.length);
 
-                        // 将浮点数据转换为16位整数
+                        // Convert float data to 16-bit integers
                         for (let i = 0; i < input.length; i++) {
                             buffer[i] = Math.max(-32768, Math.min(32767, Math.floor(input[i] * 32767)));
                         }
 
-                        // 处理PCM数据
+                        // Process PCM data
                         processPCMBuffer(buffer);
                     };
 
-                    // 需要连接输出，否则不会触发处理
-                    // 我们创建一个静音通道
+                    // Need to connect output, otherwise processing won't be triggered
+                    // We create a silent channel
                     const silent = audioContext.createGain();
                     silent.gain.value = 0;
                     scriptProcessor.connect(silent);
@@ -1350,11 +1350,11 @@
                     return { node: scriptProcessor, type: 'processor' };
                 }
             } catch (error) {
-                log(`创建音频处理器失败: ${error.message}，尝试回退方案`, 'error');
+                log(`Failed to create audio processor: ${error.message}, trying fallback`, 'error');
 
-                // 最后回退方案：使用ScriptProcessorNode
+                // Final fallback: use ScriptProcessorNode
                 try {
-                    const frameSize = 4096; // ScriptProcessorNode缓冲区大小
+                    const frameSize = 4096; // ScriptProcessorNode buffer size
                     const scriptProcessor = audioContext.createScriptProcessor(frameSize, 1, 1);
 
                     scriptProcessor.onaudioprocess = (event) => {
@@ -1375,85 +1375,85 @@
                     scriptProcessor.connect(silent);
                     silent.connect(audioContext.destination);
 
-                    log('使用ScriptProcessorNode作为回退方案成功', 'warning');
+                    log('Successfully using ScriptProcessorNode as fallback', 'warning');
                     return { node: scriptProcessor, type: 'processor' };
                 } catch (fallbackError) {
-                    log(`回退方案也失败: ${fallbackError.message}`, 'error');
+                    log(`Fallback also failed: ${fallbackError.message}`, 'error');
                     return null;
                 }
             }
         }
 
-        // 初始化直接从PCM数据录音的系统
+        // Initialize system for direct PCM data recording
         let audioProcessor = null;
         let audioProcessorType = null;
         let audioSource = null;
 
-        // 处理PCM缓冲数据
+        // Process PCM buffer data
         let pcmDataBuffer = new Int16Array();
 
         function processPCMBuffer(buffer) {
             if (!isRecording) return;
 
-            // 将新的PCM数据追加到缓冲区
+            // Append new PCM data to buffer
             const newBuffer = new Int16Array(pcmDataBuffer.length + buffer.length);
             newBuffer.set(pcmDataBuffer);
             newBuffer.set(buffer, pcmDataBuffer.length);
             pcmDataBuffer = newBuffer;
 
-            // 检查是否有足够的数据进行Opus编码（16000Hz, 60ms = 960个采样点）
+            // Check if there's enough data for Opus encoding (16000Hz, 60ms = 960 samples)
             const samplesPerFrame = 960; // 60ms @ 16kHz
 
             while (pcmDataBuffer.length >= samplesPerFrame) {
-                // 从缓冲区取出一帧数据
+                // Extract one frame of data from buffer
                 const frameData = pcmDataBuffer.slice(0, samplesPerFrame);
                 pcmDataBuffer = pcmDataBuffer.slice(samplesPerFrame);
 
-                // 编码为Opus
+                // Encode to Opus
                 encodeAndSendOpus(frameData);
             }
         }
 
-        // 编码并发送Opus数据
+        // Encode and send Opus data
         function encodeAndSendOpus(pcmData = null) {
             if (!opusEncoder) {
-                log('Opus编码器未初始化', 'error');
+                log('Opus encoder not initialized', 'error');
                 return;
             }
 
             try {
-                // 如果提供了PCM数据，则编码该数据
+                // If PCM data is provided, encode that data
                 if (pcmData) {
-                    // 使用已初始化的Opus编码器编码
+                    // Use initialized Opus encoder to encode
                     const opusData = opusEncoder.encode(pcmData);
 
                     if (opusData && opusData.length > 0) {
-                        // 存储音频帧
+                        // Store audio frame
                         audioBuffers.push(opusData.buffer);
                         totalAudioSize += opusData.length;
 
-                        // 如果WebSocket已连接，则发送数据
+                        // If WebSocket is connected, send data
                         if (websocket && websocket.readyState === WebSocket.OPEN) {
                             try {
-                                // 服务端期望接收原始Opus数据，不需要任何额外包装
+                                // Server expects raw Opus data, no additional wrapping needed
                                 websocket.send(opusData.buffer);
-                                log(`发送Opus帧，大小：${opusData.length}字节`, 'debug');
+                                log(`Sent Opus frame, size: ${opusData.length} bytes`, 'debug');
                             } catch (error) {
-                                log(`WebSocket发送错误: ${error.message}`, 'error');
+                                log(`WebSocket send error: ${error.message}`, 'error');
                             }
                         }
                     } else {
-                        log('Opus编码失败，无有效数据返回', 'error');
+                        log('Opus encoding failed, no valid data returned', 'error');
                     }
                 } else {
-                    // 处理剩余的PCM数据
+                    // Process remaining PCM data
                     if (pcmDataBuffer.length > 0) {
-                        // 如果剩余的采样点不足一帧，用静音填充
+                        // If remaining samples are insufficient for one frame, pad with silence
                         const samplesPerFrame = 960;
                         if (pcmDataBuffer.length < samplesPerFrame) {
                             const paddedBuffer = new Int16Array(samplesPerFrame);
                             paddedBuffer.set(pcmDataBuffer);
-                            // 剩余部分为0（静音）
+                            // Remaining part is 0 (silence)
                             encodeAndSendOpus(paddedBuffer);
                         } else {
                             encodeAndSendOpus(pcmDataBuffer.slice(0, samplesPerFrame));
@@ -1462,22 +1462,22 @@
                     }
                 }
             } catch (error) {
-                log(`Opus编码错误: ${error.message}`, 'error');
+                log(`Opus encoding error: ${error.message}`, 'error');
             }
         }
 
-        // 开始直接从PCM数据录音
+        // Start direct recording from PCM data
         async function startDirectRecording() {
             if (isRecording) return;
 
             try {
-                // 初始化Opus编码器
+                // Initialize Opus encoder
                 if (!initOpusEncoder()) {
-                    log('无法启动录音: Opus编码器初始化失败', 'error');
+                    log('Cannot start recording: Opus encoder initialization failed', 'error');
                     return;
                 }
 
-                // 请求麦克风权限
+                // Request microphone permission
                 const stream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         echoCancellation: true,
@@ -1487,20 +1487,20 @@
                     }
                 });
 
-                // 创建音频上下文和分析器
+                // Create audio context and analyzer
                 audioContext = getAudioContextInstance();
 
-                // 创建音频处理器
+                // Create audio processor
                 const processorResult = await createAudioProcessor();
                 if (!processorResult) {
-                    log('无法创建音频处理器', 'error');
+                    log('Cannot create audio processor', 'error');
                     return;
                 }
 
                 audioProcessor = processorResult.node;
                 audioProcessorType = processorResult.type;
 
-                // 连接音频处理链
+                // Connect audio processing chain
                 audioSource = audioContext.createMediaStreamSource(stream);
                 analyser = audioContext.createAnalyser();
                 analyser.fftSize = 2048;
@@ -1508,70 +1508,70 @@
                 audioSource.connect(analyser);
                 audioSource.connect(audioProcessor);
 
-                // 启动录音
+                // Start recording
                 pcmDataBuffer = new Int16Array();
                 audioBuffers = [];
                 totalAudioSize = 0;
                 isRecording = true;
 
-                // 启动音频处理器的录音 - 只有AudioWorklet才需要发送消息
+                // Start audio processor recording - only AudioWorklet needs to send messages
                 if (audioProcessorType === 'worklet' && audioProcessor.port) {
                     audioProcessor.port.postMessage({ command: 'start' });
                 }
 
-                // 发送监听开始消息
+                // Send listen start message
                 if (websocket && websocket.readyState === WebSocket.OPEN) {
-                    // 使用与服务端期望的listen消息格式
+                    // Use listen message format expected by server
                     const listenMessage = {
                         type: 'listen',
-                        mode: 'manual',  // 使用手动模式，由我们控制开始/停止
-                        state: 'start'   // 表示开始录音
+                        mode: 'manual',  // Use manual mode, we control start/stop
+                        state: 'start'   // Indicates start recording
                     };
 
-                    log(`发送录音开始消息: ${JSON.stringify(listenMessage)}`, 'info');
+                    log(`Sending recording start message: ${JSON.stringify(listenMessage)}`, 'info');
                     websocket.send(JSON.stringify(listenMessage));
                 } else {
-                    log('WebSocket未连接，无法发送开始消息', 'error');
+                    log('WebSocket not connected, cannot send start message', 'error');
                     return false;
                 }
 
-                // 开始音频可视化
+                // Start audio visualization
                 const dataArray = new Uint8Array(analyser.frequencyBinCount);
                 drawVisualizer(dataArray);
 
-                // 在UI上显示录音计时器
+                // Display recording timer on UI
                 let recordingSeconds = 0;
                 const recordingTimer = setInterval(() => {
                     recordingSeconds += 0.1;
-                    recordButton.textContent = `停止录音 ${recordingSeconds.toFixed(1)}秒`;
+                    recordButton.textContent = `Stop Recording ${recordingSeconds.toFixed(1)}s`;
                 }, 100);
 
-                // 保存计时器，以便在停止时清除
+                // Save timer for clearing when stopping
                 window.recordingTimer = recordingTimer;
 
                 recordButton.classList.add('recording');
                 recordButton.disabled = false;
 
-                log('开始PCM直接录音', 'success');
+                log('Started PCM direct recording', 'success');
                 return true;
             } catch (error) {
-                log(`直接录音启动错误: ${error.message}`, 'error');
+                log(`Direct recording startup error: ${error.message}`, 'error');
                 isRecording = false;
                 return false;
             }
         }
 
-        // 停止直接从PCM数据录音
+        // Stop direct recording from PCM data
         function stopDirectRecording() {
             if (!isRecording) return;
 
             try {
-                // 停止录音
+                // Stop recording
                 isRecording = false;
 
-                // 停止音频处理器的录音
+                // Stop audio processor recording
                 if (audioProcessor) {
-                    // 只有AudioWorklet才需要发送停止消息
+                    // Only AudioWorklet needs to send stop message
                     if (audioProcessorType === 'worklet' && audioProcessor.port) {
                         audioProcessor.port.postMessage({ command: 'stop' });
                     }
@@ -1580,34 +1580,34 @@
                     audioProcessor = null;
                 }
 
-                // 断开音频连接
+                // Disconnect audio connections
                 if (audioSource) {
                     audioSource.disconnect();
                     audioSource = null;
                 }
 
-                // 停止可视化
+                // Stop visualization
                 if (visualizationRequest) {
                     cancelAnimationFrame(visualizationRequest);
                     visualizationRequest = null;
                 }
 
-                // 清除录音计时器
+                // Clear recording timer
                 if (window.recordingTimer) {
                     clearInterval(window.recordingTimer);
                     window.recordingTimer = null;
                 }
 
-                // 编码并发送剩余的数据
+                // Encode and send remaining data
                 encodeAndSendOpus();
 
-                // 发送一个空的消息作为结束标志（模拟接收到空音频数据的情况）
+                // Send an empty message as an end marker (simulate receiving empty audio data)
                 if (websocket && websocket.readyState === WebSocket.OPEN) {
-                    // 使用空的Uint8Array发送最后一个空帧
+                    // Use empty Uint8Array to send the last empty frame
                     const emptyOpusFrame = new Uint8Array(0);
                     websocket.send(emptyOpusFrame);
 
-                    // 发送监听结束消息
+                    // Send listen end message
                     const stopMessage = {
                         type: 'listen',
                         mode: 'manual',
@@ -1615,18 +1615,18 @@
                     };
 
                     websocket.send(JSON.stringify(stopMessage));
-                    log('已发送录音停止信号', 'info');
+                    log('Recording stop signal sent', 'info');
                 }
 
-                // 重置UI
-                recordButton.textContent = '开始录音';
+                // Reset UI
+                recordButton.textContent = 'Start Recording';
                 recordButton.classList.remove('recording');
                 recordButton.disabled = false;
 
-                log('停止PCM直接录音', 'success');
+                log('Stopped PCM direct recording', 'success');
                 return true;
             } catch (error) {
-                log(`直接录音停止错误: ${error.message}`, 'error');
+                log(`Direct recording stop error: ${error.message}`, 'error');
                 return false;
             }
         }
@@ -1634,40 +1634,40 @@
         async function handleBinaryMessage(data) {
             try {
                 let arrayBuffer;
-                // 根据数据类型进行处理
+                // Process based on data type
                 if (data instanceof ArrayBuffer) {
                     arrayBuffer = data;
-                    log(`收到ArrayBuffer音频数据，大小: ${data.byteLength}字节`, 'debug');
+                    log(`Received ArrayBuffer audio data, size: ${data.byteLength} bytes`, 'debug');
                 } else if (data instanceof Blob) {
-                    // 如果是Blob类型，转换为ArrayBuffer
+                    // If it's Blob type, convert to ArrayBuffer
                     arrayBuffer = await data.arrayBuffer();
-                    log(`收到Blob音频数据，大小: ${arrayBuffer.byteLength}字节`, 'debug');
+                    log(`Received Blob audio data, size: ${arrayBuffer.byteLength} bytes`, 'debug');
                 } else {
-                    log(`收到未知类型的二进制数据: ${typeof data}`, 'warning');
+                    log(`Received unknown type of binary data: ${typeof data}`, 'warning');
                     return;
                 }
-                // 创建Uint8Array用于处理
+                // Create Uint8Array for processing
                 const opusData = new Uint8Array(arrayBuffer);
                 if (opusData.length > 0) {
-                    // 将数据添加到缓冲队列
+                    // Add data to buffer queue
                     queue.enqueue(opusData);
                 } else {
-                    log('收到空音频数据帧，可能是结束标志', 'warning');
-                    // 如果正在播放，发送结束信号
+                    log('Received empty audio data frame, possibly end marker', 'warning');
+                    // If currently playing, send end signal
                     if (isAudioPlaying && streamingContext) {
                         streamingContext.endOfStream = true;
                     }
                 }
             } catch (error) {
-                log(`处理二进制消息出错: ${error.message}`, 'error');
+                log(`Error processing binary message: ${error.message}`, 'error');
             }
         }
 
-        // 获取配置值
+        // Get configuration values
         function getConfig() {
             const deviceMac = document.getElementById('deviceMac').value.trim();
             return {
-                deviceId: deviceMac,  // 使用MAC地址作为deviceId
+                deviceId: deviceMac,  // Use MAC address as deviceId
                 deviceName: document.getElementById('deviceName').value.trim(),
                 deviceMac: deviceMac,
                 clientId: document.getElementById('clientId').value.trim(),

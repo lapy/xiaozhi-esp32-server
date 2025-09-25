@@ -10,7 +10,7 @@
         ×
       </button>
 
-      <!-- 模型信息部分 -->
+      <!-- Model Information Section -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <div style="font-size: 20px; font-weight: bold; color: #3d4566;">{{ $t('modelConfigDialog.modelInfo') }}</div>
         <div style="display: flex; align-items: center; gap: 20px;">
@@ -159,7 +159,7 @@ export default {
             label: f.label,
             prop: f.key,
             type: f.type === 'password' ? 'password' : 'text',
-            placeholder: `请输入${f.label}`
+            placeholder: `Please enter ${f.label}`
           }))
         }))
         this.providersLoaded = true
@@ -239,10 +239,10 @@ export default {
         isDefault: true,
         configJson: {}
       };
-      // 重置加载状态
+      // Reset loading state
       this.providers = [];
       this.providersLoaded = false;
-      // 重置字段配置
+      // Reset field configuration
       this.providerFields = [];
       this.currentProvider = null;
     },

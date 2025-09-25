@@ -1,7 +1,7 @@
 <route lang="jsonc" type="page">{
   "layout": "default",
   "style": {
-    "navigationBarTitleText": "设置",
+    "navigationBarTitleText": "Settings",
     "navigationStyle": "custom"
   }
 }</route>
@@ -18,30 +18,30 @@ defineOptions({
 
 const toast = useToast()
 
-// 缓存信息
+// Cache information
 const cacheInfo = reactive({
   storageSize: '0MB',
   imageCache: '0MB',
   dataCache: '0MB',
 })
 
-// 服务端地址设置
+// Server address settings
 const baseUrlInput = ref('')
 const urlError = ref('')
 
-// 系统信息（保留）
+// System information (reserved)
 const systemInfo = computed(() => {
   const info = uni.getSystemInfoSync()
   return `${info.platform} ${info.system}`
 })
 
-// 读取本地覆盖地址
+// Read local override address
 function loadServerBaseUrl() {
   const override = getServerBaseUrlOverride()
   baseUrlInput.value = override || getEnvBaseUrl()
 }
 
-// 获取缓存信息
+// Get cache information
 function getCacheInfo() {
   try {
     const info = uni.getStorageInfoSync()
@@ -49,11 +49,11 @@ function getCacheInfo() {
     cacheInfo.storageSize = `${totalSize.toFixed(2)}MB`
   }
   catch (error) {
-    console.error('获取缓存信息失败:', error)
+    console.error('Failed to get cache information:', error)
   }
 }
 
-// 验证URL格式
+// Validate URL format
 function validateUrl() {
   urlError.value = ''
 
@@ -62,13 +62,13 @@ function validateUrl() {
   }
 
   if (!/^https?:\/\/.+\/xiaozhi$/.test(baseUrlInput.value)) {
-    urlError.value = '请输入有效的服务端地址（以 http 或 https 开头，并以 /xiaozhi 结尾）'
+    urlError.value = 'Please enter a valid server address (starting with http or https and ending with /xiaozhi)'
   }
 }
 
-// 测试服务端地址
+// Test server address
 async function testServerBaseUrl() {
-  // 先清除错误信息
+  // Clear error message first
   urlError.value = ''
 
   if (!baseUrlInput.value || !/^https?:\/\/.+\/xiaozhi$/.test(baseUrlInput.value)) {
@@ -85,74 +85,74 @@ async function testServerBaseUrl() {
     if (response.statusCode === 200) {
       return true
     } else {
-      toast.error('无效地址，请检查服务端是否启动或网络连接是否正常')
+      toast.error('Invalid address, please check if server is running or network connection is normal')
       return false
     }
   } catch (error) {
-    console.error('测试服务端地址失败:', error)
-    toast.error('无效地址，请检查服务端是否启动或网络连接是否正常')
+    console.error('Failed to test server address:', error)
+    toast.error('Invalid address, please check if server is running or network connection is normal')
     return false
   }
 }
 
-// 保存服务端地址
+// Save server address
 async function saveServerBaseUrl() {
   if (!baseUrlInput.value || !/^https?:\/\/.+\/xiaozhi$/.test(baseUrlInput.value)) {
-    toast.warning('请输入有效的服务端地址（以 http 或 https 开头，并以 /xiaozhi 结尾）')
+    toast.warning('Please enter a valid server address (starting with http or https and ending with /xiaozhi)')
     return
   }
 
-  // 测试地址有效性
+  // Test address validity
   const isServerValid = await testServerBaseUrl()
   if (!isServerValid) {
     return
   }
   setServerBaseUrlOverride(baseUrlInput.value)
 
-  // 切换请求地址后清空所有缓存
+  // Clear all cache after switching request address
   clearAllCacheAfterUrlChange()
 
   uni.showModal({
-    title: '重启应用',
-    content: '服务端地址已保存并清空缓存，是否立即重启生效？',
-    confirmText: '立即重启',
-    cancelText: '稍后',
+    title: 'Restart App',
+    content: 'Server address saved and cache cleared, restart now to take effect?',
+    confirmText: 'Restart Now',
+    cancelText: 'Later',
     success: (res) => {
       if (res.confirm) {
         restartApp()
       }
       else {
-        toast.success('已保存，可稍后手动重启应用')
+        toast.success('Saved, you can manually restart the app later')
       }
     },
   })
 }
 
-// 重置为 env 默认
+// Reset to env default
 function resetServerBaseUrl() {
   clearServerBaseUrlOverride()
   baseUrlInput.value = getEnvBaseUrl()
 
-  // 切换请求地址后清空所有缓存
+  // Clear all cache after switching request address
   clearAllCacheAfterUrlChange()
 
   uni.showModal({
-    title: '重启应用',
-    content: '已重置为默认地址并清空缓存，是否立即重启生效？',
-    confirmText: '立即重启',
-    cancelText: '稍后',
+    title: 'Restart App',
+    content: 'Reset to default address and cache cleared, restart now to take effect?',
+    confirmText: 'Restart Now',
+    cancelText: 'Later',
     success: (res) => {
       if (res.confirm) {
         restartApp()
       }
       else {
-        toast.success('已重置，可稍后手动重启应用')
+        toast.success('Reset complete, you can manually restart the app later')
       }
     },
   })
 }
 
-// 重启应用（App 原生重启；其他端回到首页）
+// Restart app (Native app restart; other platforms return to home)
 function restartApp() {
   // #ifdef APP-PLUS
   plus.runtime.restart()
@@ -162,47 +162,47 @@ function restartApp() {
   // #endif
 }
 
-// 切换地址后自动清空所有缓存
+// Automatically clear all cache after switching address
 function clearAllCacheAfterUrlChange() {
   try {
-    // 备份运行时覆盖地址，确保清理后恢复
+    // Backup runtime override address, ensure recovery after cleanup
     const preservedOverride = getServerBaseUrlOverride()
 
-    // 完全清空所有缓存，包括token
+    // Completely clear all cache, including token
     uni.clearStorageSync()
 
-    // 清空localStorage（H5环境）
+    // Clear localStorage (H5 environment)
     // #ifdef H5
     if (typeof localStorage !== 'undefined') {
       localStorage.clear()
     }
     // #endif
 
-    // 恢复运行时覆盖地址（如有），需要在清理完成后再写入
+    // Restore runtime override address (if any), need to write after cleanup is complete
     if (preservedOverride) {
       setServerBaseUrlOverride(preservedOverride)
     }
 
-    // 重新获取缓存信息
+    // Re-get cache information
     getCacheInfo()
   }
   catch (error) {
-    console.error('清除缓存失败:', error)
+    console.error('Clear cache failed:', error)
   }
 }
 
-// 清除缓存
+// Clear cache
 async function clearCache() {
   try {
     uni.showModal({
-      title: '确认清除',
-      content: '确定要清除所有缓存吗？这将删除所有数据包括登录状态，需要重新登录。',
+      title: 'Confirm Clear',
+      content: 'Are you sure you want to clear all cache? This will delete all data including login status and require re-login.',
       success: (res) => {
         if (res.confirm) {
           clearAllCacheAfterUrlChange()
-          toast.success('缓存清除成功，即将跳转到登录页')
+          toast.success('Cache cleared successfully, redirecting to login page')
 
-          // 延迟跳转到登录页
+          // Delayed redirect to login page
           setTimeout(() => {
             uni.reLaunch({ url: '/pages/login/index' })
           }, 1500)
@@ -211,25 +211,25 @@ async function clearCache() {
     })
   }
   catch (error) {
-    console.error('清除缓存失败:', error)
-    toast.error('清除缓存失败')
+    console.error('Clear cache failed:', error)
+    toast.error('Clear cache failed')
   }
 }
 
-// 关于我们
+// About us
 function showAbout() {
   uni.showModal({
-    title: `关于${import.meta.env.VITE_APP_TITLE}`,
-    content: `${import.meta.env.VITE_APP_TITLE}\n\n基于 Vue.js 3 + uni-app 构建的跨平台移动端管理应用，为小智ESP32智能硬件提供设备管理、智能体配置等功能。\n\n© 2025 xiaozhi-esp32-server`,
-    title: `关于小智智控台`,
-    content: `小智智控台\n\n基于 Vue.js 3 + uni-app 构建的跨平台移动端管理应用，为小智ESP32智能硬件提供设备管理、智能体配置等功能。\n\n© 2025 xiaozhi-esp32-server 0.8.3`,
+    title: `About ${import.meta.env.VITE_APP_TITLE}`,
+    content: `${import.meta.env.VITE_APP_TITLE}\n\nCross-platform mobile management application built with Vue.js 3 + uni-app, providing device management and agent configuration for Xiaozhi ESP32 smart hardware.\n\n© 2025 xiaozhi-esp32-server`,
+    title: `About Xiaozhi Control Panel`,
+    content: `Xiaozhi Control Panel\n\nCross-platform mobile management application built with Vue.js 3 + uni-app, providing device management and agent configuration for Xiaozhi ESP32 smart hardware.\n\n© 2025 xiaozhi-esp32-server 0.8.3`,
     showCancel: false,
-    confirmText: '确定',
+    confirmText: 'OK',
   })
 }
 
 onMounted(async () => {
-  // 仅在非小程序环境加载服务端地址设置
+  // Only load server address settings in non-mini-program environment
   if (!isMp) {
     loadServerBaseUrl()
   }
@@ -239,14 +239,14 @@ onMounted(async () => {
 
 <template>
   <view class="min-h-screen bg-[#f5f7fb]">
-    <wd-navbar title="设置" placeholder safe-area-inset-top fixed />
+    <wd-navbar title="Settings" placeholder safe-area-inset-top fixed />
 
     <view class="p-[24rpx]">
-      <!-- 网络设置 - 仅在非小程序环境显示 -->
+      <!-- Network settings - only show in non-mini-program environment -->
       <view v-if="!isMp" class="mb-[32rpx]">
         <view class="mb-[24rpx] flex items-center">
           <text class="text-[32rpx] text-[#232338] font-bold">
-            网络设置
+            Network Settings
           </text>
         </view>
 
@@ -254,17 +254,17 @@ onMounted(async () => {
           style="box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);">
           <view class="mb-[24rpx]">
             <text class="text-[28rpx] text-[#232338] font-semibold">
-              服务端接口地址
+              Server API Address
             </text>
             <text class="mt-[8rpx] block text-[24rpx] text-[#9d9ea3]">
-              修改后将自动清空缓存并重启应用
+              Cache will be cleared and app restarted after modification
             </text>
           </view>
 
           <view class="mb-[24rpx]">
             <view class="w-full rounded-[16rpx] border border-[#eeeeee] bg-[#f5f7fb] overflow-hidden">
               <wd-input v-model="baseUrlInput" type="text" clearable :maxlength="200"
-                placeholder="输入服务端地址，如 https://example.com/xiaozhi"
+                placeholder="Enter server address, e.g. https://example.com/xiaozhi"
                 custom-class="!border-none !bg-transparent h-[88rpx] px-[24rpx] items-center"
                 input-class="text-[28rpx] text-[#232338]" @input="validateUrl" @blur="validateUrl" />
             </view>
@@ -277,37 +277,37 @@ onMounted(async () => {
             <wd-button type="primary"
               custom-class="flex-1 h-[88rpx] rounded-[20rpx] text-[28rpx] font-semibold bg-[#336cff] border-none shadow-[0_4rpx_16rpx_rgba(51,108,255,0.3)] active:shadow-[0_2rpx_8rpx_rgba(51,108,255,0.4)] active:scale-98"
               @click="saveServerBaseUrl">
-              保存设置
+              Save Settings
             </wd-button>
             <wd-button type="default"
               custom-class="flex-1 h-[88rpx] rounded-[20rpx] text-[28rpx] font-semibold bg-white border-[#eeeeee] text-[#65686f] active:bg-[#f5f7fb]"
               @click="resetServerBaseUrl">
-              恢复默认
+              Reset Default
             </wd-button>
           </view>
         </view>
       </view>
 
-      <!-- 缓存管理 -->
+      <!-- Cache management -->
       <view class="mb-[32rpx]">
         <view class="mb-[24rpx] flex items-center">
           <text class="text-[32rpx] text-[#232338] font-bold">
-            缓存管理
+            Cache Management
           </text>
         </view>
 
         <view class="border border-[#eeeeee] rounded-[24rpx] bg-[#fbfbfb] p-[32rpx]"
           style="box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);">
           <view class="space-y-[16rpx]">
-            <!-- 缓存信息展示，参考插件样式 -->
+            <!-- Cache information display, reference plugin style -->
             <view
               class="flex items-center justify-between border border-[#eeeeee] rounded-[16rpx] bg-[#f5f7fb] p-[24rpx] transition-all active:bg-[#eef3ff]">
               <view>
                 <text class="text-[28rpx] text-[#232338] font-medium">
-                  总缓存大小
+                  Total Cache Size
                 </text>
                 <text class="mt-[4rpx] block text-[24rpx] text-[#9d9ea3]">
-                  应用数据总大小
+                  Total application data size
                 </text>
               </view>
               <text class="text-[28rpx] text-[#65686f] font-semibold">
@@ -315,32 +315,32 @@ onMounted(async () => {
               </text>
             </view>
 
-            <!-- 清除缓存按钮，参考插件编辑按钮样式 -->
+            <!-- Clear cache button, reference plugin edit button style -->
             <view
               class="flex items-center justify-between border border-[#eeeeee] rounded-[16rpx] bg-[#f5f7fb] p-[24rpx]">
               <view>
                 <text class="text-[28rpx] text-[#232338] font-medium">
-                  缓存清理
+                  Cache Cleanup
                 </text>
                 <text class="mt-[4rpx] block text-[24rpx] text-[#9d9ea3]">
-                  清空所有缓存数据
+                  Clear all cache data
                 </text>
               </view>
               <view
                 class="cursor-pointer rounded-[24rpx] bg-[rgba(255,107,107,0.1)] px-[28rpx] py-[16rpx] text-[24rpx] text-[#ff6b6b] font-semibold transition-all duration-300 active:scale-95 active:bg-[#ff6b6b] active:text-white"
                 @click="clearCache">
-                清除缓存
+                Clear Cache
               </view>
             </view>
           </view>
         </view>
       </view>
 
-      <!-- 应用信息 -->
+      <!-- Application information -->
       <view class="mb-[32rpx]">
         <view class="mb-[24rpx] flex items-center">
           <text class="text-[32rpx] text-[#232338] font-bold">
-            应用信息
+            Application Information
           </text>
         </view>
 
@@ -351,10 +351,10 @@ onMounted(async () => {
             @click="showAbout">
             <view>
               <text class="text-[28rpx] text-[#232338] font-medium">
-                关于我们
+                About Us
               </text>
               <text class="mt-[4rpx] block text-[24rpx] text-[#9d9ea3]">
-                应用版本与团队信息
+                Application version and team information
               </text>
             </view>
             <wd-icon name="arrow-right" custom-class="text-[32rpx] text-[#9d9ea3]" />
@@ -362,12 +362,12 @@ onMounted(async () => {
         </view>
       </view>
 
-      <!-- 底部安全距离 -->
-      <!-- 底部安全距离 -->
+      <!-- Bottom safe area -->
+      <!-- Bottom safe area -->
       <view style="height: env(safe-area-inset-bottom);" />
     </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
-// 保持与 edit.vue 一致的风格，样式主要通过类名控制</style>
+// Keep consistent style with edit.vue, styles mainly controlled by class names</style>

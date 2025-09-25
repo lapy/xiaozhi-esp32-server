@@ -3,7 +3,7 @@
   "layout": "default",
   "style": {
     "navigationStyle": "custom",
-    "navigationBarTitleText": "注册"
+    "navigationBarTitleText": "Register"
   }
 }
 </route>
@@ -15,12 +15,12 @@ import { useConfigStore } from '@/store'
 import { getEnvBaseUrl } from '@/utils'
 import { toast } from '@/utils/toast'
 
-// 获取屏幕边界到安全区域距离
+// Get distance from screen boundary to safe area
 let safeAreaInsets
 let systemInfo
 
 // #ifdef MP-WEIXIN
-// 微信小程序使用新的API
+// WeChat Mini Program uses new API
 systemInfo = uni.getWindowInfo()
 safeAreaInsets = systemInfo.safeArea
   ? {
@@ -33,12 +33,12 @@ safeAreaInsets = systemInfo.safeArea
 // #endif
 
 // #ifndef MP-WEIXIN
-// 其他平台继续使用uni API
+// Other platforms continue to use uni API
 systemInfo = uni.getSystemInfoSync()
 safeAreaInsets = systemInfo.safeAreaInsets
 // #endif
 
-// 注册表单数据
+// Registration form data
 interface RegisterData {
   username: string
   password: string
@@ -56,53 +56,53 @@ const formData = ref<RegisterData>({
   confirmPassword: '',
   captcha: '',
   captchaId: '',
-  areaCode: '+86',
+  areaCode: '+1',
   mobile: '',
   mobileCaptcha: '',
 })
 
-// 验证码图片
+// Captcha image
 const captchaImage = ref('')
 const loading = ref(false)
 const smsLoading = ref(false)
 const smsCountdown = ref(0)
 
-// 注册方式：'username' | 'mobile'
+// Registration method: 'username' | 'mobile'
 const registerType = ref<'username' | 'mobile'>('username')
 
-// 获取配置store
+// Get config store
 const configStore = useConfigStore()
 
-// 区号选择相关
+// Area code selection related
 const showAreaCodeSheet = ref(false)
-const selectedAreaCode = ref('+86')
-const selectedAreaName = ref('中国大陆')
+const selectedAreaCode = ref('+1')
+const selectedAreaName = ref('United States')
 
-// 计算属性：是否启用手机号注册
+// Computed property: whether mobile registration is enabled
 const enableMobileRegister = computed(() => {
   return configStore.config.enableMobileRegister
 })
 
-// 计算属性：区号列表
+// Computed property: area code list
 const areaCodeList = computed(() => {
-  return configStore.config.mobileAreaList || [{ name: '中国大陆', key: '+86' }]
+  return configStore.config.mobileAreaList || [{ name: 'United States', key: '+1' }]
 })
 
-// 切换注册方式
+// Switch registration method
 function toggleRegisterType() {
   registerType.value = registerType.value === 'username' ? 'mobile' : 'username'
-  // 清空输入框
+  // Clear input fields
   formData.value.username = ''
   formData.value.mobile = ''
   formData.value.mobileCaptcha = ''
 }
 
-// 打开区号选择弹窗
+// Open area code selection dialog
 function openAreaCodeSheet() {
   showAreaCodeSheet.value = true
 }
 
-// 选择区号
+// Select area code
 function selectAreaCode(item: { name: string, key: string }) {
   selectedAreaCode.value = item.key
   selectedAreaName.value = item.name
@@ -110,12 +110,12 @@ function selectAreaCode(item: { name: string, key: string }) {
   showAreaCodeSheet.value = false
 }
 
-// 关闭区号选择弹窗
+// Close area code selection dialog
 function closeAreaCodeSheet() {
   showAreaCodeSheet.value = false
 }
 
-// 生成UUID
+// Generate UUID
 function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0
@@ -124,28 +124,28 @@ function generateUUID() {
   })
 }
 
-// 获取验证码
+// Get verification code
 async function refreshCaptcha() {
   const uuid = generateUUID()
   formData.value.captchaId = uuid
   captchaImage.value = `${getEnvBaseUrl()}/user/captcha?uuid=${uuid}&t=${Date.now()}`
 }
 
-// 发送短信验证码
+// Send SMS verification code
 async function sendSmsVerification() {
   if (!formData.value.mobile) {
-    toast.warning('请输入手机号')
+    toast.warning('Please enter phone number')
     return
   }
   if (!formData.value.captcha) {
-    toast.warning('请输入图形验证码')
+    toast.warning('Please enter captcha')
     return
   }
 
-  // 手机号格式验证
+  // Phone number format validation
   const phoneRegex = /^1[3-9]\d{9}$/
   if (!phoneRegex.test(formData.value.mobile)) {
-    toast.warning('请输入正确的手机号')
+    toast.warning('Please enter correct phone number')
     return
   }
 
@@ -157,9 +157,9 @@ async function sendSmsVerification() {
       captchaId: formData.value.captchaId,
     })
 
-    toast.success('验证码发送成功')
+    toast.success('Verification code sent successfully')
 
-    // 开始倒计时
+    // Start countdown
     smsCountdown.value = 60
     const timer = setInterval(() => {
       smsCountdown.value--
@@ -169,7 +169,7 @@ async function sendSmsVerification() {
     }, 1000)
   }
   catch (error: any) {
-    // 发送失败重新获取图形验证码
+    // Send failed, re-obtain graphic verification code
     refreshCaptcha()
   }
   finally {
@@ -177,56 +177,56 @@ async function sendSmsVerification() {
   }
 }
 
-// 注册
+// Register
 async function handleRegister() {
-  // 表单验证
+  // Form validation
   if (registerType.value === 'username') {
     if (!formData.value.username) {
-      toast.warning('请输入用户名')
+      toast.warning('Please enter username')
       return
     }
   }
   else {
     if (!formData.value.mobile) {
-      toast.warning('请输入手机号')
+      toast.warning('Please enter phone number')
       return
     }
-    // 手机号格式验证
+    // Phone number format validation
     const phoneRegex = /^1[3-9]\d{9}$/
     if (!phoneRegex.test(formData.value.mobile)) {
-      toast.warning('请输入正确的手机号')
+      toast.warning('Please enter correct phone number')
       return
     }
     if (!formData.value.mobileCaptcha) {
-      toast.warning('请输入短信验证码')
+      toast.warning('Please enter SMS verification code')
       return
     }
   }
 
   if (!formData.value.password) {
-    toast.warning('请输入密码')
+    toast.warning('Please enter password')
     return
   }
 
   if (!formData.value.confirmPassword) {
-    toast.warning('请确认密码')
+    toast.warning('Please confirm password')
     return
   }
 
   if (formData.value.password !== formData.value.confirmPassword) {
-    toast.warning('两次输入的密码不一致')
+    toast.warning('The two passwords entered do not match')
     return
   }
 
   if (!formData.value.captcha) {
-    toast.warning('请输入验证码')
+    toast.warning('Please enter verification code')
     return
   }
 
   try {
     loading.value = true
 
-    // 构建注册数据
+    // Build registration data
     const registerData = {
       username: registerType.value === 'mobile' ? `${selectedAreaCode.value}${formData.value.mobile}` : formData.value.username,
       password: formData.value.password,
@@ -239,15 +239,15 @@ async function handleRegister() {
     }
 
     await register(registerData)
-    toast.success('注册成功')
+    toast.success('Registration successful')
 
-    // 跳转到登录页
+    // Jump to login page
     setTimeout(() => {
       uni.navigateBack()
     }, 1000)
   }
   catch (error: any) {
-    // 注册失败重新获取验证码
+    // Registration failed, re-obtain verification code
     refreshCaptcha()
   }
   finally {
@@ -255,24 +255,24 @@ async function handleRegister() {
   }
 }
 
-// 返回登录
+// Return to login
 function goBack() {
   uni.navigateBack()
 }
 
-// 页面加载时获取验证码
+// Get verification code when page loads
 onLoad(() => {
   refreshCaptcha()
 })
 
-// 组件挂载时确保配置已加载
+// Ensure configuration is loaded when component is mounted
 onMounted(async () => {
   if (!configStore.config.name) {
     try {
       await configStore.fetchPublicConfig()
     }
     catch (error) {
-      console.error('获取配置失败:', error)
+      console.error('Failed to get configuration:', error)
     }
   }
 })
@@ -287,17 +287,17 @@ onMounted(async () => {
       <view class="logo-section">
         <wd-img :width="80" :height="80" round src="/static/logo.png" class="logo" />
         <text class="welcome-text">
-          欢迎注册
+          Welcome to Register
         </text>
         <text class="subtitle">
-          创建您的新账户
+          Create Your New Account
         </text>
       </view>
     </view>
 
     <view class="form-container">
       <view class="form">
-        <!-- 手机号注册 -->
+        <!-- Mobile number registration -->
         <template v-if="registerType === 'mobile'">
           <view class="input-group">
             <view class="input-wrapper mobile-wrapper">
@@ -312,7 +312,7 @@ onMounted(async () => {
                   v-model="formData.mobile"
                   custom-class="styled-input"
                   no-border
-                  placeholder="请输入手机号码"
+                  placeholder="Please enter mobile number"
                   type="number"
                   :maxlength="11"
                 />
@@ -321,7 +321,7 @@ onMounted(async () => {
           </view>
         </template>
 
-        <!-- 用户名注册 -->
+        <!-- Username registration -->
         <template v-else>
           <view class="input-group">
             <view class="input-wrapper">
@@ -329,7 +329,7 @@ onMounted(async () => {
                 v-model="formData.username"
                 custom-class="styled-input"
                 no-border
-                placeholder="请输入用户名"
+                placeholder="Please enter username"
               />
             </view>
           </view>
@@ -341,7 +341,7 @@ onMounted(async () => {
               v-model="formData.password"
               custom-class="styled-input"
               no-border
-              placeholder="请输入密码"
+              placeholder="Please enter password"
               show-password
               :maxlength="20"
             />
@@ -354,7 +354,7 @@ onMounted(async () => {
               v-model="formData.confirmPassword"
               custom-class="styled-input"
               no-border
-              placeholder="请确认密码"
+              placeholder="Please confirm password"
               show-password
               :maxlength="20"
             />
@@ -367,7 +367,7 @@ onMounted(async () => {
               v-model="formData.captcha"
               custom-class="styled-input"
               no-border
-              placeholder="请输入验证码"
+              placeholder="Please enter verification code"
               :maxlength="6"
             />
             <view class="captcha-image" @click="refreshCaptcha">
@@ -376,14 +376,14 @@ onMounted(async () => {
           </view>
         </view>
 
-        <!-- 手机验证码输入框 -->
+        <!-- Mobile verification code input box -->
         <view v-if="registerType === 'mobile'" class="input-group">
           <view class="input-wrapper sms-wrapper">
             <wd-input
               v-model="formData.mobileCaptcha"
               custom-class="styled-input"
               no-border
-              placeholder="请输入短信验证码"
+              placeholder="Please enter SMS verification code"
               type="number"
               :maxlength="6"
             />
@@ -393,7 +393,7 @@ onMounted(async () => {
               custom-class="sms-btn"
               @click="sendSmsVerification"
             >
-              {{ smsCountdown > 0 ? `${smsCountdown}s` : '获取验证码' }}
+              {{ smsCountdown > 0 ? `${smsCountdown}s` : 'Get Verification Code' }}
             </wd-button>
           </view>
         </view>
@@ -404,19 +404,19 @@ onMounted(async () => {
           :loading="loading"
           @click="handleRegister"
         >
-          {{ loading ? '注册中...' : '注册' }}
+          {{ loading ? 'Registering...' : 'Register' }}
         </view>
 
         <view class="login-hint">
           <text class="hint-text">
-            已有账户？
+            Already have an account?
           </text>
           <text class="login-link" @click="goBack">
-            立即登录
+            Login Now
           </text>
         </view>
 
-        <!-- 注册方式切换 -->
+        <!-- Registration method switch -->
         <view v-if="enableMobileRegister" class="register-type-switch">
           <view class="switch-tabs">
             <view
@@ -438,10 +438,10 @@ onMounted(async () => {
       </view>
     </view>
 
-    <!-- 区号选择弹窗 -->
+    <!-- Area code selection popup -->
     <wd-action-sheet
       v-model="showAreaCodeSheet"
-      title="选择国家/地区"
+      title="Select Country/Region"
       :close-on-click-modal="true"
       @close="closeAreaCodeSheet"
     >
@@ -475,7 +475,7 @@ onMounted(async () => {
             custom-class="confirm-btn"
             @click="closeAreaCodeSheet"
           >
-            确认
+            Confirm
           </wd-button>
         </view>
       </view>
@@ -803,7 +803,7 @@ onMounted(async () => {
   }
 }
 
-// 区号选择弹窗样式
+// Area code selection popup styles
 .area-code-sheet {
   background: #ffffff;
   border-radius: 24rpx 24rpx 0 0;

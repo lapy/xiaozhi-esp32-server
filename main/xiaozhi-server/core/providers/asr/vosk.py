@@ -18,97 +18,114 @@ class ASRProvider(ASRProviderBase):
         self.output_dir = config.get("output_dir", "tmp/")
         self.delete_audio_file = delete_audio_file
         
-        # 初始化VOSK模型
+        logger.debug(
+            f"Vosk ASR parameters initialized: model_path={self.model_path}, output_dir={self.output_dir}, delete_audio_file={self.delete_audio_file}"
+        )
+        
+        # Initialize VOSK model
         self.model = None
         self.recognizer = None
         self._load_model()
         
-        # 确保输出目录存在
+        # Ensure output directory exists
         os.makedirs(self.output_dir, exist_ok=True)
 
     def _load_model(self):
-        """加载VOSK模型"""
+        """Load VOSK model"""
         try:
             if not os.path.exists(self.model_path):
-                raise FileNotFoundError(f"VOSK模型路径不存在: {self.model_path}")
+                raise FileNotFoundError(f"VOSK model path does not exist: {self.model_path}")
                 
-            logger.bind(tag=TAG).info(f"正在加载VOSK模型: {self.model_path}")
+            logger.bind(tag=TAG).info(f"Loading VOSK model: {self.model_path}")
             self.model = vosk.Model(self.model_path)
 
-            # 初始化VOSK识别器（采样率必须为16kHz）
+            # Initialize VOSK recognizer (sample rate must be 16kHz)
             self.recognizer = vosk.KaldiRecognizer(self.model, 16000)
 
-            logger.bind(tag=TAG).info("VOSK模型加载成功")
+            logger.bind(tag=TAG).info("VOSK model loaded successfully")
         except Exception as e:
-            logger.bind(tag=TAG).error(f"加载VOSK模型失败: {e}")
+            logger.bind(tag=TAG).error(f"Failed to load VOSK model: {e}")
             raise
 
     async def speech_to_text(
         self, audio_data: List[bytes], session_id: str, audio_format: str = "opus"
     ) -> Tuple[Optional[str], Optional[str]]:
-        """将语音数据转换为文本"""
+        """Convert speech data to text"""
+        logger.bind(tag=TAG).debug(f"Sending Vosk ASR request with session_id: {session_id}, audio_format: {audio_format}")
+        
         file_path = None
         try:
-            # 检查模型是否加载成功
+            # Check if model loaded successfully
             if not self.model:
-                logger.bind(tag=TAG).error("VOSK模型未加载，无法进行识别")
+                logger.bind(tag=TAG).error("VOSK model not loaded, cannot perform recognition")
                 return "", None
 
-            # 解码音频（如果原始格式是Opus）
+            # Decode audio (if original format is Opus)
             if audio_format == "pcm":
                 pcm_data = audio_data
+                logger.bind(tag=TAG).debug(f"Using PCM data directly, length: {len(audio_data)}")
             else:
+                logger.bind(tag=TAG).debug(f"Decoding Opus data to PCM")
                 pcm_data = self.decode_opus(audio_data)
+                logger.bind(tag=TAG).debug(f"Decoded PCM data length: {len(pcm_data) if pcm_data else 0}")
                 
             if not pcm_data:
-                logger.bind(tag=TAG).warning("解码后的PCM数据为空，无法进行识别")
+                logger.bind(tag=TAG).warning("Decoded PCM data is empty, cannot perform recognition")
                 return "", None
                 
-            # 合并PCM数据
+            # Merge PCM data
             combined_pcm_data = b"".join(pcm_data)
             if len(combined_pcm_data) == 0:
-                logger.bind(tag=TAG).warning("合并后的PCM数据为空")
+                logger.bind(tag=TAG).warning("Merged PCM data is empty")
                 return "", None
 
-            # 判断是否保存为WAV文件
+            logger.bind(tag=TAG).debug(f"Merged PCM data size: {len(combined_pcm_data)} bytes")
+
+            # Determine whether to save as WAV file
             if not self.delete_audio_file:
                 file_path = self.save_audio_to_file(pcm_data, session_id)
+                logger.bind(tag=TAG).debug(f"Saved audio file: {file_path}")
 
             start_time = time.time()
             
+            logger.bind(tag=TAG).debug(f"Starting Vosk speech recognition")
             
-            # 进行识别（VOSK推荐每次送入2000字节的数据）
+            # Perform recognition (VOSK recommends sending 2000 bytes of data each time)
             chunk_size = 2000
             text_result = ""
+            chunk_count = 0
             
             for i in range(0, len(combined_pcm_data), chunk_size):
                 chunk = combined_pcm_data[i:i+chunk_size]
+                chunk_count += 1
                 if self.recognizer.AcceptWaveform(chunk):
                     result = json.loads(self.recognizer.Result())
                     text = result.get('text', '')
                     if text:
                         text_result += text + " "
+                        logger.bind(tag=TAG).debug(f"Vosk recognized text chunk {chunk_count}: {text}")
             
-            # 获取最终结果
+            # Get final result
             final_result = json.loads(self.recognizer.FinalResult())
             final_text = final_result.get('text', '')
             if final_text:
                 text_result += final_text
+                logger.bind(tag=TAG).debug(f"Vosk final result: {final_text}")
             
             logger.bind(tag=TAG).debug(
-                f"VOSK语音识别耗时: {time.time() - start_time:.3f}s | 结果: {text_result.strip()}"
+                f"VOSK speech recognition time: {time.time() - start_time:.3f}s | Processed {chunk_count} chunks | Result: {text_result.strip()}"
             )
             
             return text_result.strip(), file_path
             
         except Exception as e:
-            logger.bind(tag=TAG).error(f"VOSK语音识别失败: {e}")
+            logger.bind(tag=TAG).error(f"VOSK speech recognition failed: {e}")
             return "", None
         finally:
-            # 文件清理逻辑
+            # File cleanup logic
             if self.delete_audio_file and file_path and os.path.exists(file_path):
                 try:
                     os.remove(file_path)
-                    logger.bind(tag=TAG).debug(f"已删除临时音频文件: {file_path}")
+                    logger.bind(tag=TAG).debug(f"Deleted temporary audio file: {file_path}")
                 except Exception as e:
-                    logger.bind(tag=TAG).error(f"文件删除失败: {file_path} | 错误: {e}")
+                    logger.bind(tag=TAG).error(f"File deletion failed: {file_path} | Error: {e}")

@@ -12,12 +12,16 @@ class LLMProvider(LLMProviderBase):
         self.model_name = config.get("model_name")
         self.base_url = config.get("base_url", "http://localhost:9997")
         # Initialize OpenAI client with Xinference base URL
-        # 如果没有v1，增加v1
+        # If no v1, add v1
         if not self.base_url.endswith("/v1"):
             self.base_url = f"{self.base_url}/v1"
 
         logger.bind(tag=TAG).info(
             f"Initializing Xinference LLM provider with model: {self.model_name}, base_url: {self.base_url}"
+        )
+
+        logger.debug(
+            f"Intent recognition parameters initialized: model_name={self.model_name}, base_url={self.base_url}"
         )
 
         try:
@@ -38,15 +42,20 @@ class LLMProvider(LLMProviderBase):
             responses = self.client.chat.completions.create(
                 model=self.model_name, messages=dialogue, stream=True
             )
+            logger.bind(tag=TAG).debug(f"Received response from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
             is_active = True
             for chunk in responses:
+                logger.bind(tag=TAG).debug(f"Received chunk from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 try:
                     delta = (
                         chunk.choices[0].delta
                         if getattr(chunk, "choices", None)
                         else None
                     )
+                    logger.bind(tag=TAG).debug(f"Received delta from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     content = delta.content if hasattr(delta, "content") else ""
+                    logger.bind(tag=TAG).debug(f"Extracted content from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
+                    
                     if content:
                         if "<think>" in content:
                             is_active = False
@@ -55,13 +64,14 @@ class LLMProvider(LLMProviderBase):
                             is_active = True
                             content = content.split("</think>")[-1]
                         if is_active:
+                            logger.bind(tag=TAG).debug(f"Yielding content from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                             yield content
                 except Exception as e:
                     logger.bind(tag=TAG).error(f"Error processing chunk: {e}")
 
         except Exception as e:
             logger.bind(tag=TAG).error(f"Error in Xinference response generation: {e}")
-            yield "【Xinference服务响应异常】"
+            yield "【Xinference service response exception】"
 
     def response_with_functions(self, session_id, dialogue, functions=None):
         try:
@@ -80,19 +90,25 @@ class LLMProvider(LLMProviderBase):
                 tools=functions,
             )
 
+            logger.bind(tag=TAG).debug(f"Received function response from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
+
             for chunk in stream:
+                logger.bind(tag=TAG).debug(f"Received function chunk from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 delta = chunk.choices[0].delta
+                logger.bind(tag=TAG).debug(f"Received function delta from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 content = delta.content
                 tool_calls = delta.tool_calls
 
                 if content:
+                    logger.bind(tag=TAG).debug(f"Received function text content from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     yield content, tool_calls
                 elif tool_calls:
+                    logger.bind(tag=TAG).debug(f"Received tool call from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     yield None, tool_calls
 
         except Exception as e:
             logger.bind(tag=TAG).error(f"Error in Xinference function call: {e}")
             yield {
                 "type": "content",
-                "content": f"【Xinference服务响应异常: {str(e)}】",
+                "content": f"【Xinference service response exception: {str(e)}】",
             }

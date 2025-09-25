@@ -13,7 +13,7 @@ import xiaozhi.modules.agent.entity.AgentPluginMapping;
 import xiaozhi.modules.agent.service.AgentPluginMappingService;
 
 /**
- * @description 针对表【ai_agent_plugin_mapping(Agent与插件的唯一映射表)】的数据库操作Service实现
+ * @description Database operation Service implementation for table [ai_agent_plugin_mapping(unique mapping table between Agent and plugins)]
  * @createDate 2025-05-25 22:33:17
  */
 @Service

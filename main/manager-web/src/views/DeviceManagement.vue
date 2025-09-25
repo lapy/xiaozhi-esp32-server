@@ -172,7 +172,7 @@ export default {
     pageCount() {
       return Math.ceil(this.filteredDeviceList.length / this.pageSize);
     },
-    // 计算当前页是否全选
+    // Calculate if current page is all selected
     isCurrentPageAllSelected() {
       return this.paginatedDeviceList.length > 0 &&
         this.paginatedDeviceList.every(device => device.selected);
@@ -309,14 +309,14 @@ export default {
         row._submitting = false;
       });
     },
-    // 备注输入框：失焦时提交
+    // Remark input box: submit on blur
     onRemarkBlur(row) {
       row.isEdit = false;
       setTimeout(() => {
         this.submitRemark(row);
-      }, 100); // 延迟 100ms，避开 enter+blur 同时触发的窗口
+      }, 100); // Delay 100ms to avoid window triggered by enter+blur simultaneously
     },
-    // 备注输入框：按回车时提交
+    // Remark input box: submit on enter
     onRemarkEnter(row) {
       row.isEdit = false;
       this.submitRemark(row);
@@ -376,7 +376,7 @@ export default {
               otaSwitch: device.autoUpdate === 1,
               rawBindTime: new Date(device.createDate).getTime(),
               selected: false,
-              // 初始设置为离线状态
+              // Initially set to offline status
               deviceStatus: 'offline'
             };
           })
@@ -384,7 +384,7 @@ export default {
           this.activeSearchKeyword = "";
           this.searchKeyword = "";
           
-          // 获取设备列表后，立即获取设备状态
+          // Get device status immediately after getting device list
           this.fetchDeviceStatus(agentId);
         } else {
           this.$message.error(data.msg || this.$t('device.getListFailed'));
@@ -392,35 +392,35 @@ export default {
       });
     },
     
-    // 获取设备状态
+    // Get device status
     fetchDeviceStatus(agentId) {
       Api.device.getDeviceStatus(agentId, ({ data }) => {
         if (data.code === 0) {
           try {
-            // 解析后端返回的设备状态JSON
+            // Parse device status JSON returned from backend
             const statusData = JSON.parse(data.data);
             
-            // 直接使用解析后的数据作为设备状态映射（不需要devices字段包装）
+            // Directly use parsed data as device status mapping (no devices field wrapper needed)
             if (statusData && typeof statusData === 'object') {
-              // 更新设备状态
+              // Update device status
               this.updateDeviceStatusFromResponse(statusData);
             }
           } catch (error) {
-            // JSON解析失败，忽略状态更新
+            // JSON parsing failed, ignore status update
           }
         }
       });
     },
     
-    // 根据API响应更新设备状态
+    // Update device status based on API response
     updateDeviceStatusFromResponse(deviceStatusMap) {
       this.deviceList.forEach(device => {
-        // 构建设备的MQTT客户端ID
+        // Build device MQTT client ID
         const macAddress = device.macAddress ? device.macAddress.replace(/:/g, '_') : 'unknown';
         const groupId = device.model ? device.model.replace(/:/g, '_') : 'GID_default';
         const mqttClientId = `${groupId}@@@${macAddress}@@@${macAddress}`;
         
-        // 从状态映射中获取设备状态
+        // Get device status from status mapping
         if (deviceStatusMap[mqttClientId]) {
           const statusInfo = deviceStatusMap[mqttClientId];
           
@@ -437,7 +437,7 @@ export default {
           
           device.deviceStatus = isOnline ? 'online' : 'offline';
         } else {
-          // 如果没有找到对应的状态信息，默认为离线
+          // If no corresponding status information found, default to offline
           device.deviceStatus = 'offline';
         }
       });

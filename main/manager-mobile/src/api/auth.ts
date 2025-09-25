@@ -1,6 +1,6 @@
 import { http } from '@/http/request/alova'
 
-// 登录接口数据类型
+// Login interface data type
 export interface LoginData {
   username: string
   password: string
@@ -10,20 +10,20 @@ export interface LoginData {
   mobile?: string
 }
 
-// 登录响应数据类型
+// Login response data type
 export interface LoginResponse {
   token: string
   expire: number
   clientHash: string
 }
 
-// 验证码响应数据类型
+// Captcha response data type
 export interface CaptchaResponse {
   captchaId: string
   captchaImage: string
 }
 
-// 获取验证码
+// Get captcha
 export function getCaptcha(uuid: string) {
   return http.Get<string>('/user/captcha', {
     params: { uuid },
@@ -34,7 +34,7 @@ export function getCaptcha(uuid: string) {
   })
 }
 
-// 用户登录
+// User login
 export function login(data: LoginData) {
   return http.Post<LoginResponse>('/user/login', data, {
     meta: {
@@ -44,7 +44,7 @@ export function login(data: LoginData) {
   })
 }
 
-// 用户信息响应数据类型
+// User info response data type
 export interface UserInfo {
   id: number
   username: string
@@ -55,7 +55,7 @@ export interface UserInfo {
   superAdmin: number
 }
 
-// 公共配置响应数据类型
+// Public config response data type
 export interface PublicConfig {
   enableMobileRegister: boolean
   version: string
@@ -70,7 +70,7 @@ export interface PublicConfig {
   name: string
 }
 
-// 获取用户信息
+// Get user info
 export function getUserInfo() {
   return http.Get<UserInfo>('/user/info', {
     meta: {
@@ -80,7 +80,7 @@ export function getUserInfo() {
   })
 }
 
-// 获取公共配置
+// Get public config
 export function getPublicConfig() {
   return http.Get<PublicConfig>('/user/pub-config', {
     meta: {
@@ -90,7 +90,7 @@ export function getPublicConfig() {
   })
 }
 
-// 注册数据类型
+// Registration data type
 export interface RegisterData {
   username: string
   password: string
@@ -102,7 +102,7 @@ export interface RegisterData {
   mobileCaptcha: string
 }
 
-// 发送短信验证码
+// Send SMS verification code
 export function sendSmsCode(data: {
   phone: string
   captcha: string
@@ -116,7 +116,7 @@ export function sendSmsCode(data: {
   })
 }
 
-// 用户注册
+// User registration
 export function register(data: RegisterData) {
   return http.Post('/user/register', data, {
     meta: {

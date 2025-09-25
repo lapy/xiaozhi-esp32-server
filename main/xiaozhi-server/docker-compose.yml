@@ -1,22 +1,31 @@
-# Docker安装Server
+# Docker Server Installation
 
 version: '3'
 services:
   xiaozhi-esp32-server:
-    image: ghcr.nju.edu.cn/xinnan-tech/xiaozhi-esp32-server:server_latest
+    build:
+      context: .
+      dockerfile: Dockerfile-server
     container_name: xiaozhi-esp32-server
     restart: always
     security_opt:
       - seccomp:unconfined
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=UTC
+    mem_limit: 4g
+    mem_reservation: 2g
     ports:
-      # ws服务端
+      # WebSocket server
       - "8000:8000"
-      # http服务的端口，用于简单OTA接口(单服务部署)，以及视觉分析接口
+      # HTTP service port for simple OTA interface (single service deployment) and visual analysis interface
       - "8003:8003"
     volumes:
-      # 配置文件目录
+      # Configuration file directory
       - ./data:/opt/xiaozhi-esp32-server/data
-      # 模型文件挂接，很重要
-      - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt
+      # Model file mount, very important
+      - ./models/vosk:/opt/xiaozhi-esp32-server/models/vosk
+      # Whisper model mount
+      - ./models/whisper:/opt/xiaozhi-esp32-server/models/whisper
+      # Sherpa ONNX model mounts
+      - ./models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17:/opt/xiaozhi-esp32-server/models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17
+      - ./models/sherpa-onnx-paraformer-zh-small-2024-03-09:/opt/xiaozhi-esp32-server/models/sherpa-onnx-paraformer-zh-small-2024-03-09

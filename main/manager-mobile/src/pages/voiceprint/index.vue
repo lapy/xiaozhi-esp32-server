@@ -9,7 +9,7 @@ defineOptions({
   name: 'VoicePrintManage',
 })
 
-// 接收props
+// Receive props
 interface Props {
   agentId?: string
 }
@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
   agentId: 'default'
 })
 
-// 获取屏幕边界到安全区域距离
+// Get screen boundary to safe area distance
 let safeAreaInsets: any
 let systemInfo: any
 
@@ -42,21 +42,21 @@ safeAreaInsets = systemInfo.safeAreaInsets
 const message = useMessage()
 const toast = useToast()
 
-// 页面数据
+// Page data
 const voicePrintList = ref<VoicePrint[]>([])
 const chatHistoryList = ref<ChatHistory[]>([])
 const chatHistoryActions = ref<any[]>([])
 const swipeStates = ref<Record<string, 'left' | 'close' | 'right'>>({})
 const loading = ref(false)
 
-// 使用传入的智能体ID
+// Use passed agent ID
 const currentAgentId = computed(() => {
   return props.agentId
 })
 
-// 智能体选择相关功能已移除
+// Agent selection related functions have been removed
 
-// 弹窗相关
+// Dialog related
 const showAddDialog = ref(false)
 const showEditDialog = ref(false)
 const showChatHistoryDialog = ref(false)
@@ -74,14 +74,14 @@ const editForm = ref<VoicePrint>({
   createDate: '',
 })
 
-// 获取声纹列表
+// Get voiceprint list
 async function loadVoicePrintList() {
   try {
-    console.log('获取声纹列表')
+    console.log('Get voiceprint list')
 
-    // 检查是否有当前选中的智能体
+    // Check if there is currently selected agent
     if (!currentAgentId.value) {
-      console.warn('没有选中的智能体')
+      console.warn('No selected agent')
       voicePrintList.value = []
       return
     }
@@ -89,7 +89,7 @@ async function loadVoicePrintList() {
     loading.value = true
     const data = await getVoicePrintList(currentAgentId.value)
 
-    // 初始化滑动状态
+    // Initialize swipe status
     const list = data || []
     list.forEach((item) => {
       if (!swipeStates.value[item.id]) {
@@ -100,7 +100,7 @@ async function loadVoicePrintList() {
     voicePrintList.value = list
   }
   catch (error) {
-    console.error('获取声纹列表失败:', error)
+    console.error('Failed to get voiceprint list:', error)
     voicePrintList.value = []
   }
   finally {
@@ -108,22 +108,22 @@ async function loadVoicePrintList() {
   }
 }
 
-// 暴露给父组件的刷新方法
+// Refresh method exposed to parent component
 async function refresh() {
   await loadVoicePrintList()
 }
 
-// 获取语音对话记录
+// Get voice conversation records
 async function loadChatHistory() {
   try {
     if (!currentAgentId.value) {
-      toast.error('请先选择智能体')
+      toast.error('Please select an agent first')
       return
     }
 
     const data = await getChatHistory(currentAgentId.value)
     chatHistoryList.value = data || []
-    // 转换为ActionSheet格式
+    // Convert to ActionSheet format
     chatHistoryActions.value = chatHistoryList.value.map((item, index) => ({
       name: item.content,
       audioId: item.audioId,
@@ -132,15 +132,15 @@ async function loadChatHistory() {
     showChatHistoryDialog.value = true
   }
   catch (error) {
-    console.error('获取对话记录失败:', error)
-    toast.error('获取对话记录失败')
+    console.error('Failed to get conversation records:', error)
+    toast.error('Failed to get conversation records')
   }
 }
 
-// 打开添加弹窗
+// Open add dialog
 function openAddDialog() {
   if (!currentAgentId.value) {
-    toast.error('请先选择智能体')
+    toast.error('Please select an agent first')
     return
   }
 
@@ -153,21 +153,21 @@ function openAddDialog() {
   showAddDialog.value = true
 }
 
-// 打开编辑弹窗
+// Open edit dialog
 function openEditDialog(item: VoicePrint) {
   editForm.value = { ...item }
   showEditDialog.value = true
 }
 
-// 获取选中音频的显示内容
+// Get selected audio display content
 function getSelectedAudioContent(audioId: string) {
   if (!audioId)
-    return '点击选择声纹向量'
+    return 'Click to select voiceprint vector'
   const chatItem = chatHistoryList.value.find(item => item.audioId === audioId)
-  return chatItem ? chatItem.content : `已选择: ${audioId.substring(0, 8)}...`
+  return chatItem ? chatItem.content : `Selected: ${audioId.substring(0, 8)}...`
 }
 
-// 选择声纹向量
+// Select voiceprint vector
 function selectAudioId({ item }: { item: any }) {
   if (showAddDialog.value) {
     addForm.value.audioId = item.audioId
@@ -178,37 +178,37 @@ function selectAudioId({ item }: { item: any }) {
   showChatHistoryDialog.value = false
 }
 
-// 提交添加说话人
+// Submit add speaker
 async function submitAdd() {
   if (!addForm.value.sourceName.trim()) {
-    toast.error('请输入姓名')
+    toast.error('Please enter name')
     return
   }
   if (!addForm.value.audioId) {
-    toast.error('请选择声纹向量')
+    toast.error('Please select voiceprint vector')
     return
   }
 
   try {
     await createVoicePrint(addForm.value)
-    toast.success('添加成功')
+    toast.success('Added successfully')
     showAddDialog.value = false
     await loadVoicePrintList()
   }
   catch (error) {
-    console.error('添加说话人失败:', error)
-    toast.error('添加说话人失败')
+    console.error('Failed to add speaker:', error)
+    toast.error('Failed to add speaker')
   }
 }
 
-// 提交编辑说话人
+// Submit edit speaker
 async function submitEdit() {
   if (!editForm.value.sourceName.trim()) {
-    toast.error('请输入姓名')
+    toast.error('Please enter name')
     return
   }
   if (!editForm.value.audioId) {
-    toast.error('请选择声纹向量')
+    toast.error('Please select voiceprint vector')
     return
   }
 
@@ -220,43 +220,43 @@ async function submitEdit() {
       introduce: editForm.value.introduce,
       createDate: editForm.value.createDate,
     })
-    toast.success('编辑成功')
+    toast.success('Edited successfully')
     showEditDialog.value = false
     await loadVoicePrintList()
   }
   catch (error) {
-    console.error('编辑说话人失败:', error)
-    toast.error('编辑说话人失败')
+    console.error('Failed to edit speaker:', error)
+    toast.error('Failed to edit speaker')
   }
 }
 
-// 处理编辑操作
+// Handle edit operation
 function handleEdit(item: VoicePrint) {
   openEditDialog(item)
   swipeStates.value[item.id] = 'close'
 }
 
-// 删除声纹
+// Delete voiceprint
 async function handleDelete(id: string) {
   message.confirm({
-    msg: '确定要删除这个说话人吗？',
-    title: '确认删除',
+    msg: 'Are you sure you want to delete this speaker?',
+    title: 'Confirm Delete',
   }).then(async () => {
     await deleteVoicePrint(id)
-    toast.success('删除成功')
+    toast.success('Delete successful')
     await loadVoicePrintList()
   }).catch(() => {
-    console.log('点击了取消按钮')
+    console.log('Clicked cancel button')
   })
 }
 
 onMounted(async () => {
-  // 智能体已简化为默认
+  // Agent simplified to default
 
   loadVoicePrintList()
 })
 
-// 暴露方法给父组件
+// Expose methods to parent component
 defineExpose({
   refresh,
 })
@@ -264,17 +264,17 @@ defineExpose({
 
 <template>
   <view class="voiceprint-container" style="background: #f5f7fb; min-height: 100%;">
-    <!-- 加载状态 -->
+    <!-- Loading state -->
     <view v-if="loading && voicePrintList.length === 0" class="loading-container">
       <wd-loading color="#336cff" />
       <text class="loading-text">
-        加载中...
+        Loading...
       </text>
     </view>
 
-    <!-- 声纹列表 -->
+    <!-- Voiceprint list -->
     <view v-else-if="voicePrintList.length > 0" class="voiceprint-list">
-      <!-- 声纹卡片列表 -->
+      <!-- Voiceprint card list -->
       <view class="box-border flex flex-col gap-[24rpx] p-[20rpx]">
         <view v-for="item in voicePrintList" :key="item.id">
           <wd-swipe-action
@@ -287,7 +287,7 @@ defineExpose({
                   {{ item.sourceName }}
                 </text>
                 <text class="mb-[12rpx] block text-[28rpx] text-[#65686f] leading-[1.4]">
-                  {{ item.introduce || '暂无描述' }}
+                  {{ item.introduce || 'No description' }}
                 </text>
                 <text class="block text-[24rpx] text-[#9d9ea3]">
                   {{ item.createDate }}
@@ -302,7 +302,7 @@ defineExpose({
                   @click="handleDelete(item.id)"
                 >
                   <wd-icon name="delete" />
-                  删除
+                  Delete
                 </view>
               </view>
             </template>
@@ -311,29 +311,29 @@ defineExpose({
       </view>
     </view>
 
-    <!-- 空状态 -->
+    <!-- Empty state -->
     <view v-else-if="!loading" class="empty-container">
       <view class="flex flex-col items-center justify-center p-[100rpx_40rpx] text-center">
         <wd-icon name="voice" custom-class="text-[120rpx] text-[#d9d9d9] mb-[32rpx]" />
         <text class="mb-[16rpx] text-[32rpx] text-[#666666] font-medium">
-          暂无声纹数据
+          No voiceprint data
         </text>
         <text class="text-[26rpx] text-[#999999] leading-[1.5]">
-          点击右下角 + 号添加您的第一个说话人
+          Click the + button in the bottom right corner to add your first speaker
         </text>
       </view>
     </view>
 
-    <!-- 浮动操作按钮 -->
+    <!-- Floating action button -->
     <wd-fab type="primary" size="small" :draggable="true" :expandable="false" @click="openAddDialog">
       <wd-icon name="add" />
     </wd-fab>
 
-    <!-- MessageBox 组件 -->
+    <!-- MessageBox component -->
     <wd-message-box />
   </view>
 
-  <!-- 添加说话人弹窗 -->
+  <!-- Add speaker dialog -->
   <wd-popup
     v-model="showAddDialog" position="center" custom-style="width: 90%; max-width: 400px; border-radius: 16px;"
     safe-area-inset-bottom
@@ -341,15 +341,15 @@ defineExpose({
     <view>
       <view class="w-full flex items-center justify-between border-b-[2rpx] border-[#eeeeee] p-[32rpx_32rpx_24rpx]">
         <text class="w-full text-center text-[32rpx] text-[#232338] font-semibold">
-          添加说话人
+          Add Speaker
         </text>
       </view>
 
       <view class="p-[32rpx]">
-        <!-- 声纹向量选择 -->
+        <!-- Voiceprint Vector Selection -->
         <view class="mb-[32rpx]">
           <text class="mb-[16rpx] block text-[28rpx] text-[#232338] font-medium">
-            * 声纹向量
+            * Voiceprint Vector
           </text>
           <view
             class="flex cursor-pointer items-center justify-between border-[1rpx] border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[20rpx] transition-all duration-300 active:bg-[#eef3ff]"
@@ -365,25 +365,25 @@ defineExpose({
           </view>
         </view>
 
-        <!-- 姓名 -->
+        <!-- Name -->
         <view class="mb-[32rpx]">
           <text class="mb-[16rpx] block text-[28rpx] text-[#232338] font-medium">
-            * 姓名
+            * Name
           </text>
           <input
             v-model="addForm.sourceName"
             class="box-border h-[80rpx] w-full border-[1rpx] border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[16rpx_20rpx] text-[28rpx] text-[#232338] leading-[1.4] outline-none focus:border-[#336cff] focus:bg-white placeholder:text-[#9d9ea3]"
-            type="text" placeholder="请输入姓名"
+            type="text" placeholder="Please enter name"
           >
         </view>
 
-        <!-- 描述 -->
+        <!-- Description -->
         <view>
           <text class="mb-[16rpx] block text-[28rpx] text-[#232338] font-medium">
-            * 描述
+            * Description
           </text>
           <textarea
-            v-model="addForm.introduce" :maxlength="100" placeholder="请输入描述"
+            v-model="addForm.introduce" :maxlength="100" placeholder="Please enter description"
             class="box-border h-[200rpx] w-full resize-none border-[1rpx] border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[20rpx] text-[26rpx] text-[#232338] leading-[1.6] outline-none focus:border-[#336cff] focus:bg-white placeholder:text-[#9d9ea3]"
           />
           <view class="mt-[8rpx] text-right text-[22rpx] text-[#9d9ea3]">
@@ -394,16 +394,16 @@ defineExpose({
 
       <view class="flex gap-[16rpx] border-t-[2rpx] border-[#eeeeee] p-[24rpx_32rpx_32rpx]">
         <wd-button type="info" custom-class="flex-1" @click="showAddDialog = false">
-          取消
+          Cancel
         </wd-button>
         <wd-button type="primary" custom-class="flex-1" @click="submitAdd">
-          保存
+          Save
         </wd-button>
       </view>
     </view>
   </wd-popup>
 
-  <!-- 编辑说话人弹窗 -->
+  <!-- Edit speaker dialog -->
   <wd-popup
     v-model="showEditDialog" position="center" custom-style="width: 90%; max-width: 400px; border-radius: 16px;"
     safe-area-inset-bottom
@@ -411,15 +411,15 @@ defineExpose({
     <view>
       <view class="w-full flex items-center justify-between border-b-[2rpx] border-[#eeeeee] p-[32rpx_32rpx_24rpx]">
         <text class="w-full text-center text-[32rpx] text-[#232338] font-semibold">
-          编辑说话人
+          Edit Speaker
         </text>
       </view>
 
       <view class="p-[32rpx]">
-        <!-- 声纹向量选择 -->
+        <!-- Voiceprint Vector Selection -->
         <view class="mb-[32rpx]">
           <text class="mb-[16rpx] block text-[28rpx] text-[#232338] font-medium">
-            * 声纹向量
+            * Voiceprint Vector
           </text>
           <view
             class="flex cursor-pointer items-center justify-between border-[1rpx] border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[20rpx] transition-all duration-300 active:bg-[#eef3ff]"
@@ -435,25 +435,25 @@ defineExpose({
           </view>
         </view>
 
-        <!-- 姓名 -->
+        <!-- Name -->
         <view class="mb-[32rpx]">
           <text class="mb-[16rpx] block text-[28rpx] text-[#232338] font-medium">
-            * 姓名
+            * Name
           </text>
           <input
             v-model="editForm.sourceName"
             class="box-border h-[80rpx] w-full border-[1rpx] border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[16rpx_20rpx] text-[28rpx] text-[#232338] leading-[1.4] outline-none focus:border-[#336cff] focus:bg-white placeholder:text-[#9d9ea3]"
-            type="text" placeholder="请输入姓名"
+            type="text" placeholder="Please enter name"
           >
         </view>
 
-        <!-- 描述 -->
+        <!-- Description -->
         <view>
           <text class="mb-[16rpx] block text-[28rpx] text-[#232338] font-medium">
-            * 描述
+            * Description
           </text>
           <textarea
-            v-model="editForm.introduce" :maxlength="100" placeholder="请输入描述"
+            v-model="editForm.introduce" :maxlength="100" placeholder="Please enter description"
             class="box-border h-[200rpx] w-full resize-none border-[1rpx] border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[20rpx] text-[26rpx] text-[#232338] leading-[1.6] outline-none focus:border-[#336cff] focus:bg-white placeholder:text-[#9d9ea3]"
           />
           <view class="mt-[8rpx] text-right text-[22rpx] text-[#9d9ea3]">
@@ -464,18 +464,18 @@ defineExpose({
 
       <view class="flex gap-[16rpx] border-t-[2rpx] border-[#eeeeee] p-[24rpx_32rpx_32rpx]">
         <wd-button type="info" custom-class="flex-1" @click="showEditDialog = false">
-          取消
+          Cancel
         </wd-button>
         <wd-button type="primary" custom-class="flex-1" @click="submitEdit">
-          保存
+          Save
         </wd-button>
       </view>
     </view>
   </wd-popup>
 
-  <!-- 语音对话记录选择动作面板 -->
+  <!-- Voice chat history selection action panel -->
   <wd-action-sheet
-    v-model="showChatHistoryDialog" :actions="chatHistoryActions" title="选择声纹向量"
+    v-model="showChatHistoryDialog" :actions="chatHistoryActions" title="Select Voiceprint Vector"
     @select="selectAudioId"
   />
 </template>

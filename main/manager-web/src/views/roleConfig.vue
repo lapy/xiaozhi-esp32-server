@@ -102,7 +102,7 @@
                           <el-tooltip v-for="func in currentFunctions" :key="func.name" effect="dark" placement="top"
                             popper-class="custom-tooltip">
                             <div slot="content">
-                              <div><strong>功能名称:</strong> {{ func.name }}</div>
+                              <div><strong>Function Name:</strong> {{ func.name }}</div>
                             </div>
                             <div class="icon-dot" :style="{ backgroundColor: getFunctionColor(func.name) }">
                               {{ func.name.charAt(0) }}
@@ -297,7 +297,7 @@ export default {
           message: i18n.t('roleConfig.applyTemplateFailed'),
           showClose: true
         });
-        console.error('应用模板失败:', error);
+        console.error('Failed to apply template:', error);
       } finally {
         this.loadingTemplate = false;
       }
@@ -338,34 +338,34 @@ export default {
               intentModelId: data.data.intentModelId
             }
           };
-          // 后端只给了最小映射：[{ id, agentId, pluginId }, ...]
+          // Backend only provided minimal mapping: [{ id, agentId, pluginId }, ...]
           const savedMappings = data.data.functions || [];
 
-          // 先保证 allFunctions 已经加载（如果没有，则先 fetchAllFunctions）
+          // Ensure allFunctions is loaded first (if not, fetch all functions first)
           const ensureFuncs = this.allFunctions.length
             ? Promise.resolve()
             : this.fetchAllFunctions();
 
           ensureFuncs.then(() => {
-            // 合并：按照 pluginId（id 字段）把全量元数据信息补齐
+            // Merge: complete full metadata information by pluginId (id field)
             this.currentFunctions = savedMappings.map(mapping => {
               const meta = this.allFunctions.find(f => f.id === mapping.pluginId);
               if (!meta) {
-                // 插件定义没找到，退化处理
+                // Plugin definition not found, fallback handling
                 return { id: mapping.pluginId, name: mapping.pluginId, params: {} };
               }
               return {
                 id: mapping.pluginId,
                 name: meta.name,
-                // 后端如果还有 paramInfo 字段就用 mapping.paramInfo，否则用 meta.params 默认值
+                // If backend has paramInfo field use mapping.paramInfo, otherwise use meta.params default value
                 params: mapping.paramInfo || { ...meta.params },
-                fieldsMeta: meta.fieldsMeta  // 保留以便对话框渲染 tooltip
+                fieldsMeta: meta.fieldsMeta  // Keep for dialog rendering tooltip
               };
             });
-            // 备份原始，以备取消时恢复
+            // Backup original for cancellation recovery
             this.originalFunctions = JSON.parse(JSON.stringify(this.currentFunctions));
 
-            // 确保意图识别选项的可见性正确
+            // Ensure intent recognition options visibility is correct
             this.updateIntentOptionsVisibility();
           });
         } else {
@@ -384,7 +384,7 @@ export default {
                 isHidden: false
               })));
 
-              // 如果是意图识别选项，需要根据当前LLM类型更新可见性
+              // If it is intent recognition option, need to update visibility based on current LLM type
               if (model.type === 'Intent') {
                 this.updateIntentOptionsVisibility();
               }
@@ -406,7 +406,7 @@ export default {
               })
               this.$set(this.modelOptions, model.type, LLMdata);
             } else {
-              this.$message.error(data.msg || '获取LLM模型列表失败');
+              this.$message.error(data.msg || 'Failed to get LLM model list');
             }
           });
         }
@@ -447,7 +447,7 @@ export default {
         this.form.chatHistoryConf = 2;
       }
       if (type === 'LLM') {
-        // 当LLM类型改变时，更新意图识别选项的可见性
+        // When LLM type changes, update intent recognition options visibility
         this.updateIntentOptionsVisibility();
       }
     },
@@ -472,7 +472,7 @@ export default {
       });
     },
     openFunctionDialog() {
-      // 显示编辑对话框时，确保 allFunctions 已经加载
+      // When showing edit dialog, ensure allFunctions is already loaded
       if (this.allFunctions.length === 0) {
         this.fetchAllFunctions().then(() => this.showFunctionDialog = true);
       } else {
@@ -491,7 +491,7 @@ export default {
       this.showFunctionDialog = false;
     },
     updateIntentOptionsVisibility() {
-      // 根据当前选择的LLM类型更新意图识别选项的可见性
+      // Update intent recognition options visibility based on currently selected LLM type
       const currentLlmId = this.form.model.llmModelId;
       if (!currentLlmId || !this.modelOptions['Intent']) return;
 
@@ -500,28 +500,28 @@ export default {
 
       this.modelOptions['Intent'].forEach(item => {
         if (item.value === "Intent_function_call") {
-          // 如果llmType是openai或ollama，允许选择function_call
-          // 否则隐藏function_call选项
+          // If llmType is openai or ollama, allow selecting function_call
+          // Otherwise hide function_call option
           if (llmType === "openai" || llmType === "ollama") {
             item.isHidden = false;
           } else {
             item.isHidden = true;
           }
         } else {
-          // 其他意图识别选项始终可见
+          // Other intent recognition options are always visible
           item.isHidden = false;
         }
       });
 
-      // 如果当前选择的意图识别是function_call，但LLM类型不支持，则设置为可选的第一项
+      // If currently selected intent recognition is function_call but LLM type does not support it, set to first available option
       if (this.form.model.intentModelId === "Intent_function_call" &&
         llmType !== "openai" && llmType !== "ollama") {
-        // 找到第一个可见的选项
+        // Find first visible option
         const firstVisibleOption = this.modelOptions['Intent'].find(item => !item.isHidden);
         if (firstVisibleOption) {
           this.form.model.intentModelId = firstVisibleOption.value;
         } else {
-          // 如果没有可见选项，设置为Intent_nointent
+          // If no visible options, set to Intent_nointent
           this.form.model.intentModelId = 'Intent_nointent';
         }
       }

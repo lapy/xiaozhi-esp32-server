@@ -40,10 +40,10 @@ public class AgentChatHistoryBizServiceImpl implements AgentChatHistoryBizServic
     private final DeviceService deviceService;
 
     /**
-     * 处理聊天记录上报，包括文件上传和相关信息记录
+     * Process chat record report, including file upload and related information recording
      *
-     * @param report 包含聊天上报所需信息的输入对象
-     * @return 上传结果，true表示成功，false表示失败
+     * @param report Input object containing information required for chat report
+     * @return Upload result, true means success, false means failure
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -51,9 +51,9 @@ public class AgentChatHistoryBizServiceImpl implements AgentChatHistoryBizServic
         String macAddress = report.getMacAddress();
         Byte chatType = report.getChatType();
         Long reportTimeMillis = null != report.getReportTime() ? report.getReportTime() * 1000 : System.currentTimeMillis();
-        log.info("小智设备聊天上报请求: macAddress={}, type={} reportTime={}", macAddress, chatType, reportTimeMillis);
+        log.info("XiaoZhi device chat report request: macAddress={}, type={} reportTime={}", macAddress, chatType, reportTimeMillis);
 
-        // 根据设备MAC地址查询对应的默认智能体，判断是否需要上报
+        // Query the corresponding default agent by device MAC address to determine if reporting is needed
         AgentEntity agentEntity = agentService.getDefaultAgentByMacAddress(macAddress);
         if (agentEntity == null) {
             return Boolean.FALSE;
@@ -69,22 +69,22 @@ public class AgentChatHistoryBizServiceImpl implements AgentChatHistoryBizServic
             saveChatText(report, agentId, macAddress, audioId, reportTimeMillis);
         }
 
-        // 更新设备最后对话时间
+        // Update device last conversation time
         redisUtils.set(RedisKeys.getAgentDeviceLastConnectedAtById(agentId), new Date());
 
-        // 更新设备最后连接时间
+        // Update device last connection time
         DeviceEntity device = deviceService.getDeviceByMacAddress(macAddress);
         if (device != null) {
             deviceService.updateDeviceConnectionInfo(agentId, device.getId(), null);
         } else {
-            log.warn("聊天记录上报时，未找到mac地址为 {} 的设备", macAddress);
+            log.warn("Device with MAC address {} not found when reporting chat history", macAddress);
         }
 
         return Boolean.TRUE;
     }
 
     /**
-     * base64解码report.getOpusDataBase64(),存入ai_agent_chat_audio表
+     * Base64 decode report.getOpusDataBase64() and store in ai_agent_chat_audio table
      */
     private String saveChatAudio(AgentChatHistoryReportDTO report) {
         String audioId = null;
@@ -93,9 +93,9 @@ public class AgentChatHistoryBizServiceImpl implements AgentChatHistoryBizServic
             try {
                 byte[] audioData = Base64.getDecoder().decode(report.getAudioBase64());
                 audioId = agentChatAudioService.saveAudio(audioData);
-                log.info("音频数据保存成功，audioId={}", audioId);
+                log.info("Audio data saved successfully, audioId={}", audioId);
             } catch (Exception e) {
-                log.error("音频数据保存失败", e);
+                log.error("Audio data save failed", e);
                 return null;
             }
         }
@@ -103,10 +103,10 @@ public class AgentChatHistoryBizServiceImpl implements AgentChatHistoryBizServic
     }
 
     /**
-     * 组装上报数据
+     * Assemble report data
      */
     private void saveChatText(AgentChatHistoryReportDTO report, String agentId, String macAddress, String audioId, Long reportTime) {
-        // 构建聊天记录实体
+        // Build chat history entity
         AgentChatHistoryEntity entity = AgentChatHistoryEntity.builder()
                 .macAddress(macAddress)
                 .agentId(agentId)
@@ -115,12 +115,12 @@ public class AgentChatHistoryBizServiceImpl implements AgentChatHistoryBizServic
                 .content(report.getContent())
                 .audioId(audioId)
                 .createdAt(new Date(reportTime))
-                // NOTE(haotian): 2025/5/26 updateAt可以不设置，重点是createAt，而且这样可以看到上报延迟
+                // NOTE(haotian): 2025/5/26 updateAt can be left unset, the focus is on createAt, and this way we can see the reporting delay
                 .build();
 
-        // 保存数据
+        // Save data
         agentChatHistoryService.save(entity);
 
-        log.info("设备 {} 对应智能体 {} 上报成功", macAddress, agentId);
+        log.info("Device {} corresponding agent {} reported successfully", macAddress, agentId);
     }
 }

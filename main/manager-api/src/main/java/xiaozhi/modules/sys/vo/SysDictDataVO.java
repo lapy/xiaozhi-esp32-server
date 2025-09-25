@@ -7,44 +7,44 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 字典数据VO
+ * Dictionary Data VO
  */
 @Data
-@Schema(description = "字典数据VO")
+@Schema(description = "Dictionary Data VO")
 public class SysDictDataVO implements Serializable {
-    @Schema(description = "主键")
+    @Schema(description = "Primary Key")
     private Long id;
 
-    @Schema(description = "字典类型ID")
+    @Schema(description = "Dictionary Type ID")
     private Long dictTypeId;
 
-    @Schema(description = "字典标签")
+    @Schema(description = "Dictionary Label")
     private String dictLabel;
 
-    @Schema(description = "字典值")
+    @Schema(description = "Dictionary Value")
     private String dictValue;
 
-    @Schema(description = "备注")
+    @Schema(description = "Remark")
     private String remark;
 
-    @Schema(description = "排序")
+    @Schema(description = "Sort Order")
     private Integer sort;
 
-    @Schema(description = "创建者")
+    @Schema(description = "Creator")
     private Long creator;
 
-    @Schema(description = "创建者名称")
+    @Schema(description = "Creator Name")
     private String creatorName;
 
-    @Schema(description = "创建时间")
+    @Schema(description = "Create Time")
     private Date createDate;
 
-    @Schema(description = "更新者")
+    @Schema(description = "Updater")
     private Long updater;
 
-    @Schema(description = "更新者名称")
+    @Schema(description = "Updater Name")
     private String updaterName;
 
-    @Schema(description = "更新时间")
+    @Schema(description = "Update time")
     private Date updateDate;
 }

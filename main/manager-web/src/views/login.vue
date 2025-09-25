@@ -10,7 +10,6 @@
             gap: 10px;
           ">
           <img loading="lazy" alt="" src="@/assets/xiaozhi-logo.png" style="width: 45px; height: 45px" />
-          <img loading="lazy" alt="" src="@/assets/xiaozhi-ai.png" style="height: 18px" />
         </div>
       </el-header>
       <div class="login-person">
@@ -32,7 +31,7 @@
               {{ $t("login.welcome") }}
             </div>
 
-            <!-- 语言切换下拉菜单 -->
+            <!-- Language switching dropdown menu -->
             <el-dropdown trigger="click" class="title-language-dropdown"
               @visible-change="handleLanguageDropdownVisibleChange">
               <span class="el-dropdown-link">
@@ -53,7 +52,7 @@
             </el-dropdown>
           </div>
           <div style="padding: 0 30px">
-            <!-- 用户名登录 -->
+            <!-- Username login -->
             <template v-if="!isMobileLogin">
               <div class="input-box">
                 <img loading="lazy" alt="" class="input-icon" src="@/assets/login/username.png" />
@@ -61,7 +60,7 @@
               </div>
             </template>
 
-            <!-- 手机号登录 -->
+            <!-- Mobile number login -->
             <template v-else>
               <div class="input-box">
                 <div style="display: flex; align-items: center; width: 100%">
@@ -90,7 +89,7 @@
                 <img loading="lazy" alt="" class="input-icon" src="@/assets/login/shield.png" />
                 <el-input v-model="form.captcha" :placeholder="$t('login.captchaPlaceholder')" style="flex: 1" />
               </div>
-              <img loading="lazy" v-if="captchaUrl" :src="captchaUrl" alt="验证码"
+              <img loading="lazy" v-if="captchaUrl" :src="captchaUrl" alt="Captcha"
                 style="width: 150px; height: 40px; cursor: pointer" @click="fetchCaptcha" />
             </div>
             <div style="
@@ -112,7 +111,7 @@
           </div>
           <div class="login-btn" @click="login">{{ $t("login.login") }}</div>
 
-          <!-- 登录方式切换按钮 -->
+          <!-- Login method switching button -->
           <div class="login-type-container" v-if="enableMobileRegister">
             <div style="display: flex; gap: 10px">
               <el-tooltip :content="$t('login.mobileLogin')" placement="bottom">
@@ -162,11 +161,11 @@ export default {
       enableMobileRegister: (state) => state.pubConfig.enableMobileRegister,
       mobileAreaList: (state) => state.pubConfig.mobileAreaList,
     }),
-    // 获取当前语言
+    // Get current language
     currentLanguage() {
-      return i18n.locale || "zh_CN";
+      return i18n.locale || "en";
     },
-    // 获取当前语言显示文本
+    // Get current language display text
     currentLanguageText() {
       const currentLang = this.currentLanguage;
       switch (currentLang) {
@@ -177,7 +176,7 @@ export default {
         case "en":
           return this.$t("language.en");
         default:
-          return this.$t("language.zhCN");
+          return this.$t("language.en");
       }
     },
   },
@@ -189,7 +188,7 @@ export default {
         password: "",
         captcha: "",
         captchaId: "",
-        areaCode: "+86",
+        areaCode: "+1",
         mobile: "",
       },
       captchaUuid: "",
@@ -201,7 +200,7 @@ export default {
   mounted() {
     this.fetchCaptcha();
     this.$store.dispatch("fetchPubConfig").then(() => {
-      // 根据配置决定默认登录方式
+      // Determine default login method based on configuration
       this.isMobileLogin = this.enableMobileRegister;
     });
   },
@@ -216,21 +215,21 @@ export default {
 
         Api.user.getCaptcha(this.captchaUuid, (res) => {
           if (res.status === 200) {
-            const blob = new Blob([res.data], { type: res.data.type });
+            const blob = new Blob([res.data], { type: 'image/gif' });
             this.captchaUrl = URL.createObjectURL(blob);
           } else {
-            showDanger("验证码加载失败，点击刷新");
+            showDanger("Captcha loading failed, click to refresh");
           }
         });
       }
     },
 
-    // 切换语言下拉菜单的可见状态变化
+    // Handle language dropdown menu visibility change
     handleLanguageDropdownVisibleChange(visible) {
       this.languageDropdownVisible = visible;
     },
 
-    // 切换语言
+    // Switch language
     changeLanguage(lang) {
       changeLanguage(lang);
       this.languageDropdownVisible = false;
@@ -240,10 +239,10 @@ export default {
       });
     },
 
-    // 切换登录方式
+    // Switch login method
     switchLoginType(type) {
       this.isMobileLogin = type === "mobile";
-      // 清空表单
+      // Clear form
       this.form.username = "";
       this.form.mobile = "";
       this.form.password = "";
@@ -251,7 +250,7 @@ export default {
       this.fetchCaptcha();
     },
 
-    // 封装输入验证逻辑
+    // Encapsulate input validation logic
     validateInput(input, messageKey) {
       if (!input.trim()) {
         showDanger(this.$t(messageKey));
@@ -262,25 +261,25 @@ export default {
 
     async login() {
       if (this.isMobileLogin) {
-        // 手机号登录验证
+        // Mobile number login validation
         if (!validateMobile(this.form.mobile, this.form.areaCode)) {
           showDanger(this.$t('login.requiredMobile'));
           return;
         }
-        // 拼接手机号作为用户名
+        // Concatenate mobile number as username
         this.form.username = this.form.areaCode + this.form.mobile;
       } else {
-        // 用户名登录验证
+        // Username login validation
         if (!this.validateInput(this.form.username, 'login.requiredUsername')) {
           return;
         }
       }
 
-      // 验证密码
+      // Validate password
       if (!this.validateInput(this.form.password, 'login.requiredPassword')) {
         return;
       }
-      // 验证验证码
+      // Validate captcha
       if (!this.validateInput(this.form.captcha, 'login.requiredCaptcha')) {
         return;
       }
@@ -294,21 +293,21 @@ export default {
           goToPage("/home");
         },
         (err) => {
-          // 直接使用后端返回的国际化消息
-          let errorMessage = err.data.msg || "登录失败";
+          // Use backend returned internationalization message directly
+          let errorMessage = err.data.msg || "Login failed";
           
           showDanger(errorMessage);
           if (
             err.data != null &&
             err.data.msg != null &&
-            err.data.msg.indexOf("图形验证码") > -1 || err.data.msg.indexOf("Captcha") > -1
+            err.data.msg.indexOf("Captcha") > -1 || err.data.msg.indexOf("Captcha") > -1
           ) {
             this.fetchCaptcha();
           }
         }
       );
 
-      // 重新获取验证码
+      // Re-fetch captcha
       setTimeout(() => {
         this.fetchCaptcha();
       }, 1000);

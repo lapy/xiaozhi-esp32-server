@@ -52,9 +52,9 @@ public class AgentVoicePrintServiceImpl extends ServiceImpl<AgentVoicePrintDao, 
     private final RestTemplate restTemplate;
     private final SysParamsService sysParamsService;
     private final AgentChatHistoryService agentChatHistoryService;
-    // Springboot提供的编程事务类
+    // Spring Boot programmatic transaction class
     private final TransactionTemplate transactionTemplate;
-    // 识别度
+    // Recognition threshold
     private final Double RECOGNITION = 0.5;
     private final Executor taskExecutor;
 
@@ -71,36 +71,36 @@ public class AgentVoicePrintServiceImpl extends ServiceImpl<AgentVoicePrintDao, 
 
     @Override
     public boolean insert(AgentVoicePrintSaveDTO dto) {
-        // 获取音频数据
+        // Get audio data
         ByteArrayResource resource = getVoicePrintAudioWAV(dto.getAgentId(), dto.getAudioId());
-        // 识别一下此声音是否注册过
+        // Check if this voice has been registered
         IdentifyVoicePrintResponse response = identifyVoicePrint(dto.getAgentId(), resource);
         if (response != null && response.getScore() > RECOGNITION) {
-            // 根据识别出的声纹ID查询对应的用户信息
+            // Query corresponding user information based on recognized voiceprint ID
             AgentVoicePrintEntity existingVoicePrint = baseMapper.selectById(response.getSpeakerId());
-            String existingUserName = existingVoicePrint != null ? existingVoicePrint.getSourceName() : "未知用户";
+            String existingUserName = existingVoicePrint != null ? existingVoicePrint.getSourceName() : "Unknown user";
             throw new RenException(ErrorCode.VOICEPRINT_ALREADY_REGISTERED, existingUserName);
         }
         AgentVoicePrintEntity entity = ConvertUtils.sourceToTarget(dto, AgentVoicePrintEntity.class);
-        // 开启事务
+        // Start transaction
         return Boolean.TRUE.equals(transactionTemplate.execute(status -> {
             try {
-                // 保存声纹信息
+                // Save voiceprint information
                 int row = baseMapper.insert(entity);
-                // 插入一条数据，影响的数据不等于1说明出现了，保存问题回滚
+                // Insert one record, if affected rows != 1, indicates save problem, rollback
                 if (row != 1) {
-                    status.setRollbackOnly(); // 标记事务回滚
+                    status.setRollbackOnly(); // Mark transaction rollback
                     return false;
                 }
-                // 发送注册声纹请求
+                // Send voiceprint registration request
                 registerVoicePrint(entity.getId(), resource);
                 return true;
             } catch (RenException e) {
-                status.setRollbackOnly(); // 标记事务回滚
+                status.setRollbackOnly(); // Mark transaction rollback
                 throw e;
             } catch (Exception e) {
-                status.setRollbackOnly(); // 标记事务回滚
-                log.error("保存声纹错误原因：{}", e.getMessage());
+                status.setRollbackOnly(); // Mark transaction rollback
+                log.error("Save voiceprint error reason: {}", e.getMessage());
                 throw new RenException(ErrorCode.VOICE_PRINT_SAVE_ERROR);
             }
         }));
@@ -108,32 +108,32 @@ public class AgentVoicePrintServiceImpl extends ServiceImpl<AgentVoicePrintDao, 
 
     @Override
     public boolean delete(Long userId, String voicePrintId) {
-        // 开启事务
+        // Start transaction
         boolean b = Boolean.TRUE.equals(transactionTemplate.execute(status -> {
             try {
-                // 删除声纹,按照指定当前登录用户和智能体
+                // Delete voiceprint, according to specified current logged-in user and agent
                 int row = baseMapper.delete(new LambdaQueryWrapper<AgentVoicePrintEntity>()
                         .eq(AgentVoicePrintEntity::getId, voicePrintId)
                         .eq(AgentVoicePrintEntity::getCreator, userId));
                 if (row != 1) {
-                    status.setRollbackOnly(); // 标记事务回滚
+                    status.setRollbackOnly(); // Mark transaction rollback
                     return false;
                 }
 
                 return true;
             } catch (Exception e) {
-                status.setRollbackOnly(); // 标记事务回滚
-                log.error("删除声纹存在错误原因：{}", e.getMessage());
+                status.setRollbackOnly(); // Mark transaction rollback
+                log.error("Delete voiceprint error reason: {}", e.getMessage());
                 throw new RenException(ErrorCode.VOICEPRINT_DELETE_ERROR);
             }
         }));
-        // 数据库声纹数据删除成功才继续执行删除声纹服务的数据
+        // Continue to delete voiceprint service data only after database voiceprint data deletion succeeds
         if(b){
             taskExecutor.execute(()-> {
                 try {
                     cancelVoicePrint(voicePrintId);
                 }catch (RuntimeException e) {
-                    log.error("删除声纹存在运行时错误原因：{}，id：{}", e.getMessage(),voicePrintId);
+                    log.error("Delete voiceprint runtime error reason: {}, id: {}", e.getMessage(),voicePrintId);
                 }
             });
         }
@@ -142,12 +142,12 @@ public class AgentVoicePrintServiceImpl extends ServiceImpl<AgentVoicePrintDao, 
 
     @Override
     public List<AgentVoicePrintVO> list(Long userId, String agentId) {
-        // 按照指定当前登录用户和智能体查找数据
+        // Search data by current logged-in user and agent
         List<AgentVoicePrintEntity> list = baseMapper.selectList(new LambdaQueryWrapper<AgentVoicePrintEntity>()
                 .eq(AgentVoicePrintEntity::getAgentId, agentId)
                 .eq(AgentVoicePrintEntity::getCreator, userId));
         return list.stream().map(entity -> {
-            // 遍历转换成AgentVoicePrintVO类型
+            // Iterate and convert to AgentVoicePrintVO type
             return ConvertUtils.sourceToTarget(entity, AgentVoicePrintVO.class);
         }).toList();
 
@@ -162,79 +162,79 @@ public class AgentVoicePrintServiceImpl extends ServiceImpl<AgentVoicePrintDao, 
         if (agentVoicePrintEntity == null) {
             return false;
         }
-        // 获取音频Id
+        // Get audio ID
         String audioId = dto.getAudioId();
-        // 获取智能体id
+        // Get agent ID
         String agentId = agentVoicePrintEntity.getAgentId();
         ByteArrayResource resource;
-        // audioId不等于空，且audioId和之前的保存的音频id不一样，则需要重新获取音频数据生成声纹
+        // If audioId is not empty and different from previously saved audio id, need to re-acquire audio data to generate voiceprint
         if (!StringUtils.isEmpty(audioId) && !audioId.equals(agentVoicePrintEntity.getAudioId())) {
             resource = getVoicePrintAudioWAV(agentId, audioId);
 
-            // 识别一下此声音是否注册过
+            // Check if this voice has been registered
             IdentifyVoicePrintResponse response = identifyVoicePrint(agentId, resource);
-            // 返回分数高于RECOGNITION说明这个声纹已经有了
+            // Score higher than RECOGNITION means this voiceprint already exists
             if (response != null && response.getScore() > RECOGNITION) {
-                // 判断返回的id如果不是要修改的声纹id，说明这个声纹id，现在要注册的声音已经存在且不是原来的声纹，不允许修改
+                // If returned id is not the voiceprint id to be modified, it means the voiceprint id already exists and is not the original voiceprint, modification not allowed
                 if (!response.getSpeakerId().equals(dto.getId())) {
-                    // 根据识别出的声纹ID查询对应的用户信息
+                    // Query corresponding user information based on recognized voiceprint ID
                     AgentVoicePrintEntity existingVoicePrint = baseMapper.selectById(response.getSpeakerId());
-                    String existingUserName = existingVoicePrint != null ? existingVoicePrint.getSourceName() : "未知用户";
+                    String existingUserName = existingVoicePrint != null ? existingVoicePrint.getSourceName() : "Unknown user";
                     throw new RenException(ErrorCode.VOICEPRINT_UPDATE_NOT_ALLOWED, existingUserName);
                 }
             }
         } else {
             resource = null;
         }
-        // 开启事务
+        // Start transaction
         return Boolean.TRUE.equals(transactionTemplate.execute(status -> {
             try {
                 AgentVoicePrintEntity entity = ConvertUtils.sourceToTarget(dto, AgentVoicePrintEntity.class);
                 int row = baseMapper.updateById(entity);
                 if (row != 1) {
-                    status.setRollbackOnly(); // 标记事务回滚
+                    status.setRollbackOnly(); // Mark transaction rollback
                     return false;
                 }
                 if (resource != null) {
                     String id = entity.getId();
-                    // 先注销之前这个声纹id上的声纹向量
+                    // First cancel the previous voiceprint vector on this voiceprint id
                     cancelVoicePrint(id);
-                    // 发送注册声纹请求
+                    // Send voiceprint registration request
                     registerVoicePrint(id, resource);
                 }
                 return true;
             } catch (RenException e) {
-                status.setRollbackOnly(); // 标记事务回滚
+                status.setRollbackOnly(); // Mark transaction rollback
                 throw e;
             } catch (Exception e) {
-                status.setRollbackOnly(); // 标记事务回滚
-                log.error("修改声纹错误原因：{}", e.getMessage());
+                status.setRollbackOnly(); // Mark transaction rollback
+                log.error("Voiceprint modification error reason: {}", e.getMessage());
                 throw new RenException(ErrorCode.VOICEPRINT_UPDATE_ADMIN_ERROR);
             }
         }));
     }
 
     /**
-     * 获取生纹接口URI对象
+     * Get voiceprint interface URI object
      *
-     * @return URI对象
+     * @return URI object
      */
     private URI getVoicePrintURI() {
-        // 获取声纹接口地址
+        // Get voiceprint interface address
         String voicePrint = sysParamsService.getValue(Constant.SERVER_VOICE_PRINT, true);
         try {
             return new URI(voicePrint);
         } catch (URISyntaxException e) {
-            log.error("路径格式不正确路径：{}，\n错误信息:{}", voicePrint, e.getMessage());
+            log.error("Incorrect path format path: {}, \nError message:{}", voicePrint, e.getMessage());
                 throw new RenException(ErrorCode.VOICEPRINT_API_URI_ERROR);
         }
     }
 
     /**
-     * 获取声纹地址基础路径
+     * Get voiceprint address base path
      * 
-     * @param uri 声纹地址uri
-     * @return 基础路径
+     * @param uri Voiceprint address uri
+     * @return Base path
      */
     private String getBaseUrl(URI uri) {
         String protocol = uri.getScheme();
@@ -248,160 +248,160 @@ public class AgentVoicePrintServiceImpl extends ServiceImpl<AgentVoicePrintDao, 
     }
 
     /**
-     * 获取验证Authorization
+     * Get verification Authorization
      *
-     * @param uri 声纹地址uri
-     * @return Authorization值
+     * @param uri Voiceprint address uri
+     * @return Authorization value
      */
     private String getAuthorization(URI uri) {
-        // 获取参数
+        // Get parameters
         String query = uri.getQuery();
-        // 获取aes加密密钥
+        // Get AES encryption key
         String str = "key=";
         return "Bearer " + query.substring(query.indexOf(str) + str.length());
     }
 
     /**
-     * 获取声纹音频资源数据
+     * Get voiceprint audio resource data
      *
-     * @param audioId 音频Id
-     * @return 声纹音频资源数据
+     * @param audioId Audio ID
+     * @return Voiceprint audio resource data
      */
     private ByteArrayResource getVoicePrintAudioWAV(String agentId, String audioId) {
-        // 判断这个音频是否属于当前智能体
+        // Check if this audio belongs to current agent
         boolean b = agentChatHistoryService.isAudioOwnedByAgent(audioId, agentId);
         if (!b) {
             throw new RenException(ErrorCode.VOICEPRINT_AUDIO_NOT_BELONG_AGENT);
         }
-        // 获取到音频数据
+        // Get audio data
         byte[] audio = agentChatAudioService.getAudio(audioId);
-        // 如果音频数据为空的直接报错不进行下去
+        // If audio data is empty, report error directly without proceeding
         if (audio == null || audio.length == 0) {
             throw new RenException(ErrorCode.VOICEPRINT_AUDIO_EMPTY);
         }
-        // 将字节数组包装为资源，返回
+        // Wrap byte array as resource and return
         return new ByteArrayResource(audio) {
             @Override
             public String getFilename() {
-                return "VoicePrint.WAV"; // 设置文件名
+                return "VoicePrint.WAV"; // Set filename
             }
         };
     }
 
     /**
-     * 发送注册声纹http请求
+     * Send voiceprint registration HTTP request
      * 
-     * @param id       声纹id
-     * @param resource 声纹音频资源
+     * @param id       Voiceprint ID
+     * @param resource Voiceprint audio resource
      */
     private void registerVoicePrint(String id, ByteArrayResource resource) {
-        // 处理声纹接口地址，获取前缀
+        // Process voiceprint interface address, get prefix
         URI uri = getVoicePrintURI();
         String baseUrl = getBaseUrl(uri);
         String requestUrl = baseUrl + "/voiceprint/register";
-        // 创建请求体
+        // Create request body
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("speaker_id", id);
         body.add("file", resource);
 
-        // 创建请求头
+        // Create request headers
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", getAuthorization(uri));
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        // 创建请求体
+        // Create request body
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        // 发送 POST 请求
+        // Send POST request
         ResponseEntity<String> response = restTemplate.postForEntity(requestUrl, requestEntity, String.class);
 
         if (response.getStatusCode() != HttpStatus.OK) {
-            log.error("声纹注册失败,请求路径：{}", requestUrl);
+            log.error("Voiceprint registration failed, request path: {}", requestUrl);
             throw new RenException(ErrorCode.VOICEPRINT_REGISTER_REQUEST_ERROR);
         }
-        // 检查响应内容
+        // Check response content
         String responseBody = response.getBody();
         if (responseBody == null || !responseBody.contains("true")) {
-            log.error("声纹注册失败,请求处理失败内容：{}", responseBody == null ? "空内容" : responseBody);
+            log.error("Voiceprint registration failed, request processing failed content: {}", responseBody == null ? "Empty content" : responseBody);
             throw new RenException(ErrorCode.VOICEPRINT_REGISTER_PROCESS_ERROR);
         }
     }
 
     /**
-     * 发送注销声纹的请求
+     * Send voiceprint cancellation request
      * 
-     * @param voicePrintId 声纹id
+     * @param voicePrintId Voiceprint ID
      */
     private void cancelVoicePrint(String voicePrintId) {
         URI uri = getVoicePrintURI();
         String baseUrl = getBaseUrl(uri);
         String requestUrl = baseUrl + "/voiceprint/" + voicePrintId;
-        // 创建请求头
+        // Create request headers
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", getAuthorization(uri));
-        // 创建请求体
+        // Create request body
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(headers);
 
-        // 发送 POST 请求
+        // Send POST request
         ResponseEntity<String> response = restTemplate.exchange(requestUrl, HttpMethod.DELETE, requestEntity,
                 String.class);
         if (response.getStatusCode() != HttpStatus.OK) {
-            log.error("声纹注销失败,请求路径：{}", requestUrl);
+            log.error("Voiceprint cancellation failed, request path: {}", requestUrl);
             throw new RenException(ErrorCode.VOICEPRINT_UNREGISTER_REQUEST_ERROR);
         }
-        // 检查响应内容
+        // Check response content
         String responseBody = response.getBody();
         if (responseBody == null || !responseBody.contains("true")) {
-            log.error("声纹注销失败,请求处理失败内容：{}", responseBody == null ? "空内容" : responseBody);
+            log.error("Voiceprint cancellation failed, request processing failed content: {}", responseBody == null ? "Empty content" : responseBody);
             throw new RenException(ErrorCode.VOICEPRINT_UNREGISTER_PROCESS_ERROR);
         }
     }
 
     /**
-     * 发送识别声纹http请求
+     * Send voiceprint identification HTTP request
      * 
-     * @param agentId  智能体id
-     * @param resource 声纹音频资源
-     * @return 返回识别数据
+     * @param agentId  Agent ID
+     * @param resource Voiceprint audio resource
+     * @return Return identification data
      */
     private IdentifyVoicePrintResponse identifyVoicePrint(String agentId, ByteArrayResource resource) {
 
-        // 获取该智能体所有注册的声纹
+        // Get all registered voiceprints for this agent
         List<AgentVoicePrintEntity> agentVoicePrintList = baseMapper
                 .selectList(new LambdaQueryWrapper<AgentVoicePrintEntity>()
                         .select(AgentVoicePrintEntity::getId)
                         .eq(AgentVoicePrintEntity::getAgentId, agentId));
 
-        // 声纹数量为0，说明还没注册过声纹不需要发生识别请求
+        // Voiceprint count is 0, means no voiceprints registered yet, no need to send identification request
         if (agentVoicePrintList.isEmpty()) {
             return null;
         }
-        // 处理声纹接口地址，获取前缀
+        // Process voiceprint interface address, get prefix
         URI uri = getVoicePrintURI();
         String baseUrl = getBaseUrl(uri);
         String requestUrl = baseUrl + "/voiceprint/identify";
-        // 创建请求体
+        // Create request body
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 
-        // 创建speaker_id参数
+        // Create speaker_id parameter
         String speakerIds = agentVoicePrintList.stream()
                 .map(AgentVoicePrintEntity::getId)
                 .collect(Collectors.joining(","));
         body.add("speaker_ids", speakerIds);
         body.add("file", resource);
 
-        // 创建请求头
+        // Create request headers
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", getAuthorization(uri));
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        // 创建请求体
+        // Create request body
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        // 发送 POST 请求
+        // Send POST request
         ResponseEntity<String> response = restTemplate.postForEntity(requestUrl, requestEntity, String.class);
 
         if (response.getStatusCode() != HttpStatus.OK) {
-            log.error("声纹识别请求失败,请求路径：{}", requestUrl);
+            log.error("Voiceprint identification request failed, request path: {}", requestUrl);
             throw new RenException(ErrorCode.VOICEPRINT_IDENTIFY_REQUEST_ERROR);
         }
-        // 检查响应内容
+        // Check response content
         String responseBody = response.getBody();
         if (responseBody != null) {
             return JsonUtils.parseObject(responseBody, IdentifyVoicePrintResponse.class);

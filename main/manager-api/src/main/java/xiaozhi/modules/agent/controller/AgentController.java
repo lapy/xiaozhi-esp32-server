@@ -53,7 +53,7 @@ import xiaozhi.modules.device.entity.DeviceEntity;
 import xiaozhi.modules.device.service.DeviceService;
 import xiaozhi.modules.security.user.SecurityUser;
 
-@Tag(name = "智能体管理")
+@Tag(name = "Agent Management")
 @AllArgsConstructor
 @RestController
 @RequestMapping("/agent")
@@ -67,7 +67,7 @@ public class AgentController {
     private final RedisUtils redisUtils;
 
     @GetMapping("/list")
-    @Operation(summary = "获取用户智能体列表")
+    @Operation(summary = "Get user agent list")
     @RequiresPermissions("sys:role:normal")
     public Result<List<AgentDTO>> getUserAgents() {
         UserDetail user = SecurityUser.getUser();
@@ -76,11 +76,11 @@ public class AgentController {
     }
 
     @GetMapping("/all")
-    @Operation(summary = "智能体列表（管理员）")
+    @Operation(summary = "Agent list (Administrator)")
     @RequiresPermissions("sys:role:superAdmin")
     @Parameters({
-            @Parameter(name = Constant.PAGE, description = "当前页码，从1开始", required = true),
-            @Parameter(name = Constant.LIMIT, description = "每页显示记录数", required = true),
+            @Parameter(name = Constant.PAGE, description = "Current page number, starting from 1", required = true),
+            @Parameter(name = Constant.LIMIT, description = "Number of records per page", required = true),
     })
     public Result<PageData<AgentEntity>> adminAgentList(
             @Parameter(hidden = true) @RequestParam Map<String, Object> params) {
@@ -89,7 +89,7 @@ public class AgentController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "获取智能体详情")
+    @Operation(summary = "Get agent details")
     @RequiresPermissions("sys:role:normal")
     public Result<AgentInfoVO> getAgentById(@PathVariable("id") String id) {
         AgentInfoVO agent = agentService.getAgentById(id);
@@ -97,7 +97,7 @@ public class AgentController {
     }
 
     @PostMapping
-    @Operation(summary = "创建智能体")
+    @Operation(summary = "Create agent")
     @RequiresPermissions("sys:role:normal")
     public Result<String> save(@RequestBody @Valid AgentCreateDTO dto) {
         String agentId = agentService.createAgent(dto);
@@ -105,7 +105,7 @@ public class AgentController {
     }
 
     @PutMapping("/saveMemory/{macAddress}")
-    @Operation(summary = "根据设备id更新智能体")
+    @Operation(summary = "Update agent by device ID")
     public Result<Void> updateByDeviceId(@PathVariable String macAddress, @RequestBody @Valid AgentMemoryDTO dto) {
         DeviceEntity device = deviceService.getDeviceByMacAddress(macAddress);
         if (device == null) {
@@ -118,7 +118,7 @@ public class AgentController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "更新智能体")
+    @Operation(summary = "Update agent")
     @RequiresPermissions("sys:role:normal")
     public Result<Void> update(@PathVariable String id, @RequestBody @Valid AgentUpdateDTO dto) {
         agentService.updateAgentById(id, dto);
@@ -126,22 +126,22 @@ public class AgentController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "删除智能体")
+    @Operation(summary = "Delete agent")
     @RequiresPermissions("sys:role:normal")
     public Result<Void> delete(@PathVariable String id) {
-        // 先删除关联的设备
+        // First delete associated devices
         deviceService.deleteByAgentId(id);
-        // 删除关联的聊天记录
+        // Delete associated chat records
         agentChatHistoryService.deleteByAgentId(id, true, true);
-        // 删除关联的插件
+        // Delete associated plugins
         agentPluginMappingService.deleteByAgentId(id);
-        // 再删除智能体
+        // Then delete the agent
         agentService.deleteById(id);
         return new Result<>();
     }
 
     @GetMapping("/template")
-    @Operation(summary = "智能体模板模板列表")
+    @Operation(summary = "Agent template list")
     @RequiresPermissions("sys:role:normal")
     public Result<List<AgentTemplateEntity>> templateList() {
         List<AgentTemplateEntity> list = agentTemplateService
@@ -150,11 +150,11 @@ public class AgentController {
     }
 
     @GetMapping("/{id}/sessions")
-    @Operation(summary = "获取智能体会话列表")
+    @Operation(summary = "Get agent session list")
     @RequiresPermissions("sys:role:normal")
     @Parameters({
-            @Parameter(name = Constant.PAGE, description = "当前页码，从1开始", required = true),
-            @Parameter(name = Constant.LIMIT, description = "每页显示记录数", required = true),
+            @Parameter(name = Constant.PAGE, description = "Current page number, starting from 1", required = true),
+            @Parameter(name = Constant.LIMIT, description = "Number of records per page", required = true),
     })
     public Result<PageData<AgentChatSessionDTO>> getAgentSessions(
             @PathVariable("id") String id,
@@ -165,58 +165,94 @@ public class AgentController {
     }
 
     @GetMapping("/{id}/chat-history/{sessionId}")
-    @Operation(summary = "获取智能体聊天记录")
+    @Operation(summary = "Get agent chat history")
     @RequiresPermissions("sys:role:normal")
     public Result<List<AgentChatHistoryDTO>> getAgentChatHistory(
             @PathVariable("id") String id,
             @PathVariable("sessionId") String sessionId) {
-        // 获取当前用户
+        // Get current user
         UserDetail user = SecurityUser.getUser();
 
-        // 检查权限
+        // Check permissions
         if (!agentService.checkAgentPermission(id, user.getId())) {
-            return new Result<List<AgentChatHistoryDTO>>().error("没有权限查看该智能体的聊天记录");
+            return new Result<List<AgentChatHistoryDTO>>().error("No permission to view this agent's chat history");
         }
 
-        // 查询聊天记录
+        // Query chat history
         List<AgentChatHistoryDTO> result = agentChatHistoryService.getChatHistoryBySessionId(id, sessionId);
         return new Result<List<AgentChatHistoryDTO>>().ok(result);
     }
+
+    @DeleteMapping("/{id}/chat-history/{sessionId}")
+    @Operation(summary = "Delete agent chat session")
+    @RequiresPermissions("sys:role:normal")
+    public Result<Void> deleteAgentChatSession(
+            @PathVariable("id") String id,
+            @PathVariable("sessionId") String sessionId) {
+        // Get current user
+        UserDetail user = SecurityUser.getUser();
+
+        // Check permissions
+        if (!agentService.checkAgentPermission(id, user.getId())) {
+            return new Result<Void>().error("No permission to delete this agent's chat history");
+        }
+
+        // Delete chat session
+        agentChatHistoryService.deleteBySessionId(id, sessionId);
+        return new Result<Void>().ok(null);
+    }
+
+    @DeleteMapping("/{id}/chat-history/all")
+    @Operation(summary = "Delete all agent chat sessions")
+    @RequiresPermissions("sys:role:normal")
+    public Result<Void> deleteAllAgentChatSessions(@PathVariable("id") String id) {
+        // Get current user
+        UserDetail user = SecurityUser.getUser();
+
+        // Check permissions
+        if (!agentService.checkAgentPermission(id, user.getId())) {
+            return new Result<Void>().error("No permission to delete this agent's chat history");
+        }
+
+        // Delete all chat sessions for this agent
+        agentChatHistoryService.deleteByAgentId(id, true, true);
+        return new Result<Void>().ok(null);
+    }
     @GetMapping("/{id}/chat-history/user")
-    @Operation(summary = "获取智能体聊天记录（用户）")
+    @Operation(summary = "Get agent chat history (User)")
     @RequiresPermissions("sys:role:normal")
     public Result<List<AgentChatHistoryUserVO>> getRecentlyFiftyByAgentId(
             @PathVariable("id") String id) {
-        // 获取当前用户
+        // Get current user
         UserDetail user = SecurityUser.getUser();
 
-        // 检查权限
+        // Check permissions
         if (!agentService.checkAgentPermission(id, user.getId())) {
-            return new Result<List<AgentChatHistoryUserVO>>().error("没有权限查看该智能体的聊天记录");
+            return new Result<List<AgentChatHistoryUserVO>>().error("No permission to view this agent's chat history");
         }
 
-        // 查询聊天记录
+        // Query chat history
         List<AgentChatHistoryUserVO> data = agentChatHistoryService.getRecentlyFiftyByAgentId(id);
         return new Result<List<AgentChatHistoryUserVO>>().ok(data);
     }
 
     @GetMapping("/{id}/chat-history/audio")
-    @Operation(summary = "获取音频内容")
+    @Operation(summary = "Get audio content")
     @RequiresPermissions("sys:role:normal")
     public Result<String> getContentByAudioId(
             @PathVariable("id") String id) {
-        // 查询聊天记录
+        // Query chat history
         String data = agentChatHistoryService.getContentByAudioId(id);
         return new Result<String>().ok(data);
     }
 
     @PostMapping("/audio/{audioId}")
-    @Operation(summary = "获取音频下载ID")
+    @Operation(summary = "Get audio download ID")
     @RequiresPermissions("sys:role:normal")
     public Result<String> getAudioId(@PathVariable("audioId") String audioId) {
         byte[] audioData = agentChatAudioService.getAudio(audioId);
         if (audioData == null) {
-            return new Result<String>().error("音频不存在");
+            return new Result<String>().error("Audio does not exist");
         }
         String uuid = UUID.randomUUID().toString();
         redisUtils.set(RedisKeys.getAgentAudioIdKey(uuid), audioId);
@@ -224,7 +260,7 @@ public class AgentController {
     }
 
     @GetMapping("/play/{uuid}")
-    @Operation(summary = "播放音频")
+    @Operation(summary = "Play audio")
     public ResponseEntity<byte[]> playAudio(@PathVariable("uuid") String uuid) {
 
         String audioId = (String) redisUtils.get(RedisKeys.getAgentAudioIdKey(uuid));

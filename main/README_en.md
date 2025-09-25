@@ -268,7 +268,7 @@ The `xiaozhi-esp32-server` system coordinates work through well-defined data flo
 This flow is real-time, primarily using WebSocket for low-latency, bidirectional data exchange.
 
 *   **Communication Protocol Documentation:**
-    *   Detailed communication protocol documentation can be accessed at: https://ccnphfhqs21z.feishu.cn/wiki/M0XiwldO9iJwHikpXD5cEx71nKh
+    *   Detailed communication protocol documentation can be accessed at: https://github.com/lapy/xiaozhi-esp32-server/wiki
     *   This document details the WebSocket communication protocol between ESP32 devices and `xiaozhi-server`, including:
         *   Connection establishment and handshake process
         *   Audio data transmission format
@@ -288,7 +288,7 @@ This flow is real-time, primarily using WebSocket for low-latency, bidirectional
 
 *   **AI Core Processing (within `xiaozhi-server`):**
     *   **VAD (Voice Activity Detection):** `receiveAudioHandle.py` uses the configured VAD provider (such as SileroVAD) to analyze the audio stream, accurately identifying the start and end points of speech, filtering out silent or noise segments.
-    *   **ASR (Automatic Speech Recognition):** Detected valid speech segments are sent to the configured ASR provider (local such as FunASR, or cloud services). The ASR engine converts audio signals into text strings.
+    *   **ASR (Automatic Speech Recognition):** Detected valid speech segments are sent to the configured ASR provider (local such as SherpaASR, or cloud services like OpenAI ASR). The ASR engine converts audio signals into text strings.
     *   **NLU/LLM (Natural Language Understanding/Large Language Model):** The ASR output text, along with the current dialogue context history obtained from the Memory provider, and the description schemas of available functions (tools) loaded from `plugins_func/`, are passed to the configured LLM provider.
     *   **Function Call Execution (if LLM decides needed):** If the LLM analysis determines that an external function needs to be called (e.g., querying weather, controlling home appliances), it generates a structured function call request. `core/handle/functionHandler.py` receives this request, finds and executes the corresponding Python function defined in `plugins_func/`, and returns the function's execution result to the LLM. The LLM then generates the final natural language response based on this result.
     *   **Response Generation:** The LLM synthesizes all information (user input, context, function call results, etc.) to generate the final text response.
@@ -354,7 +354,7 @@ The `xiaozhi-esp32-server` system provides a series of rich features aimed at su
     *   Includes contextual memory to maintain coherence in multi-turn dialogues.
     *   Has automatic sleep mode after a period of inactivity.
 4.  **Multi-language Capabilities:**
-    *   Supports recognition and synthesis in multiple languages, including Mandarin, Cantonese, English, Japanese, and Korean (specific capabilities depend on the selected ASR/LLM/TTS providers).
+    *   Supports recognition and synthesis in multiple languages, including English, Spanish, French, German, Japanese, and Korean (specific capabilities depend on the selected ASR/LLM/TTS providers).
 5.  **Extensible Functions through Plugins:**
     *   Powerful plugin system allows developers to add custom "skills" or functions (e.g., getting weather, controlling smart home devices, accessing news).
     *   These functions can be triggered by the LLM using its function calling capability, based on provided schemas.

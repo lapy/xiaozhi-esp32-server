@@ -6,7 +6,7 @@ export default {
   'login.requiredMobile': 'Please enter a valid mobile phone number',
   'login.loginSuccess': 'Login successful!',
   
-  // HeaderBar组件文本
+  // HeaderBar component text
   'header.smartManagement': 'Agents',
   'header.modelConfig': 'Models',
   'header.userManagement': 'Users',
@@ -14,7 +14,7 @@ export default {
   'header.paramDictionary': 'More',
   'header.paramManagement': 'Params Management',
   'header.dictManagement': 'Dict Management',
-  'header.agentTemplate': 'Default Role Templates', // 添加这一行
+  'header.agentTemplate': 'Default Role Templates', // Add this line
 
   // McpToolCallDialog component text
   'mcpToolCall.title': 'Tool Call',
@@ -178,7 +178,7 @@ export default {
   'editVoiceDialog.remarkPlaceholder': 'Please enter remark content',
   'editVoiceDialog.generatePreview': 'Generate Preview',
   'editVoiceDialog.defaultVoiceName': 'Wawa Xiaohe',
-  'editVoiceDialog.defaultLanguageType': 'Chinese',
+  'editVoiceDialog.defaultLanguageType': 'English',
   'editVoiceDialog.requiredVoiceCode': 'Please enter voice code',
   'editVoiceDialog.requiredVoiceName': 'Please enter voice name',
 
@@ -489,13 +489,22 @@ export default {
   'cache.viewer': 'Cache Viewer',
 
   // Chat history dialog related
-  'chatHistory.with': 'With',
-  'chatHistory.dialogTitle': "'s Chat History",
+  'chatHistory.with': 'Chat history with ',
   'chatHistory.loading': 'Loading...',
   'chatHistory.noMoreRecords': 'No more records',
   'chatHistory.selectSession': 'Please select a session to view chat history',
   'chatHistory.today': 'Today',
   'chatHistory.yesterday': 'Yesterday',
+  'chatHistory.deleteSession': 'Delete Session',
+  'chatHistory.deleteConfirm': 'Are you sure you want to delete this chat session? This action cannot be undone.',
+  'chatHistory.deleteSuccess': 'Chat session deleted successfully',
+  'chatHistory.deleteFailed': 'Failed to delete chat session',
+  'chatHistory.sessionCount': '{count} sessions',
+  'chatHistory.deleteAll': 'Delete All',
+  'chatHistory.deleteAllSessions': 'Delete All Sessions',
+  'chatHistory.deleteAllConfirm': 'Are you sure you want to delete ALL chat sessions? This action cannot be undone.',
+  'chatHistory.deleteAllSuccess': 'All chat sessions deleted successfully',
+  'chatHistory.deleteAllFailed': 'Failed to delete all chat sessions',
   'cache.status': 'Cache Status',
   'cache.cdnEnabled': 'CDN Mode Enabled',
   'cache.cdnDisabled': 'CDN Mode Disabled',
@@ -663,13 +672,11 @@ export default {
   'common.sensitive': 'Sensitive',
   
   // Language switch
-  'language.zhCN': '中文简体',
-  'language.zhTW': '中文繁體',
   'language.en': 'English',
 
   // Home page text
   'home.addAgent': 'Add Agent',
-  'home.greeting': 'Hi Jarvis',
+  'home.greeting': 'Welcome to XiaoZhi',
   'home.wish': "Let's have a wonderful day!",
   'home.languageModel': 'LLM',
   'home.voiceModel': 'TTS',
