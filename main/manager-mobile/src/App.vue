@@ -10,9 +10,9 @@ const configStore = useConfigStore()
 
 onLaunch(() => {
   console.log('App Launch')
-  // 获取公共配置
+  // Get public config
   configStore.fetchPublicConfig().catch((error) => {
-    console.error('获取公共配置失败:', error)
+    console.error('Failed to get public config:', error)
   })
 })
 onShow(() => {

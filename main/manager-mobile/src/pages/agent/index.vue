@@ -2,7 +2,7 @@
 {
   "layout": "default",
   "style": {
-    "navigationBarTitleText": "智能体",
+    "navigationBarTitleText": "Agent",
     "navigationStyle": "custom"
   }
 }
@@ -21,7 +21,7 @@ defineOptions({
   name: 'AgentIndex',
 })
 
-// 获取屏幕边界到安全区域距离
+// Get distance from screen boundary to safe area
 let safeAreaInsets: any
 let systemInfo: any
 
@@ -43,66 +43,66 @@ safeAreaInsets = systemInfo.safeAreaInsets
 // #endif
 
 
-// 智能体ID
+// Agent ID
 const currentAgentId = ref('default')
 
-// 当前 tab
+// Current tab
 const currentTab = ref('agent-config')
 
-// 刷新和加载状态
+// Refresh and loading status
 const refreshing = ref(false)
 
-// 计算是否启用下拉刷新（角色编辑页面不启用）
+// Calculate whether to enable pull-to-refresh (not enabled on role edit page)
 const refresherEnabled = computed(() => {
   return currentTab.value !== 'agent-config'
 })
 
-// 子组件引用
+// Child component reference
 const deviceRef = ref()
 const chatRef = ref()
 const voiceprintRef = ref()
 
-// Tab 配置
+// Tab configuration
 const tabList = [
   {
-    label: '角色配置',
+    label: 'Role Configuration',
     value: 'agent-config',
     icon: '/static/tabbar/robot.png',
     activeIcon: '/static/tabbar/robot_activate.png',
   },
   {
-    label: '设备管理',
+    label: 'Device Management',
     value: 'device-management',
     icon: '/static/tabbar/device.png',
     activeIcon: '/static/tabbar/device_activate.png',
   },
   {
-    label: '聊天记录',
+    label: 'Chat History',
     value: 'chat-history',
     icon: '/static/tabbar/chat.png',
     activeIcon: '/static/tabbar/chat_activate.png',
   },
   {
-    label: '声纹管理',
+    label: 'Voiceprint Management',
     value: 'voiceprint-management',
     icon: '/static/tabbar/microphone.png',
     activeIcon: '/static/tabbar/microphone_activate.png',
   },
 ]
 
-// 返回上一页
+// Return to previous page
 function goBack() {
   uni.navigateBack()
 }
 
-// 处理 tab 切换
+// Handle tab switching
 function handleTabChange(item: any) {
   console.log('Tab changed:', item)
 }
 
-// 下拉刷新
+// Pull to refresh
 async function onRefresh() {
-  // 角色编辑页面不需要刷新
+  // Agent edit page does not need refresh
   if (currentTab.value === 'agent-config') {
     return
   }
@@ -129,51 +129,51 @@ async function onRefresh() {
     }
   }
   catch (error) {
-    console.error('刷新失败:', error)
+    console.error('Refresh failed:', error)
   }
   finally {
     refreshing.value = false
   }
 }
 
-// 触底加载更多
+// Load more on reach bottom
 async function onLoadMore() {
-  // 只有聊天记录需要加载更多
+  // Only chat history needs to load more
   if (currentTab.value === 'chat-history' && chatRef.value?.loadMore) {
     await chatRef.value.loadMore()
   }
 }
 
-// 接收页面参数
+// Receive page parameters
 onLoad((options) => {
   if (options?.agentId) {
     currentAgentId.value = options.agentId
-    console.log('接收到智能体ID:', options.agentId)
+    console.log('Received agent ID:', options.agentId)
   }
 })
 
 onMounted(async () => {
-  // 页面初始化
+  // Page initialization
 })
 </script>
 
 <template>
   <view class="h-screen flex flex-col bg-[#f5f7fb]">
-    <!-- 导航栏 -->
-    <wd-navbar title="智能体" safe-area-inset-top>
+    <!-- Navigation Bar -->
+    <wd-navbar title="Agent" safe-area-inset-top>
       <template #left>
         <wd-icon name="arrow-left" size="18" @click="goBack" />
       </template>
     </wd-navbar>
 
-    <!-- 自定义 Tabs -->
+    <!-- Custom Tabs -->
     <CustomTabs
       v-model="currentTab"
       :tab-list="tabList"
       @change="handleTabChange"
     />
 
-    <!-- 主内容滚动区域 -->
+    <!-- Main content scroll area -->
     <scroll-view
       scroll-y
       :style="{ height: `calc(100vh - ${safeAreaInsets?.top || 0}px - 180rpx)` }"
@@ -184,7 +184,7 @@ onMounted(async () => {
       @refresherrefresh="onRefresh"
       @scrolltolower="onLoadMore"
     >
-      <!-- Tab 内容 -->
+      <!-- Tab content -->
       <view class="flex-1">
         <AgentEdit
           v-if="currentTab === 'agent-config'"

@@ -115,7 +115,7 @@ export default {
       pendingProviderType: null,
       pendingModelData: null,
       dynamicCallInfoFields: [],
-      fieldJsonMap: {}, // 用于存储JSON字段的字符串形式
+      fieldJsonMap: {}, // Used to store string form of JSON fields
       form: {
         id: "",
         modelType: "",
@@ -208,9 +208,9 @@ export default {
       }
     },
     handleSave() {
-      this.saving = true; // 开始保存加载
+      this.saving = true; // Start saving loading
 
-      // 处理所有JSON字段
+      // Handle all JSON fields
       Object.keys(this.fieldJsonMap).forEach(key => {
         const parsed = this.validateJson(this.fieldJsonMap[key]);
         if (parsed !== null) {
@@ -234,11 +234,11 @@ export default {
         provideCode: this.form.configJson.type,
         formData,
         done: () => {
-          this.saving = false; // 保存完成后回调
+          this.saving = false; // Callback after saving completed
         }
       });
 
-      // 如果父组件不处理done回调，3秒后自动关闭加载状态
+      // If parent component doesn't handle done callback, automatically close loading state after 3 seconds
       setTimeout(() => {
         this.saving = false;
       }, 3000);
@@ -267,7 +267,7 @@ export default {
             label: f.label,
             prop: f.key,
             type: f.type === 'dict' ? 'json-textarea' : (f.type === 'password' ? 'password' : 'text'),
-            placeholder: `请输入${f.label}`
+            placeholder: `Please enter ${f.label}`
           }));
 
           if (this.pendingModelData && this.pendingProviderType === providerCode) {
@@ -317,13 +317,13 @@ export default {
           return parsed;
         }
         this.$message.error({
-          message: '必须输入字典格式（如 {"key":"value"}），保存则使用原数据',
+          message: 'Must enter dictionary format (e.g., {"key":"value"}), save will use original data',
           showClose: true
         });
         return null;
       } catch (e) {
         this.$message.error({
-          message: 'JSON格式错误（如 {"key":"value"}），保存则使用原数据',
+          message: 'JSON format error (e.g., {"key":"value"}), saving will use original data',
           showClose: true
         });
         return null;

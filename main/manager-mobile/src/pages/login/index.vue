@@ -3,7 +3,7 @@
   "layout": "default",
   "style": {
     "navigationStyle": "custom",
-    "navigationBarTitleText": "登陆"
+    "navigationBarTitleText": "Login"
   }
 }
 </route>
@@ -16,12 +16,12 @@ import { useConfigStore } from '@/store'
 import { getEnvBaseUrl } from '@/utils'
 import { toast } from '@/utils/toast'
 
-// 获取屏幕边界到安全区域距离
+// Get distance from screen boundary to safe area
 let safeAreaInsets
 let systemInfo
 
 // #ifdef MP-WEIXIN
-// 微信小程序使用新的API
+// WeChat Mini Program uses new API
 systemInfo = uni.getWindowInfo()
 safeAreaInsets = systemInfo.safeArea
   ? {
@@ -34,59 +34,59 @@ safeAreaInsets = systemInfo.safeArea
 // #endif
 
 // #ifndef MP-WEIXIN
-// 其他平台继续使用uni API
+// Other platforms continue to use uni API
 systemInfo = uni.getSystemInfoSync()
 safeAreaInsets = systemInfo.safeAreaInsets
 // #endif
-// 表单数据
+// Form data
 const formData = ref<LoginData>({
   username: '',
   password: '',
   captcha: '',
   captchaId: '',
-  areaCode: '+86',
+  areaCode: '+1',
   mobile: '',
 })
 
-// 验证码图片
+// Captcha image
 const captchaImage = ref('')
 const loading = ref(false)
 
-// 登录方式：'username' | 'mobile'
+// Login method: 'username' | 'mobile'
 const loginType = ref<'username' | 'mobile'>('username')
 
-// 获取配置store
+// Get config store
 const configStore = useConfigStore()
 
-// 区号选择相关
+// Area code selection related
 const showAreaCodeSheet = ref(false)
-const selectedAreaCode = ref('+86')
-const selectedAreaName = ref('中国大陆')
+const selectedAreaCode = ref('+1')
+const selectedAreaName = ref('United States')
 
-// 计算属性：是否启用手机号登录
+// Computed property: whether mobile login is enabled
 const enableMobileLogin = computed(() => {
   return configStore.config.enableMobileRegister
 })
 
-// 计算属性：区号列表
+// Computed property: area code list
 const areaCodeList = computed(() => {
-  return configStore.config.mobileAreaList || [{ name: '中国大陆', key: '+86' }]
+  return configStore.config.mobileAreaList || [{ name: 'United States', key: '+1' }]
 })
 
-// 切换登录方式
+// Switch login method
 function toggleLoginType() {
   loginType.value = loginType.value === 'username' ? 'mobile' : 'username'
-  // 清空输入框
+  // Clear input fields
   formData.value.username = ''
   formData.value.mobile = ''
 }
 
-// 打开区号选择弹窗
+// Open area code selection dialog
 function openAreaCodeSheet() {
   showAreaCodeSheet.value = true
 }
 
-// 选择区号
+// Select area code
 function selectAreaCode(item: { name: string, key: string }) {
   selectedAreaCode.value = item.key
   selectedAreaName.value = item.name
@@ -94,19 +94,19 @@ function selectAreaCode(item: { name: string, key: string }) {
   showAreaCodeSheet.value = false
 }
 
-// 关闭区号选择弹窗
+// Close area code selection dialog
 function closeAreaCodeSheet() {
   showAreaCodeSheet.value = false
 }
 
-// 跳转到注册页面
+// Navigate to registration page
 function goToRegister() {
   uni.navigateTo({
     url: '/pages/register/index',
   })
 }
 
-// 生成UUID
+// Generate UUID
 function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = Math.random() * 16 | 0
@@ -115,71 +115,71 @@ function generateUUID() {
   })
 }
 
-let skipReLaunch = false // 全局或组件作用域
+let skipReLaunch = false // Global or component scope
 
-//跳转至服务端设置页面
+// Navigate to server settings page
 function goToServerSetting() {
   uni.switchTab({
     url: '/pages/settings/index',
   })
 }
 
-// 获取验证码
+// Get verification code
 async function refreshCaptcha() {
   const uuid = generateUUID()
   formData.value.captchaId = uuid
   captchaImage.value = `${getEnvBaseUrl()}/user/captcha?uuid=${uuid}&t=${Date.now()}`
 }
 
-// 登录
+// Login
 async function handleLogin() {
-  // 表单验证
+  // Form validation
   if (loginType.value === 'username') {
     if (!formData.value.username) {
-      toast.warning('请输入用户名')
+      toast.warning('Please enter a username')
       return
     }
   }
   else {
     if (!formData.value.mobile) {
-      toast.warning('请输入手机号')
+      toast.warning('Please enter a phone number')
       return
     }
-    // 手机号格式验证
+    // Phone number format validation
     const phoneRegex = /^1[3-9]\d{9}$/
     if (!phoneRegex.test(formData.value.mobile)) {
-      toast.warning('请输入正确的手机号')
+      toast.warning('Please enter a valid phone number')
       return
     }
   }
   if (!formData.value.password) {
-    toast.warning('请输入密码')
+    toast.warning('Please enter a password')
     return
   }
   if (!formData.value.captcha) {
-    toast.warning('请输入验证码')
+    toast.warning('Please enter the verification code')
     return
   }
 
   try {
     loading.value = true
 
-    // 构建登录数据
+    // Build login data
     const loginData = { ...formData.value }
 
-    // 如果是手机号登录，将区号+手机号拼接到username字段
+    // If logging in with mobile, prefix area code to phone and assign to username
     if (loginType.value === 'mobile') {
       loginData.username = `${selectedAreaCode.value}${formData.value.mobile}`
     }
 
     const response = await login(loginData)
-    // 存储token
+    // Store token
     uni.setStorageSync('token', response.token)
     uni.setStorageSync('expire', response.expire)
 
-    toast.success('登录成功')
+    toast.success('Login successful')
 
-    // 跳转到主页
+    // Navigate to the home page
     setTimeout(() => {
       uni.reLaunch({
         url: '/pages/index/index',
@@ -187,7 +187,7 @@ async function handleLogin() {
     }, 1000)
   }
   catch (error: any) {
-    // 登录失败重新获取验证码
+    // On login failure, refresh captcha
     refreshCaptcha()
   }
   finally {
@@ -195,19 +195,19 @@ async function handleLogin() {
   }
 }
 
-// 页面加载时获取验证码
+// Fetch captcha on page load
 onLoad(() => {
   refreshCaptcha()
 })
 
-// 组件挂载时确保配置已加载
+// Ensure configuration is loaded on mount
 onMounted(async () => {
   if (!configStore.config.name) {
     try {
       await configStore.fetchPublicConfig()
     }
     catch (error) {
-      console.error('获取配置失败:', error)
+      console.error('Failed to fetch configuration:', error)
     }
   }
 })
@@ -219,15 +219,15 @@ onMounted(async () => {
       <view class="logo-section">
         <wd-img :width="80" :height="80" round src="/static/logo.png" class="logo" />
         <text class="welcome-text">
-          欢迎回来
+          Welcome back
         </text>
         <text class="subtitle">
-          请登录您的账户
+          Please sign in to your account
         </text>
       </view>
     </view>
-	
-	<!-- 右上角服务端设置按钮 -->
+  
+  	<!-- Server settings button at top-right -->
 	<view 
 	  class="server-btn" 
 	  :style="{ top: `${safeAreaInsets?.top + 10}px` }" 
@@ -238,7 +238,7 @@ onMounted(async () => {
 
     <view class="form-container">
       <view class="form">
-        <!-- 手机号登录 -->
+        <!-- Mobile login -->
         <template v-if="loginType === 'mobile'">
           <view class="input-group">
             <view class="input-wrapper mobile-wrapper">
@@ -253,7 +253,7 @@ onMounted(async () => {
                   v-model="formData.mobile"
                   custom-class="styled-input"
                   no-border
-                  placeholder="请输入手机号码"
+                  placeholder="Please enter your phone number"
                   type="number"
                   :maxlength="11"
                 />
@@ -262,7 +262,7 @@ onMounted(async () => {
           </view>
         </template>
 
-        <!-- 用户名登录 -->
+        <!-- Username login -->
         <template v-else>
           <view class="input-group">
             <view class="input-wrapper">
@@ -270,7 +270,7 @@ onMounted(async () => {
                 v-model="formData.username"
                 custom-class="styled-input"
                 no-border
-                placeholder="请输入用户名"
+                placeholder="Please enter your username"
               />
             </view>
           </view>
@@ -282,7 +282,7 @@ onMounted(async () => {
               v-model="formData.password"
               custom-class="styled-input"
               no-border
-              placeholder="请输入密码"
+              placeholder="Please enter your password"
               clearable
               show-password
               :maxlength="20"
@@ -296,7 +296,7 @@ onMounted(async () => {
               v-model="formData.captcha"
               custom-class="styled-input"
               no-border
-              placeholder="请输入验证码"
+              placeholder="Please enter the verification code"
               :maxlength="6"
             />
             <view class="captcha-image" @click="refreshCaptcha">
@@ -307,7 +307,7 @@ onMounted(async () => {
 
         <view class="forgot-password">
           <text class="forgot-text">
-            忘记密码？
+            Forgot password?
           </text>
         </view>
 
@@ -315,19 +315,19 @@ onMounted(async () => {
           class="login-btn"
           @click="handleLogin"
         >
-          {{ loading ? '登录中...' : '登录' }}
+          {{ loading ? 'Signing in...' : 'Sign In' }}
         </view>
 
         <view class="register-hint">
           <text class="hint-text">
-            还没有账户？
+            Don't have an account?
           </text>
           <text class="register-link" @click="goToRegister">
-            立即注册
+            Register now
           </text>
         </view>
 
-        <!-- 登录方式切换 -->
+        <!-- Login method switch -->
         <view v-if="enableMobileLogin" class="login-type-switch">
           <view class="switch-tabs">
             <view
@@ -349,10 +349,10 @@ onMounted(async () => {
       </view>
     </view>
 
-    <!-- 区号选择弹窗 -->
+    <!-- Area code selection popup -->
     <wd-action-sheet
       v-model="showAreaCodeSheet"
-      title="选择国家/地区"
+      title="Select Country/Region"
       :close-on-click-modal="true"
       @close="closeAreaCodeSheet"
     >
@@ -386,7 +386,7 @@ onMounted(async () => {
             custom-class="confirm-btn"
             @click="closeAreaCodeSheet"
           >
-            确认
+            Confirm
           </wd-button>
         </view>
       </view>
@@ -696,7 +696,7 @@ onMounted(async () => {
   }
 }
 
-// 区号选择弹窗样式
+// Area code selection popup style
 .area-code-sheet {
   background: #ffffff;
   border-radius: 24rpx 24rpx 0 0;
@@ -795,8 +795,8 @@ onMounted(async () => {
 }
 .server-btn {
   position: absolute;
-  right: 20rpx;          // 距离右边距
-  top: 40rpx;            // 顶部稍微下移，不贴状态栏
+  right: 20rpx;          // Right margin
+  top: 40rpx;            // Slightly below top, not touching status bar
   width: 48rpx;
   height: 48rpx;
   display: flex;
@@ -804,9 +804,9 @@ onMounted(async () => {
   justify-content: center;
   z-index: 999;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.15); // 半透明背景，更好看
-  border-radius: 24rpx;                  // 圆形按钮
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.2); // 阴影
+  background: rgba(255, 255, 255, 0.15); // Semi-transparent background, better look
+  border-radius: 24rpx;                  // Round button
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.2); // Shadow
 
   &:active {
     transform: scale(0.95);
@@ -814,11 +814,12 @@ onMounted(async () => {
 
   .server-icon {
     font-size: 28rpx;
-    color: #FFFFFF; // 白色图标
+    color: #FFFFFF; // White icon
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.25); // 悬停效果
+    background: rgba(255, 255, 255, 0.25); // Hover effect
   }
 }
+// Area code popup styles
 </style>

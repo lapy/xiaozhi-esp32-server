@@ -15,19 +15,19 @@ class SimpleHttpServer:
         self.vision_handler = VisionHandler(config)
 
     def _get_websocket_url(self, local_ip: str, port: int) -> str:
-        """获取websocket地址
+        """Get websocket address
 
         Args:
-            local_ip: 本地IP地址
-            port: 端口号
+            local_ip: Local IP address
+            port: Port number
 
         Returns:
-            str: websocket地址
+            str: websocket address
         """
         server_config = self.config["server"]
         websocket_config = server_config.get("websocket")
 
-        if websocket_config and "你" not in websocket_config:
+        if websocket_config and "your" not in websocket_config:
             return websocket_config
         else:
             return f"ws://{local_ip}:{port}/xiaozhi/v1/"
@@ -42,7 +42,7 @@ class SimpleHttpServer:
             app = web.Application()
 
             if not read_config_from_api:
-                # 如果没有开启智控台，只是单模块运行，就需要再添加简单OTA接口，用于下发websocket接口
+                # If smart console is not enabled and running as single module, add simple OTA interface for distributing websocket interface
                 app.add_routes(
                     [
                         web.get("/xiaozhi/ota/", self.ota_handler.handle_get),
@@ -50,7 +50,7 @@ class SimpleHttpServer:
                         web.options("/xiaozhi/ota/", self.ota_handler.handle_post),
                     ]
                 )
-            # 添加路由
+            # Add routes
             app.add_routes(
                 [
                     web.get("/mcp/vision/explain", self.vision_handler.handle_get),
@@ -59,12 +59,12 @@ class SimpleHttpServer:
                 ]
             )
 
-            # 运行服务
+            # Run service
             runner = web.AppRunner(app)
             await runner.setup()
             site = web.TCPSite(runner, host, port)
             await site.start()
 
-            # 保持服务运行
+            # Keep service running
             while True:
-                await asyncio.sleep(3600)  # 每隔 1 小时检查一次
+                await asyncio.sleep(3600)  # Check every 1 hour

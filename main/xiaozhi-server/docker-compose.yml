@@ -1,4 +1,4 @@
-# Docker安装Server
+# Docker Server Installation
 
 version: '3'
 services:
@@ -11,12 +11,12 @@ services:
     environment:
       - TZ=Asia/Shanghai
     ports:
-      # ws服务端
+      # WebSocket server
       - "8000:8000"
-      # http服务的端口，用于简单OTA接口(单服务部署)，以及视觉分析接口
+      # HTTP service port for simple OTA interface (single service deployment) and visual analysis interface
       - "8003:8003"
     volumes:
-      # 配置文件目录
+      # Configuration file directory
       - ./data:/opt/xiaozhi-esp32-server/data
-      # 模型文件挂接，很重要
+      # Model file mount, very important
       - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt

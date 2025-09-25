@@ -9,7 +9,7 @@ defineOptions({
   name: 'DeviceManage',
 })
 
-// 接收props
+// Receive props
 interface Props {
   agentId?: string
 }
@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
   agentId: 'default'
 })
 
-// 获取屏幕边界到安全区域距离
+// Get screen boundary to safe area distance
 let safeAreaInsets: any
 let systemInfo: any
 
@@ -39,27 +39,27 @@ systemInfo = uni.getSystemInfoSync()
 safeAreaInsets = systemInfo.safeAreaInsets
 // #endif
 
-// 设备数据
+// Device data
 const deviceList = ref<Device[]>([])
 const firmwareTypes = ref<FirmwareType[]>([])
 const loading = ref(false)
 
-// 消息组件
+// Message component
 const message = useMessage()
 
-// 使用传入的智能体ID
+// Use passed agent ID
 const currentAgentId = computed(() => {
   return props.agentId
 })
 
-// 获取设备列表
+// Get device list
 async function loadDeviceList() {
   try {
-    console.log('获取设备列表')
+    console.log('Get device list')
 
-    // 检查是否有当前选中的智能体
+    // Check if there is currently selected agent
     if (!currentAgentId.value) {
-      console.warn('没有选中的智能体')
+      console.warn('No selected agent')
       deviceList.value = []
       return
     }
@@ -69,7 +69,7 @@ async function loadDeviceList() {
     deviceList.value = response || []
   }
   catch (error) {
-    console.error('获取设备列表失败:', error)
+    console.error('Failed to get device list:', error)
     deviceList.value = []
   }
   finally {
@@ -77,107 +77,107 @@ async function loadDeviceList() {
   }
 }
 
-// 暴露给父组件的刷新方法
+// Refresh method exposed to parent component
 async function refresh() {
   await loadDeviceList()
 }
 
-// 获取设备类型名称
+// Get device type name
 function getDeviceTypeName(boardKey: string): string {
   const firmwareType = firmwareTypes.value.find(type => type.key === boardKey)
   return firmwareType?.name || boardKey
 }
 
-// 格式化时间
+// Format time
 function formatTime(timeStr: string) {
   if (!timeStr)
-    return '从未连接'
+    return 'Never connected'
   const date = new Date(timeStr)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
 
   if (diff < 60000)
-    return '刚刚'
+    return 'Just now'
   if (diff < 3600000)
-    return `${Math.floor(diff / 60000)}分钟前`
+    return `${Math.floor(diff / 60000)} minutes ago`
   if (diff < 86400000)
-    return `${Math.floor(diff / 3600000)}小时前`
+    return `${Math.floor(diff / 3600000)} hours ago`
   if (diff < 604800000)
-    return `${Math.floor(diff / 86400000)}天前`
+    return `${Math.floor(diff / 86400000)} days ago`
 
   return date.toLocaleDateString()
 }
 
-// 切换OTA自动更新
+// Toggle OTA auto update
 async function toggleAutoUpdate(device: Device) {
   try {
     const newStatus = device.autoUpdate === 1 ? 0 : 1
     await updateDeviceAutoUpdate(device.id, newStatus)
     device.autoUpdate = newStatus
-    toast.success(newStatus === 1 ? 'OTA自动升级已开启' : 'OTA自动升级已关闭')
+    toast.success(newStatus === 1 ? 'OTA auto upgrade enabled' : 'OTA auto upgrade disabled')
   }
   catch (error: any) {
-    console.error('更新设备OTA状态失败:', error)
-    toast.error('操作失败，请重试')
+    console.error('Failed to update device OTA status:', error)
+    toast.error('Operation failed, please try again')
   }
 }
 
-// 解绑设备
+// Unbind device
 async function handleUnbindDevice(device: Device) {
   try {
     await unbindDevice(device.id)
     await loadDeviceList()
-    toast.success('设备已解绑')
+    toast.success('Device unbound')
   }
   catch (error: any) {
-    console.error('解绑设备失败:', error)
-    toast.error('解绑失败，请重试')
+    console.error('Failed to unbind device:', error)
+    toast.error('Unbind failed, please try again')
   }
 }
 
-// 确认解绑设备
+// Confirm unbind device
 function confirmUnbindDevice(device: Device) {
   message.confirm({
-    title: '解绑设备',
-    msg: `确定要解绑设备 "${device.macAddress}" 吗？`,
-    confirmButtonText: '确定解绑',
-    cancelButtonText: '取消',
+    title: 'Unbind Device',
+    msg: `Are you sure you want to unbind device "${device.macAddress}"?`,
+    confirmButtonText: 'Confirm Unbind',
+    cancelButtonText: 'Cancel',
   }).then(() => {
     handleUnbindDevice(device)
   }).catch(() => {
-    // 用户取消
+    // User cancelled
   })
 }
 
-// 绑定新设备
+// Bind new device
 async function handleBindDevice(code: string) {
   try {
     if (!currentAgentId.value) {
-      toast.error('请先选择智能体')
+      toast.error('Please select an agent first')
       return
     }
 
     await bindDevice(currentAgentId.value, code.trim())
     await loadDeviceList()
-    toast.success('设备绑定成功！')
+    toast.success('Device bound successfully!')
   }
   catch (error: any) {
-    console.error('绑定设备失败:', error)
-    const errorMessage = error?.message || '绑定失败，请检查验证码是否正确'
+    console.error('Failed to bind device:', error)
+    const errorMessage = error?.message || 'Binding failed, please check if the verification code is correct'
     toast.error(errorMessage)
   }
 }
 
-// 打开绑定设备对话框
+// Open bind device dialog
 function openBindDialog() {
   message
     .prompt({
-      title: '绑定设备',
-      inputPlaceholder: '请输入设备验证码',
+      title: 'Bind Device',
+      inputPlaceholder: 'Please enter device verification code',
       inputValue: '',
       inputPattern: /^\d{6}$/,
-      confirmButtonText: '立即绑定',
-      cancelButtonText: '取消',
+      confirmButtonText: 'Bind Now',
+      cancelButtonText: 'Cancel',
     })
     .then(async (result: any) => {
       if (result.value && String(result.value).trim()) {
@@ -185,29 +185,29 @@ function openBindDialog() {
       }
     })
     .catch(() => {
-      // 用户取消操作
+      // User cancelled operation
     })
 }
 
-// 获取设备类型列表
+// Get device type list
 async function loadFirmwareTypes() {
   try {
     const response = await getFirmwareTypes()
     firmwareTypes.value = response
   }
   catch (error) {
-    console.error('获取设备类型失败:', error)
+    console.error('Failed to get device types:', error)
   }
 }
 
 onMounted(async () => {
-  // 智能体已简化为默认
+  // Agent simplified to default
 
   loadFirmwareTypes()
   loadDeviceList()
 })
 
-// 暴露方法给父组件
+// Expose methods to parent component
 defineExpose({
   refresh,
 })
@@ -215,17 +215,17 @@ defineExpose({
 
 <template>
   <view class="device-container" style="background: #f5f7fb; min-height: 100%;">
-    <!-- 加载状态 -->
+    <!-- Loading state -->
     <view v-if="loading && deviceList.length === 0" class="loading-container">
       <wd-loading color="#336cff" />
       <text class="loading-text">
-        加载中...
+        Loading...
       </text>
     </view>
 
-    <!-- 设备列表 -->
+    <!-- Device list -->
     <view v-else-if="deviceList.length > 0" class="device-list">
-      <!-- 设备卡片列表 -->
+      <!-- Device card list -->
       <view class="box-border flex flex-col gap-[24rpx] p-[20rpx]">
         <view v-for="device in deviceList" :key="device.id">
           <wd-swipe-action>
@@ -240,19 +240,19 @@ defineExpose({
 
                   <view class="mb-[20rpx]">
                     <text class="mb-[12rpx] block text-[28rpx] text-[#65686f] leading-[1.4]">
-                      MAC地址：{{ device.macAddress }}
+                      MAC Address: {{ device.macAddress }}
                     </text>
                     <text class="mb-[12rpx] block text-[28rpx] text-[#65686f] leading-[1.4]">
-                      固件版本：{{ device.appVersion }}
+                      Firmware Version: {{ device.appVersion }}
                     </text>
                     <text class="block text-[28rpx] text-[#65686f] leading-[1.4]">
-                      最近对话：{{ formatTime(device.lastConnectedAt) }}
+                      Last Conversation: {{ formatTime(device.lastConnectedAt) }}
                     </text>
                   </view>
 
                   <view class="flex items-center justify-between border-[1rpx] border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[16rpx_20rpx]">
                     <text class="text-[28rpx] text-[#232338] font-medium">
-                      OTA升级
+                      OTA Update
                     </text>
                     <wd-switch
                       :model-value="device.autoUpdate === 1"
@@ -271,7 +271,7 @@ defineExpose({
                   @click.stop="confirmUnbindDevice(device)"
                 >
                   <wd-icon name="delete" />
-                  <text>解绑</text>
+                  <text>Unbind</text>
                 </view>
               </view>
             </template>
@@ -280,23 +280,23 @@ defineExpose({
       </view>
     </view>
 
-    <!-- 空状态 -->
+    <!-- Empty state -->
     <view v-else-if="!loading" class="empty-container">
       <view class="flex flex-col items-center justify-center p-[100rpx_40rpx] text-center">
         <wd-icon name="phone" custom-class="text-[120rpx] text-[#d9d9d9] mb-[32rpx]" />
         <text class="mb-[16rpx] text-[32rpx] text-[#666666] font-medium">
-          暂无设备
+          No devices yet
         </text>
         <text class="text-[26rpx] text-[#999999] leading-[1.5]">
-          点击右下角 + 号绑定您的第一个设备
+          Click the + button in the bottom right to bind your first device
         </text>
       </view>
     </view>
 
-    <!-- FAB 绑定设备按钮 -->
+    <!-- FAB bind device button -->
     <wd-fab type="primary" size="small" icon="add" :draggable="true" :expandable="false" @click="openBindDialog" />
 
-    <!-- MessageBox 组件 -->
+    <!-- MessageBox component -->
     <wd-message-box />
   </view>
 </template>

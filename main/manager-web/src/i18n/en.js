@@ -6,7 +6,7 @@ export default {
   'login.requiredMobile': 'Please enter a valid mobile phone number',
   'login.loginSuccess': 'Login successful!',
   
-  // HeaderBar组件文本
+  // HeaderBar component text
   'header.smartManagement': 'Agents',
   'header.modelConfig': 'Models',
   'header.userManagement': 'Users',
@@ -14,7 +14,7 @@ export default {
   'header.paramDictionary': 'More',
   'header.paramManagement': 'Params Management',
   'header.dictManagement': 'Dict Management',
-  'header.agentTemplate': 'Default Role Templates', // 添加这一行
+  'header.agentTemplate': 'Default Role Templates', // Add this line
 
   // McpToolCallDialog component text
   'mcpToolCall.title': 'Tool Call',
@@ -178,7 +178,7 @@ export default {
   'editVoiceDialog.remarkPlaceholder': 'Please enter remark content',
   'editVoiceDialog.generatePreview': 'Generate Preview',
   'editVoiceDialog.defaultVoiceName': 'Wawa Xiaohe',
-  'editVoiceDialog.defaultLanguageType': 'Chinese',
+  'editVoiceDialog.defaultLanguageType': 'English',
   'editVoiceDialog.requiredVoiceCode': 'Please enter voice code',
   'editVoiceDialog.requiredVoiceName': 'Please enter voice name',
 
@@ -663,8 +663,8 @@ export default {
   'common.sensitive': 'Sensitive',
   
   // Language switch
-  'language.zhCN': '中文简体',
-  'language.zhTW': '中文繁體',
+  'language.zhCN': 'Chinese (Simplified)',
+  'language.zhTW': 'Chinese (Traditional)',
   'language.en': 'English',
 
   // Home page text

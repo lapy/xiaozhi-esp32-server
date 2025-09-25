@@ -53,7 +53,7 @@ export default {
   props: {
     title: {
       type: String,
-      default: '新增参数'
+      default: 'Add Parameter'
     },
     visible: {
       type: Boolean,
@@ -98,17 +98,17 @@ export default {
     submit() {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          this.saving = true; // 开始加载
+          this.saving = true; // Start loading
           this.$emit('submit', this.form);
         }
       });
     },
     cancel() {
-      this.saving = false; // 取消时重置状态
+      this.saving = false; // Reset status when cancelled
       this.$emit('cancel');
     },
 
-    // 提供给父组件调用以重置saving状态
+    // Provided for parent component to call to reset saving status
     resetSaving() {
       this.saving = false;
     }
@@ -118,7 +118,7 @@ export default {
       if (newVal) {
         this.dialogKey = Date.now();
       } else {
-        // 当对话框关闭时，重置saving状态
+        // When dialog closes, reset saving status
         this.saving = false;
       }
     }

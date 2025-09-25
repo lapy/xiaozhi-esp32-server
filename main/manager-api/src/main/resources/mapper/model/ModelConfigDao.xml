@@ -18,7 +18,7 @@
         <result column="creator" property="creator"/>
         <result column="create_date" property="createDate"/>
     </resultMap>
-    <!-- 获取模型供应器字段 -->
+    <!-- Get model provider fields -->
     <select id="getModelCodeList" resultType="String">
         select model_name from ai_model_config where model_type = #{modelType}
             <if test="modelName != null">and model_name = #{modelName}</if>

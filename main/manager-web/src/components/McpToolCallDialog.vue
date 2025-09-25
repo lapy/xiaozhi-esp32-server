@@ -5,14 +5,14 @@
     @close="handleClose"
     width="80%"
   >
-    <!-- 右上角操作按钮 -->
+    <!-- Top right operation buttons -->
     <div slot="title" class="dialog-title-wrapper">
       <span class="dialog-title-text">{{ $t("mcpToolCall.title") }}</span>
     </div>
 
     <div class="dialog-content">
       <div class="main-layout">
-        <!-- 左侧工具列表 -->
+        <!-- Left side tools list -->
         <div class="left-panel">
           <div class="tool-list-section">
             <div class="section-header">
@@ -64,9 +64,9 @@
           </div>
         </div>
 
-        <!-- 右侧面板 - 分为上下两部分 -->
+        <!-- Right panel - divided into upper and lower parts -->
         <div class="right-panel">
-          <!-- 上部分：参数设置 -->
+          <!-- Upper part: parameter settings -->
           <div v-if="selectedTool" class="params-section">
             <h3 class="params-title">
               <i class="el-icon-setting params-icon"></i>
@@ -147,7 +147,7 @@
             <div class="no-selection-text">{{ $t("mcpToolCall.pleaseSelect") }}</div>
           </div>
 
-          <!-- 下部分：执行结果 -->
+          <!-- Lower part: execution results -->
           <div v-if="selectedTool" class="result-section">
             <h3 class="result-title">
               <i class="el-icon-document result-icon"></i>
@@ -155,7 +155,7 @@
             </h3>
 
             <div v-if="executionResult" class="result-content">
-              <!-- 表格展示模式 -->
+              <!-- Table display mode -->
               <div v-if="showResultAsTable" class="result-table">
                 <el-table :data="tableData" border size="mini" style="width: 100%">
                   <el-table-column
@@ -174,7 +174,7 @@
                   ></el-table-column>
                 </el-table>
               </div>
-              <!-- JSON展示模式 -->
+              <!-- JSON display mode -->
               <pre v-else class="result-text">{{ formattedExecutionResult }}</pre>
             </div>
             <div v-else class="no-result">
@@ -186,7 +186,7 @@
       </div>
     </div>
 
-    <!-- 底部按钮区域 -->
+    <!-- Bottom button area -->
     <div class="dialog-footer">
       <div class="dialog-btn cancel-btn" @click="cancel" style="flex: none; width: 100px">
         {{ $t("mcpToolCall.cancel") }}
@@ -222,24 +222,24 @@ export default {
       toolParamsRules: {},
       toolSearchKeyword: "",
       executionResult: null,
-      themeOptions: [], // 先初始化为空数组
-      toolsLoading: false, // 工具列表加载状态
-      showResultAsTable: false, // 是否以表格形式展示结果
-      tableData: [], // 表格数据
+      themeOptions: [], // Initialize as empty array first
+      toolsLoading: false, // Tool list loading status
+      showResultAsTable: false, // Whether to display results in table format
+      tableData: [], // Table data
     };
   },
   created() {
-    // 初始化主题选项
+    // Initialize theme options
     this.initializeThemeOptions();
 
-    // 添加对语言变化的监听
+    // Add listener for language changes
     if (this.$eventBus) {
       this.$eventBus.$on("languageChanged", this.initializeThemeOptions);
     }
   },
 
   beforeDestroy() {
-    // 移除事件监听，避免内存泄漏
+    // Remove event listeners to avoid memory leaks
     if (this.$eventBus) {
       this.$eventBus.$off("languageChanged", this.initializeThemeOptions);
     }
@@ -271,11 +271,11 @@ export default {
     },
     selectedToolName(newVal) {
       if (newVal) {
-        // 延迟执行初始化，确保 selectedTool computed 已经更新
+        // Delay initialization to ensure selectedTool computed is updated
         this.$nextTick(() => {
           this.initToolParams();
           this.generateToolParamsRules();
-          // 清空表单验证状态
+          // Clear form validation status
           if (this.$refs.toolParamsForm) {
             this.$refs.toolParamsForm.clearValidate();
           }
@@ -288,7 +288,7 @@ export default {
     },
   },
   methods: {
-    // 初始化主题选项
+    // Initialize theme options
     initializeThemeOptions() {
       this.themeOptions = [
         { label: this.$t("mcpToolCall.lightTheme"), value: "light" },
@@ -299,15 +299,15 @@ export default {
       });
     },
 
-    // 添加handleThemeChange方法强制更新视图
+    // Add handleThemeChange method to force view update
     handleThemeChange() {
       this.$nextTick(() => {
-        // 强制重新渲染组件
+        // Force component re-render
         this.$forceUpdate();
       });
     },
 
-    // 检查是否为预定义工具
+    // Check if it is a predefined tool
     isPredefinedTool(toolName) {
       const predefinedTools = [
         "self.get_device_status",
@@ -322,7 +322,7 @@ export default {
       return predefinedTools.includes(toolName);
     },
 
-    // 解析设备状态数据为表格格式
+    // Parse device status data into table format
     parseDeviceStatusToTable(deviceData) {
       const tableData = [];
 
@@ -388,7 +388,7 @@ export default {
       return tableData;
     },
 
-    // 解析其他工具结果为表格格式
+    // Parse other tool results into table format
     parseOtherResultToTable(toolName, result) {
       const tableData = [];
 
@@ -425,7 +425,7 @@ export default {
             : this.$t("mcpToolCall.text.rebootFailed"),
         });
       } else if (toolName === "self.screen.get_info") {
-        // 解析屏幕信息
+        // Parse screen information
         if (
           result.success &&
           result.data &&
@@ -439,14 +439,14 @@ export default {
               tableData.push({
                 category: this.$t("mcpToolCall.table.screenInfo"),
                 property: this.$t("mcpToolCall.prop.width"),
-                value: screenInfo.width + "像素",
+                value: screenInfo.width + " pixels",
               });
             }
             if (screenInfo.height !== undefined) {
               tableData.push({
                 category: this.$t("mcpToolCall.table.screenInfo"),
                 property: this.$t("mcpToolCall.prop.height"),
-                value: screenInfo.height + "像素",
+                value: screenInfo.height + " pixels",
               });
             }
             if (screenInfo.monochrome !== undefined) {
@@ -459,7 +459,7 @@ export default {
               });
             }
           } catch (parseError) {
-            // 解析失败时显示原始信息
+            // Show original information when parsing fails
             tableData.push({
               category: this.$t("mcpToolCall.table.screenInfo"),
               property: this.$t("mcpToolCall.prop.getResult"),
@@ -478,7 +478,7 @@ export default {
           });
         }
       } else if (toolName === "self.get_system_info") {
-        // 解析系统信息
+        // Parse system information
         if (
           result.success &&
           result.data &&
@@ -489,7 +489,7 @@ export default {
           try {
             const systemInfo = JSON.parse(result.data.content[0].text);
 
-            // 基本信息
+            // Basic information
             if (systemInfo.chip_model_name) {
               tableData.push({
                 category: this.$t("mcpToolCall.table.hardwareInfo"),
@@ -503,7 +503,7 @@ export default {
                 tableData.push({
                   category: this.$t("mcpToolCall.table.hardwareInfo"),
                   property: this.$t("mcpToolCall.prop.cpuCores"),
-                  value: systemInfo.chip_info.cores + "核",
+                  value: systemInfo.chip_info.cores + " cores",
                 });
               }
               if (systemInfo.chip_info.revision) {
@@ -523,7 +523,7 @@ export default {
               });
             }
 
-            // 内存信息
+            // Memory information
             if (systemInfo.minimum_free_heap_size) {
               tableData.push({
                 category: this.$t("mcpToolCall.table.memoryInfo"),
@@ -533,7 +533,7 @@ export default {
               });
             }
 
-            // 应用信息
+            // Application information
             if (systemInfo.application) {
               if (systemInfo.application.name) {
                 tableData.push({
@@ -565,7 +565,7 @@ export default {
               }
             }
 
-            // 网络信息
+            // Network information
             if (systemInfo.mac_address) {
               tableData.push({
                 category: this.$t("mcpToolCall.table.networkInfo"),
@@ -607,12 +607,12 @@ export default {
                 tableData.push({
                   category: this.$t("mcpToolCall.table.networkInfo"),
                   property: this.$t("mcpToolCall.prop.wifiChannel"),
-                  value: systemInfo.board.channel + "频道",
+                  value: systemInfo.board.channel + " channel",
                 });
               }
             }
 
-            // 显示信息
+            // Display information
             if (systemInfo.display) {
               if (systemInfo.display.width && systemInfo.display.height) {
                 tableData.push({
@@ -632,7 +632,7 @@ export default {
               }
             }
 
-            // 其他信息
+            // Other information
             if (systemInfo.uuid) {
               tableData.push({
                 category: this.$t("mcpToolCall.table.deviceInfo"),
@@ -657,7 +657,7 @@ export default {
               });
             }
           } catch (parseError) {
-            // 解析失败时显示原始信息
+            // Show original information when parsing fails
             tableData.push({
               category: this.$t("mcpToolCall.table.systemInfo"),
               property: this.$t("mcpToolCall.prop.getResult"),
@@ -687,7 +687,7 @@ export default {
       this.toolsLoading = true;
 
       try {
-        // 调用设备指令API获取工具列表
+        // Call device command API to get tool list
         const mcpRequest = {
           type: "mcp",
           payload: {
@@ -704,10 +704,10 @@ export default {
           this.toolsLoading = false;
           if (data.code === 0) {
             try {
-              // 解析返回的工具列表数据
+              // Parse returned tool list data
               const responseData = JSON.parse(data.data);
 
-              // 检查两种可能的数据格式
+              // Check two possible data formats
               let tools = null;
               if (
                 responseData &&
@@ -715,7 +715,7 @@ export default {
                 responseData.payload.result &&
                 responseData.payload.result.tools
               ) {
-                // 标准MCP格式
+                // Standard MCP format
                 tools = responseData.payload.result.tools;
               } else if (
                 responseData &&
@@ -723,38 +723,38 @@ export default {
                 responseData.data &&
                 responseData.data.tools
               ) {
-                // 设备返回的格式
+                // Device returned format
                 tools = responseData.data.tools;
               }
 
               if (tools && Array.isArray(tools) && tools.length > 0) {
                 this.toolList = tools;
-                // 默认选择第一个工具
+                // Default select first tool
                 if (this.toolList.length > 0) {
                   this.selectedToolName = this.toolList[0].name;
                 }
               } else {
-                // 无法获取工具列表，显示空状态
+                // Unable to get tool list, show empty state
                 this.toolList = [];
               }
             } catch (error) {
-              // 解析失败，显示空状态
+              // Parse failed, show empty state
               this.toolList = [];
             }
           } else {
-            // API调用失败，显示空状态
+            // API call failed, show empty state
             this.toolList = [];
           }
         });
       } catch (error) {
         this.toolsLoading = false;
-        // 请求失败，显示空状态
+        // Request failed, show empty state
         this.toolList = [];
       }
     },
 
     initToolParams() {
-      // 清空现有参数
+      // Clear existing parameters
       this.toolParams = {};
 
       if (
@@ -762,28 +762,28 @@ export default {
         this.selectedTool.inputSchema &&
         this.selectedTool.inputSchema.properties
       ) {
-        // 使用 $nextTick 确保在下一个 tick 中设置参数值，避免响应式更新冲突
+        // Use $nextTick to ensure parameter values are set in next tick, avoid reactive update conflicts
         this.$nextTick(() => {
           const newParams = {};
           Object.keys(this.selectedTool.inputSchema.properties).forEach((key) => {
-            // 根据工具名称和参数名设置默认值
+            // Set default values based on tool name and parameter name
             if (
               this.selectedTool.name === "self.audio_speaker.set_volume" &&
               key === "volume"
             ) {
-              newParams[key] = 100; // 音量默认值设为100
+              newParams[key] = 100; // Volume default value set to 100
             } else if (
               this.selectedTool.name === "self.screen.set_brightness" &&
               key === "brightness"
             ) {
-              newParams[key] = 100; // 亮度默认值设为100
+              newParams[key] = 100; // Brightness default value set to 100
             } else if (
               this.selectedTool.name === "self.screen.set_theme" &&
               key === "theme"
             ) {
-              newParams[key] = "light"; // 主题默认值设为light
+              newParams[key] = "light"; // Theme default value set to light
             } else {
-              // 对于字符串类型的参数，设置为空字符串，对于数字类型设置为 null
+              // For string type parameters, set to empty string, for number type set to null
               const property = this.selectedTool.inputSchema.properties[key];
               if (property.type === "string") {
                 newParams[key] = "";
@@ -795,7 +795,7 @@ export default {
             }
           });
 
-          // 一次性设置所有参数，避免多次触发响应式更新
+          // Set all parameters at once to avoid multiple reactive updates
           this.toolParams = { ...newParams };
         });
       }
@@ -866,7 +866,7 @@ export default {
     },
 
     formatPropertyLabel(key, property) {
-      // 将属性名转换为更友好的标签
+      // Convert property names to more friendly labels
       const labelMap = {
         volume: this.$t("mcpToolCall.prop.volume"),
         brightness: this.$t("mcpToolCall.prop.brightness"),
@@ -878,7 +878,7 @@ export default {
       return labelMap[key] || key;
     },
 
-    // 获取工具的显示名称
+    // Get tool display name
     getToolDisplayName(toolName) {
       const nameMap = {
         "self.get_device_status": this.$t("mcpToolCall.toolName.getDeviceStatus"),
@@ -897,7 +897,7 @@ export default {
       return nameMap[toolName] || toolName;
     },
 
-    // 获取工具分类
+    // Get tool category
     getToolCategory(toolName) {
       if (toolName.includes("audio_speaker"))
         return this.$t("mcpToolCall.category.audio");
@@ -913,13 +913,13 @@ export default {
       return this.$t("mcpToolCall.category.deviceInfo");
     },
 
-    // 获取简化的工具描述
+    // Get simplified tool description
     getSimpleDescription(originalDesc) {
-      // 移除代码格式和复杂说明，保留核心功能描述
+      // Remove code formatting and complex descriptions, keep core functionality description
       return originalDesc.split("\n")[0].replace(/`/g, "");
     },
 
-    // 获取工具帮助文本
+    // Get tool help text
     getToolHelpText(toolName) {
       const helpMap = {
         "self.get_device_status": this.$t("mcpToolCall.help.getDeviceStatus"),
@@ -944,7 +944,7 @@ export default {
         return;
       }
 
-      // 验证必填参数
+      // Validate required parameters
       const requiredFields = this.selectedTool.inputSchema.required || [];
       for (const field of requiredFields) {
         if (
@@ -964,7 +964,7 @@ export default {
         }
       }
 
-      // 构建MCP执行字符串
+      // Build MCP execution string
       const mcpExecuteString = {
         type: "mcp",
         payload: {
@@ -978,23 +978,23 @@ export default {
         },
       };
 
-      // 显示执行中状态
+      // Show executing status
       this.executionResult = {
         request: mcpExecuteString,
       };
 
-      // 调用设备执行工具
+      // Call device to execute tool
       Api.device.sendDeviceCommand(this.deviceId, mcpExecuteString, ({ data }) => {
         if (data.code === 0) {
           try {
-            // 解析设备返回的结果
+            // Parse device returned result
             const deviceResult = JSON.parse(data.data);
 
-            // 检查是否为预定义工具，决定展示方式
+            // Check if it is a predefined tool, determine display method
             if (this.isPredefinedTool(this.selectedToolName)) {
               this.showResultAsTable = true;
 
-              // 解析表格数据
+              // Parse table data
               if (
                 this.selectedToolName === "self.get_device_status" &&
                 deviceResult.success &&
@@ -1007,19 +1007,19 @@ export default {
                   const deviceData = JSON.parse(deviceResult.data.content[0].text);
                   this.tableData = this.parseDeviceStatusToTable(deviceData);
                 } catch (parseError) {
-                  // 如果解析失败，回退到JSON模式
+                  // If parsing fails, fallback to JSON mode
                   this.showResultAsTable = false;
                   this.tableData = [];
                 }
               } else {
-                // 其他预定义工具的表格解析
+                // Table parsing for other predefined tools
                 this.tableData = this.parseOtherResultToTable(
                   this.selectedToolName,
                   deviceResult
                 );
               }
             } else {
-              // 非预定义工具，使用JSON模式
+              // Non-predefined tools, use JSON mode
               this.showResultAsTable = false;
               this.tableData = [];
             }
@@ -1035,7 +1035,7 @@ export default {
             this.executionResult = {
               status: "error",
               request: mcpExecuteString,
-              error: "解析设备响应失败: " + error.message,
+              error: "Failed to parse device response: " + error.message,
               rawResponse: data.data,
               timestamp: new Date().toLocaleString(),
             };
@@ -1044,7 +1044,7 @@ export default {
           this.executionResult = {
             status: "error",
             request: mcpExecuteString,
-            error: data.msg || "执行失败",
+            error: data.msg || "Execution failed",
             timestamp: new Date().toLocaleString(),
           };
         }
@@ -1079,7 +1079,7 @@ export default {
   padding: 0;
 }
 
-/* 对话框标题区域 */
+/* Dialog title area */
 .dialog-title-wrapper {
   display: flex;
   justify-content: space-between;
@@ -1105,7 +1105,7 @@ export default {
   font-weight: 500;
 }
 
-/* 主布局 */
+/* Main layout */
 .main-layout {
   display: flex;
   gap: 20px;
@@ -1113,7 +1113,7 @@ export default {
   min-height: 400px;
 }
 
-/* 左侧面板 */
+/* Left panel */
 .left-panel {
   flex: 1;
   display: flex;
@@ -1169,7 +1169,7 @@ export default {
   box-shadow: 0 0 0 2px rgba(87, 120, 255, 0.2);
 }
 
-/* 工具列表 */
+/* Tool list */
 .tool-list {
   flex: 1;
   padding: 20px;
@@ -1200,7 +1200,7 @@ export default {
   gap: 10px;
 }
 
-/* 修复单选按钮对齐问题 */
+/* Fix radio button alignment issue */
 ::v-deep .el-radio {
   display: flex !important;
   align-items: flex-start !important;
@@ -1286,7 +1286,7 @@ export default {
   text-align: left;
 }
 
-/* 右侧面板 - 分为上下两部分 */
+/* Right panel - divided into upper and lower parts */
 .right-panel {
   flex: 1;
   display: flex;
@@ -1296,7 +1296,7 @@ export default {
   overflow: hidden;
 }
 
-/* 参数设置区域 */
+/* Parameter setting area */
 .params-section {
   padding: 0px 20px 20px 20px;
   flex: 0.8;
@@ -1332,7 +1332,7 @@ export default {
   line-height: 1.5;
 }
 
-/* 表单样式 */
+/* Form styles */
 ::v-deep .el-form-item {
   margin-bottom: 20px;
 }
@@ -1377,7 +1377,7 @@ export default {
   overflow: hidden;
 }
 
-/* 执行结果区域 */
+/* Execution result area */
 .result-section {
   padding: 20px;
   background: #fafafa;
@@ -1489,7 +1489,7 @@ export default {
   font-size: 14px;
 }
 
-/* 底部按钮区域 */
+/* Bottom button area */
 .dialog-footer {
   display: flex;
   justify-content: center;
@@ -1520,7 +1520,7 @@ export default {
   color: #409eff;
 }
 
-/* 对话框整体样式 */
+/* Dialog overall styles */
 ::v-deep .el-dialog {
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
@@ -1552,7 +1552,7 @@ export default {
   overflow-y: auto;
 }
 
-/* 工具列表加载状态 */
+/* Tool list loading status */
 .tool-list-loading {
   display: flex;
   flex-direction: column;
@@ -1584,7 +1584,7 @@ export default {
   }
 }
 
-/* 响应式调整 */
+/* Responsive adjustments */
 @media (max-width: 1200px) {
   ::v-deep .el-dialog {
     width: 95% !important;

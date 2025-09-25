@@ -33,7 +33,7 @@ import xiaozhi.modules.sys.vo.SysDictDataItem;
 import xiaozhi.modules.sys.vo.SysDictDataVO;
 
 /**
- * 字典类型
+ * Dictionary Type
  */
 @Service
 @AllArgsConstructor
@@ -76,13 +76,13 @@ public class SysDictDataServiceImpl extends BaseServiceImpl<SysDictDataDao, SysD
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void save(SysDictDataDTO dto) {
-        // 相同字典类型的标签不能相同
+        // Same dictionary type labels cannot be the same
         checkDictValueUnique(dto.getDictTypeId(), dto.getDictValue(), null);
 
         SysDictDataEntity entity = ConvertUtils.sourceToTarget(dto, SysDictDataEntity.class);
 
         insert(entity);
-        // 删除Redis缓存
+        // Delete Redis cache
         String dictType = baseDao.getTypeByTypeId(dto.getDictTypeId());
         redisUtils.delete(RedisKeys.getDictDataByTypeKey(dictType));
     }
@@ -90,13 +90,13 @@ public class SysDictDataServiceImpl extends BaseServiceImpl<SysDictDataDao, SysD
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(SysDictDataDTO dto) {
-        // 相同字典类型的标签不能相同
+        // Same dictionary type labels cannot be the same
         checkDictValueUnique(dto.getDictTypeId(), dto.getDictValue(), String.valueOf(dto.getId()));
 
         SysDictDataEntity entity = ConvertUtils.sourceToTarget(dto, SysDictDataEntity.class);
 
         updateById(entity);
-        // 删除Redis缓存
+        // Delete Redis cache
         String dictType = baseDao.getTypeByTypeId(dto.getDictTypeId());
         redisUtils.delete(RedisKeys.getDictDataByTypeKey(dictType));
     }
@@ -106,10 +106,10 @@ public class SysDictDataServiceImpl extends BaseServiceImpl<SysDictDataDao, SysD
     public void delete(Long[] ids) {
         for (Long id : ids) {
             SysDictDataEntity entity = baseDao.selectById(id);
-            // 删除Redis缓存
+            // Delete Redis cache
             String dictType = baseDao.getTypeByTypeId(entity.getDictTypeId());
             redisUtils.delete(RedisKeys.getDictDataByTypeKey(dictType));
-            // 删除
+            // Delete
             deleteById(id);
         }
     }
@@ -123,19 +123,19 @@ public class SysDictDataServiceImpl extends BaseServiceImpl<SysDictDataDao, SysD
     }
 
     /**
-     * 设置用户名
+     * Set username
      *
-     * @param sysDictDataList 字典类型集合
+     * @param sysDictDataList Dictionary type collection
      */
     private void setUserName(List<SysDictDataVO> sysDictDataList) {
-        // 收集所有用户 ID
+        // Collect all user IDs
         Set<Long> userIds = sysDictDataList.stream().flatMap(vo -> Stream.of(vo.getCreator(), vo.getUpdater()))
                 .filter(Objects::nonNull).collect(Collectors.toSet());
 
-        // 设置更新者和创建者名称
+        // Set updater and creator names
         if (!userIds.isEmpty()) {
             List<SysUserEntity> sysUserEntities = sysUserDao.selectBatchIds(userIds);
-            // 把List转成Map，Map<Long, String>
+            // Convert List to Map, Map<Long, String>
             Map<Long, String> userNameMap = sysUserEntities.stream().collect(Collectors.toMap(SysUserEntity::getId,
                     SysUserEntity::getUsername, (existing, replacement) -> existing));
 
@@ -164,17 +164,17 @@ public class SysDictDataServiceImpl extends BaseServiceImpl<SysDictDataDao, SysD
             return null;
         }
 
-        // 先从Redis获取缓存
+        // First get cache from Redis
         String key = RedisKeys.getDictDataByTypeKey(dictType);
         List<SysDictDataItem> cachedData = (List<SysDictDataItem>) redisUtils.get(key);
         if (cachedData != null) {
             return cachedData;
         }
 
-        // 如果缓存中没有，则从数据库获取
+        // If not in cache, get from database
         List<SysDictDataItem> data = baseDao.getDictDataByType(dictType);
 
-        // 存入Redis缓存
+        // Store in Redis cache
         if (data != null) {
             redisUtils.set(key, data);
         }

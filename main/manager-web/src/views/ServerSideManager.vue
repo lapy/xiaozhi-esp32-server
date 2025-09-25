@@ -139,12 +139,12 @@ export default {
       if (actionItem === undefined || rowItem.address === undefined) {
         return;
       }
-      // 弹开询问框
+      // Show confirmation dialog
       this.$confirm(actionItem.message, actionItem.title, {
-        confirmButtonText: actionItem.confirmText, // 确认按钮文本
-        cancelButtonText: this.$t('common.cancel') // 取消按钮文本
+        confirmButtonText: actionItem.confirmText, // Confirm button text
+        cancelButtonText: this.$t('common.cancel') // Cancel button text
       }).then(() => {
-        // 用户点击了确认按钮
+        // User clicked confirm button
         Api.admin.sendWsServerAction({
           targetWs: rowItem.address,
           action: actionItem.value

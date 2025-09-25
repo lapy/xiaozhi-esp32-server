@@ -1,10 +1,10 @@
 import { log } from './utils/logger.js';
 import { otaStatusStyle } from './document.js'
 
-// WebSocket 连接
+// WebSocket connection
 export async function webSocketConnect(otaUrl,wsUrl,config){
     if (!validateWsUrl(wsUrl)) {
-        return;          // 直接返回，不再往下执行
+        return;          // Return directly, no further execution
     }
 
     if (!validateConfig(config)) {
@@ -13,42 +13,42 @@ export async function webSocketConnect(otaUrl,wsUrl,config){
     const ok = await sendOTA(otaUrl, config);
     if (!ok) return;
 
-    // 使用自定义WebSocket实现以添加认证头信息
+    // Use custom WebSocket implementation to add authentication header information
     let connUrl = new URL(wsUrl);
-    // 添加认证参数
+    // Add authentication parameters
     connUrl.searchParams.append('device-id', config.deviceId);
     connUrl.searchParams.append('client-id', config.clientId);
-    log(`正在连接: ${connUrl.toString()}`, 'info');
+    log(`Connecting: ${connUrl.toString()}`, 'info');
 
     return new WebSocket(connUrl.toString());
 }
 
-// 验证配置
+// Validate configuration
 function validateConfig(config) {
     if (!config.deviceMac) {
-        log('设备MAC地址不能为空', 'error');
+        log('Device MAC address cannot be empty', 'error');
         return false;
     }
     if (!config.clientId) {
-        log('客户端ID不能为空', 'error');
+        log('Client ID cannot be empty', 'error');
         return false;
     }
     return true;
 }
 
-// 判断wsUrl路径是否存在错误
+// Check if wsUrl path has errors
 function validateWsUrl(wsUrl){
     if (wsUrl === '') return false;
-    // 检查URL格式
+    // Check URL format
     if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
-        log('URL格式错误，必须以ws://或wss://开头', 'error');
+        log('URL format error, must start with ws:// or wss://', 'error');
         return false;
     }
     return true
 }
 
 
-// OTA发送请求，验证状态
+// Send OTA request, verify status
 async function sendOTA(otaUrl, config) {
     try {
         const res = await fetch(otaUrl, {
@@ -90,10 +90,10 @@ async function sendOTA(otaUrl, config) {
 
         const result = await res.json();
         otaStatusStyle(true)
-        return true; // 成功
+        return true; // Success
     } catch (err) {
         otaStatusStyle(false)
-        return false; // 失败
+        return false; // Failed
     }
 }
 

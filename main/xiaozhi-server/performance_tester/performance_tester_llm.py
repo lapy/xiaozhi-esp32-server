@@ -11,57 +11,57 @@ from tabulate import tabulate
 from core.utils.llm import create_instance as create_llm_instance
 from config.settings import load_config
 
-# 设置全局日志级别为 WARNING，抑制 INFO 级别日志
+# Set global log level to WARNING to suppress INFO level logs
 logging.basicConfig(level=logging.WARNING)
 
-description = "大语言模型性能测试"
+description = "Large Language Model performance test"
 
 
 class LLMPerformanceTester:
     def __init__(self):
         self.config = load_config()
-        # 使用更符合智能体场景的测试内容，包含系统提示词
+        # Use test content more suitable for agent scenarios, including system prompts
         self.system_prompt = self._load_system_prompt()
         self.test_sentences = self.config.get("module_test", {}).get(
             "test_sentences",
             [
-                "你好，我今天心情不太好，能安慰一下我吗？",
-                "帮我查一下明天的天气如何？",
-                "我想听一个有趣的故事，你能给我讲一个吗？",
-                "现在几点了？今天是星期几？",
-                "我想设置一个明天早上8点的闹钟提醒我开会",
+                "Hello, I'm feeling down today, can you comfort me?",
+                "Can you help me check tomorrow's weather?",
+                "I'd like to hear an interesting story, can you tell me one?",
+                "What time is it now? What day of the week is it?",
+                "I want to set an alarm for 8 AM tomorrow to remind me of a meeting",
             ],
         )
         self.results = {}
 
     def _load_system_prompt(self) -> str:
-        """加载系统提示词"""
+        """Load system prompt"""
         try:
             prompt_file = os.path.join(
                 os.path.dirname(os.path.dirname(__file__)), "agent-base-prompt.txt"
             )
             with open(prompt_file, "r", encoding="utf-8") as f:
                 content = f.read()
-                # 替换模板变量为测试值
+                # Replace template variables with test values
                 content = content.replace(
-                    "{{base_prompt}}", "你是小智，一个聪明可爱的AI助手"
+                    "{{base_prompt}}", "You are Xiaozhi, a smart and cute AI assistant"
                 )
                 content = content.replace(
                     "{{emojiList}}", "😀,😃,😄,😁,😊,😍,🤔,😮,😱,😢,😭,😴,😵,🤗,🙄"
                 )
-                content = content.replace("{{current_time}}", "2024年8月17日 12:30:45")
-                content = content.replace("{{today_date}}", "2024年8月17日")
-                content = content.replace("{{today_weekday}}", "星期六")
-                content = content.replace("{{lunar_date}}", "甲辰年七月十四")
-                content = content.replace("{{local_address}}", "北京市")
-                content = content.replace("{{weather_info}}", "今天晴，25-32℃")
+                content = content.replace("{{current_time}}", "August 17, 2024 12:30:45")
+                content = content.replace("{{today_date}}", "August 17, 2024")
+                content = content.replace("{{today_weekday}}", "Saturday")
+                content = content.replace("{{lunar_date}}", "August 17, 2024")
+                content = content.replace("{{local_address}}", "San Francisco")
+                content = content.replace("{{weather_info}}", "Today sunny, 25-32°C")
                 return content
         except Exception as e:
-            print(f"无法加载系统提示词文件: {e}")
-            return "你是小智，一个聪明可爱的AI助手。请用温暖友善的语气回复用户。"
+            print(f"Unable to load system prompt file: {e}")
+            return "You are Xiaozhi, a smart and cute AI assistant. Please reply to users with a warm and friendly tone."
 
     def _collect_response_sync(self, llm, messages, llm_name, sentence_start):
-        """同步收集响应数据的辅助方法"""
+        """Helper method for synchronous response data collection"""
         chunks = []
         first_token_received = False
         first_token_time = None
@@ -71,60 +71,60 @@ class LLMPerformanceTester:
             chunk_count = 0
             for chunk in response_generator:
                 chunk_count += 1
-                # 每处理一定数量的chunk就检查一下是否应该中断
+                # Check if should interrupt after processing certain number of chunks
                 if chunk_count % 10 == 0:
-                    # 通过检查当前线程是否被标记为中断来提前退出
+                    # Exit early by checking if current thread is marked for interruption
                     import threading
 
                     if (
                         threading.current_thread().ident
                         != threading.main_thread().ident
                     ):
-                        # 如果不是主线程，检查是否应该停止
+                        # If not main thread, check if should stop
                         pass
 
-                # 检查chunk是否包含错误信息
+                # Check if chunk contains error information
                 chunk_str = str(chunk)
                 if (
-                    "异常" in chunk_str
-                    or "错误" in chunk_str
+                    "exception" in chunk_str.lower()
+                    or "error" in chunk_str.lower()
                     or "502" in chunk_str.lower()
                 ):
                     error_msg = chunk_str.lower()
-                    print(f"{llm_name} 响应包含错误信息: {error_msg}")
-                    # 抛出一个包含错误信息的异常
+                    print(f"{llm_name} response contains error information: {error_msg}")
+                    # Throw an exception containing error information
                     raise Exception(chunk_str)
 
                 if not first_token_received and chunk.strip() != "":
                     first_token_time = time.time() - sentence_start
                     first_token_received = True
-                    print(f"{llm_name} 首个 Token: {first_token_time:.3f}s")
+                    print(f"{llm_name} first Token: {first_token_time:.3f}s")
                 chunks.append(chunk)
         except Exception as e:
-            # 更详细的错误信息
+            # More detailed error information
             error_msg = str(e).lower()
-            print(f"{llm_name} 响应收集异常: {error_msg}")
-            # 对于502错误或网络错误，直接抛出异常让上层处理
+            print(f"{llm_name} response collection exception: {error_msg}")
+            # For 502 errors or network errors, directly throw exception for upper layer handling
             if (
                 "502" in error_msg
                 or "bad gateway" in error_msg
                 or "error code: 502" in error_msg
-                or "异常" in str(e)
-                or "错误" in str(e)
+                or "exception" in str(e)
+                or "error" in str(e)
             ):
                 raise e
-            # 对于其他错误，可以返回部分结果
+            # For other errors, can return partial results
             return chunks, first_token_time
 
         return chunks, first_token_time
 
     async def _check_ollama_service(self, base_url: str, model_name: str) -> bool:
-        """异步检查 Ollama 服务状态"""
+        """Asynchronously check Ollama service status"""
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(f"{base_url}/api/version") as response:
                     if response.status != 200:
-                        print(f"Ollama 服务未启动或无法访问: {base_url}")
+                        print(f"Ollama service not started or inaccessible: {base_url}")
                         return False
                 async with session.get(f"{base_url}/api/tags") as response:
                     if response.status == 200:
@@ -132,38 +132,38 @@ class LLMPerformanceTester:
                         models = data.get("models", [])
                         if not any(model["name"] == model_name for model in models):
                             print(
-                                f"Ollama 模型 {model_name} 未找到，请先使用 `ollama pull {model_name}` 下载"
+                                f"Ollama model {model_name} not found, please use `ollama pull {model_name}` to download first"
                             )
                             return False
                     else:
-                        print("无法获取 Ollama 模型列表")
+                        print("Unable to get Ollama model list")
                         return False
                 return True
             except Exception as e:
-                print(f"无法连接到 Ollama 服务: {str(e)}")
+                print(f"Unable to connect to Ollama service: {str(e)}")
                 return False
 
     async def _test_single_sentence(
         self, llm_name: str, llm, sentence: str
     ) -> Optional[Dict]:
-        """测试单个句子的性能"""
+        """Test performance of a single sentence"""
         try:
-            print(f"{llm_name} 开始测试: {sentence[:20]}...")
+            print(f"{llm_name} starting test: {sentence[:20]}...")
             sentence_start = time.time()
             first_token_received = False
             first_token_time = None
 
-            # 构建包含系统提示词的消息
+            # Build messages containing system prompts
             messages = [
                 {"role": "system", "content": self.system_prompt},
                 {"role": "user", "content": sentence},
             ]
 
-            # 使用asyncio.wait_for进行超时控制
+            # Use asyncio.wait_for for timeout control
             try:
                 loop = asyncio.get_event_loop()
                 with concurrent.futures.ThreadPoolExecutor() as executor:
-                    # 创建响应收集任务
+                    # Create response collection task
                     future = executor.submit(
                         self._collect_response_sync,
                         llm,
@@ -172,16 +172,16 @@ class LLMPerformanceTester:
                         sentence_start,
                     )
 
-                    # 使用asyncio.wait_for实现超时控制
+                    # Use asyncio.wait_for to implement timeout control
                     try:
                         response_chunks, first_token_time = await asyncio.wait_for(
                             asyncio.wrap_future(future), timeout=10.0
                         )
                     except asyncio.TimeoutError:
-                        print(f"{llm_name} 测试超时（10秒），跳过")
-                        # 强制取消future
+                        print(f"{llm_name} test timeout (10 seconds), skipping")
+                        # Force cancel future
                         future.cancel()
-                        # 等待一小段时间确保线程池任务能够响应取消
+                        # Wait a short time to ensure thread pool task can respond to cancellation
                         try:
                             await asyncio.wait_for(
                                 asyncio.wrap_future(future), timeout=1.0
@@ -191,16 +191,16 @@ class LLMPerformanceTester:
                             concurrent.futures.CancelledError,
                             Exception,
                         ):
-                            # 忽略所有异常，确保程序继续执行
+                            # Ignore all exceptions to ensure program continues
                             pass
                         return None
 
             except Exception as timeout_error:
-                print(f"{llm_name} 处理异常: {timeout_error}")
+                print(f"{llm_name} handling exception: {timeout_error}")
                 return None
 
             response_time = time.time() - sentence_start
-            print(f"{llm_name} 完成响应: {response_time:.3f}s")
+            print(f"{llm_name} response completed: {response_time:.3f}s")
 
             return {
                 "name": llm_name,
@@ -210,36 +210,36 @@ class LLMPerformanceTester:
             }
         except Exception as e:
             error_msg = str(e).lower()
-            # 检查是否为502错误或网络错误
+            # Check if it's a 502 error or network error
             if (
                 "502" in error_msg
                 or "bad gateway" in error_msg
                 or "error code: 502" in error_msg
             ):
-                print(f"{llm_name} 遇到502错误，跳过测试")
+                print(f"{llm_name} encountered 502 error, skipping test")
                 return {
                     "name": llm_name,
                     "type": "llm",
                     "errors": 1,
-                    "error_type": "502网络错误",
+                    "error_type": "502 network error",
                 }
-            print(f"{llm_name} 句子测试失败: {str(e)}")
+            print(f"{llm_name} sentence test failed: {str(e)}")
             return None
 
     async def _test_llm(self, llm_name: str, config: Dict) -> Dict:
-        """异步测试单个 LLM 性能"""
+        """Asynchronously test single LLM performance"""
         try:
-            # 对于 Ollama，跳过 api_key 检查并进行特殊处理
+            # For Ollama, skip api_key check and perform special handling
             if llm_name == "Ollama":
                 base_url = config.get("base_url", "http://localhost:11434")
                 model_name = config.get("model_name")
                 if not model_name:
-                    print("Ollama 未配置 model_name")
+                    print("Ollama model_name not configured")
                     return {
                         "name": llm_name,
                         "type": "llm",
                         "errors": 1,
-                        "error_type": "网络错误",
+                        "error_type": "network error",
                     }
 
                 if not await self._check_ollama_service(base_url, model_name):
@@ -247,42 +247,42 @@ class LLMPerformanceTester:
                         "name": llm_name,
                         "type": "llm",
                         "errors": 1,
-                        "error_type": "网络错误",
+                        "error_type": "network error",
                     }
             else:
                 if "api_key" in config and any(
-                    x in config["api_key"] for x in ["你的", "placeholder", "sk-xxx"]
+                    x in config["api_key"] for x in ["your", "placeholder", "sk-xxx"]
                 ):
-                    print(f"跳过未配置的 LLM: {llm_name}")
+                    print(f"Skipping unconfigured LLM: {llm_name}")
                     return {
                         "name": llm_name,
                         "type": "llm",
                         "errors": 1,
-                        "error_type": "配置错误",
+                        "error_type": "configuration error",
                     }
 
-            # 获取实际类型（兼容旧配置）
+            # Get actual type (compatible with old configuration)
             module_type = config.get("type", llm_name)
             llm = create_llm_instance(module_type, config)
 
-            # 统一使用 UTF-8 编码
+            # Use UTF-8 encoding uniformly
             test_sentences = [
                 s.encode("utf-8").decode("utf-8") for s in self.test_sentences
             ]
 
-            # 创建所有句子的测试任务
+            # Create test tasks for all sentences
             sentence_tasks = []
             for sentence in test_sentences:
                 sentence_tasks.append(
                     self._test_single_sentence(llm_name, llm, sentence)
                 )
 
-            # 并发执行所有句子测试，并处理可能的异常
+            # Execute all sentence tests concurrently and handle possible exceptions
             sentence_results = await asyncio.gather(
                 *sentence_tasks, return_exceptions=True
             )
 
-            # 处理结果，过滤掉异常和None值
+            # Process results, filter out exceptions and None values
             valid_results = []
             for result in sentence_results:
                 if isinstance(result, dict) and result is not None:
@@ -290,35 +290,35 @@ class LLMPerformanceTester:
                 elif isinstance(result, Exception):
                     error_msg = str(result).lower()
                     if "502" in error_msg or "bad gateway" in error_msg:
-                        print(f"{llm_name} 遇到502错误，跳过该句子测试")
+                        print(f"{llm_name} encountered 502 error, skipping this sentence test")
                         return {
                             "name": llm_name,
                             "type": "llm",
                             "errors": 1,
-                            "error_type": "502网络错误",
+                            "error_type": "502 network error",
                         }
                     else:
-                        print(f"{llm_name} 句子测试异常: {result}")
+                        print(f"{llm_name} sentence test exception: {result}")
 
             if not valid_results:
-                print(f"{llm_name} 无有效数据，可能遇到网络问题或配置错误")
+                print(f"{llm_name} no valid data, possible network issues or configuration errors")
                 return {
                     "name": llm_name,
                     "type": "llm",
                     "errors": 1,
-                    "error_type": "网络错误",
+                    "error_type": "Network error",
                 }
 
-            # 检查有效结果数量，如果太少则认为测试失败
-            if len(valid_results) < len(test_sentences) * 0.3:  # 至少要有30%的成功率
+            # Check valid result count, if too few consider test failed
+            if len(valid_results) < len(test_sentences) * 0.3:  # At least 30% success rate
                 print(
-                    f"{llm_name} 成功测试句子过少({len(valid_results)}/{len(test_sentences)})，可能网络不稳定或接口有问题"
+                    f"{llm_name} too few successful test sentences ({len(valid_results)}/{len(test_sentences)}), possible network instability or interface issues"
                 )
                 return {
                     "name": llm_name,
                     "type": "llm",
                     "errors": 1,
-                    "error_type": "网络错误",
+                    "error_type": "Network error",
                 }
 
             first_token_times = [
@@ -328,7 +328,7 @@ class LLMPerformanceTester:
             ]
             response_times = [r["response_time"] for r in valid_results]
 
-            # 过滤异常数据（超出3个标准差的数据）
+            # Filter abnormal data (data beyond 3 standard deviations)
             if len(response_times) > 1:
                 mean = statistics.mean(response_times)
                 stdev = statistics.stdev(response_times)
@@ -351,12 +351,12 @@ class LLMPerformanceTester:
         except Exception as e:
             error_msg = str(e).lower()
             if "502" in error_msg or "bad gateway" in error_msg:
-                print(f"LLM {llm_name} 遇到502错误，跳过测试")
+                print(f"LLM {llm_name} encountered 502 error, skipping test")
             else:
-                print(f"LLM {llm_name} 测试失败: {str(e)}")
-            error_type = "网络错误"
+                print(f"LLM {llm_name} test failed: {str(e)}")
+            error_type = "network error"
             if "timeout" in str(e).lower():
-                error_type = "超时连接"
+                error_type = "timeout connection"
             return {
                 "name": llm_name,
                 "type": "llm",
@@ -365,25 +365,25 @@ class LLMPerformanceTester:
             }
 
     def _print_results(self):
-        """打印测试结果"""
+        """Print test results"""
         print("\n" + "=" * 50)
-        print("LLM 性能测试结果")
+        print("LLM Performance Test Results")
         print("=" * 50)
 
         if not self.results:
-            print("没有可用的测试结果")
+            print("No available test results")
             return
 
-        headers = ["模型名称", "平均响应时间(s)", "首Token时间(s)", "成功率", "状态"]
+        headers = ["Model Name", "Average Response Time(s)", "First Token Time(s)", "Success Rate", "Status"]
         table_data = []
 
-        # 收集所有数据并分类
+        # Collect all data and categorize
         valid_results = []
         error_results = []
 
         for name, data in self.results.items():
             if data["errors"] == 0:
-                # 正常结果
+                # Normal results
                 avg_response = f"{data['avg_response']:.3f}"
                 avg_first_token = (
                     f"{data['avg_first_token']:.3f}"
@@ -391,9 +391,9 @@ class LLMPerformanceTester:
                     else "-"
                 )
                 success_rate = data.get("success_rate", "N/A")
-                status = "✅ 正常"
+                status = "✅ Normal"
 
-                # 保存用于排序的值
+                # Save values for sorting
                 first_token_value = (
                     data["avg_first_token"]
                     if data["avg_first_token"] > 0
@@ -411,23 +411,23 @@ class LLMPerformanceTester:
                     }
                 )
             else:
-                # 错误结果
+                # Error results
                 avg_response = "-"
                 avg_first_token = "-"
                 success_rate = "0/5"
 
-                # 获取具体错误类型
-                error_type = data.get("error_type", "网络错误")
+                # Get specific error type
+                error_type = data.get("error_type", "network error")
                 status = f"❌ {error_type}"
 
                 error_results.append(
                     [name, avg_response, avg_first_token, success_rate, status]
                 )
 
-        # 按首Token时间升序排序
+        # Sort by first token time in ascending order
         valid_results.sort(key=lambda x: x["sort_key"])
 
-        # 将排序后的有效结果转换为表格数据
+        # Convert sorted valid results to table data
         for result in valid_results:
             table_data.append(
                 [
@@ -439,99 +439,99 @@ class LLMPerformanceTester:
                 ]
             )
 
-        # 将错误结果添加到表格数据末尾
+        # Add error results to end of table data
         table_data.extend(error_results)
 
         print(tabulate(table_data, headers=headers, tablefmt="grid"))
-        print("\n测试说明:")
-        print("- 测试内容：包含完整系统提示词的智能体对话场景")
-        print("- 超时控制：单个请求最大等待时间为10秒")
-        print("- 错误处理：自动跳过502错误和网络异常的模型")
-        print("- 成功率：成功响应的句子数量/总测试句子数量")
-        print("\n测试完成！")
+        print("\nTest Description:")
+        print("- Test content: Agent dialogue scenarios with complete system prompts")
+        print("- Timeout control: Maximum wait time for single request is 10 seconds")
+        print("- Error handling: Automatically skip models with 502 errors and network exceptions")
+        print("- Success rate: Number of successful responses / Total test sentences")
+        print("\nTest completed!")
 
     async def run(self):
-        """执行全量异步测试"""
-        print("开始筛选可用 LLM 模块...")
+        """Execute full asynchronous testing"""
+        print("Starting to filter available LLM modules...")
 
-        # 创建所有测试任务
+        # Create all test tasks
         all_tasks = []
 
-        # LLM 测试任务
+        # LLM test tasks
         if self.config.get("LLM") is not None:
             for llm_name, config in self.config.get("LLM", {}).items():
-                # 检查配置有效性
+                # Check configuration validity
                 if llm_name == "CozeLLM":
-                    if any(x in config.get("bot_id", "") for x in ["你的"]) or any(
-                        x in config.get("user_id", "") for x in ["你的"]
+                    if any(x in config.get("bot_id", "") for x in ["your"]) or any(
+                        x in config.get("user_id", "") for x in ["your"]
                     ):
-                        print(f"LLM {llm_name} 未配置 bot_id/user_id，已跳过")
+                        print(f"LLM {llm_name} bot_id/user_id not configured, skipped")
                         continue
                 elif "api_key" in config and any(
-                    x in config["api_key"] for x in ["你的", "placeholder", "sk-xxx"]
+                    x in config["api_key"] for x in ["your", "placeholder", "sk-xxx"]
                 ):
-                    print(f"LLM {llm_name} 未配置 api_key，已跳过")
+                    print(f"LLM {llm_name} api_key not configured, skipped")
                     continue
 
-                # 对于 Ollama，先检查服务状态
+                # For Ollama, check service status first
                 if llm_name == "Ollama":
                     base_url = config.get("base_url", "http://localhost:11434")
                     model_name = config.get("model_name")
                     if not model_name:
-                        print("Ollama 未配置 model_name")
+                        print("Ollama model_name not configured")
                         continue
 
                     if not await self._check_ollama_service(base_url, model_name):
                         continue
 
-                print(f"添加 LLM 测试任务: {llm_name}")
+                print(f"Adding LLM test task: {llm_name}")
                 all_tasks.append(self._test_llm(llm_name, config))
 
-        print(f"\n找到 {len(all_tasks)} 个可用 LLM 模块")
-        print("\n开始并发测试所有模块...\n")
+        print(f"\nFound {len(all_tasks)} available LLM modules")
+        print("\nStarting concurrent testing of all modules...\n")
 
-        # 并发执行所有测试任务，但为每个任务设置独立超时
+        # Execute all test tasks concurrently, but set independent timeout for each task
         async def test_with_timeout(task, timeout=30):
-            """为每个测试任务添加超时保护"""
+            """Add timeout protection for each test task"""
             try:
                 return await asyncio.wait_for(task, timeout=timeout)
             except asyncio.TimeoutError:
-                print(f"测试任务超时（{timeout}秒），跳过")
+                print(f"Test task timeout ({timeout} seconds), skipping")
                 return {
                     "name": "Unknown",
                     "type": "llm",
                     "errors": 1,
-                    "error_type": "超时连接",
+                    "error_type": "timeout connection",
                 }
             except Exception as e:
-                print(f"测试任务异常: {str(e)}")
+                print(f"Test task exception: {str(e)}")
                 return {
                     "name": "Unknown",
                     "type": "llm",
                     "errors": 1,
-                    "error_type": "网络错误",
+                    "error_type": "Network error",
                 }
 
-        # 为每个任务包装超时保护
+        # Wrap timeout protection for each task
         protected_tasks = [test_with_timeout(task) for task in all_tasks]
 
-        # 并发执行所有测试任务
+        # Execute all test tasks concurrently
         all_results = await asyncio.gather(*protected_tasks, return_exceptions=True)
 
-        # 处理结果
+        # Process results
         for result in all_results:
             if isinstance(result, dict):
                 if result.get("errors") == 0:
                     self.results[result["name"]] = result
                 else:
-                    # 即使有错误也记录，用于显示失败状态
+                    # Record even with errors, for displaying failure status
                     if result.get("name") != "Unknown":
                         self.results[result["name"]] = result
             elif isinstance(result, Exception):
-                print(f"测试结果处理异常: {str(result)}")
+                print(f"Test result processing exception: {str(result)}")
 
-        # 打印结果
-        print("\n生成测试报告...")
+        # Print results
+        print("\nGenerating test report...")
         self._print_results()
 
 

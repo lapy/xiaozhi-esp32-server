@@ -1,4 +1,4 @@
-// 智能体列表数据类型
+// Agent list data type
 export interface Agent {
   id: string
   agentName: string
@@ -13,12 +13,12 @@ export interface Agent {
   deviceCount: number
 }
 
-// 智能体创建数据类型
+// Agent creation data type
 export interface AgentCreateData {
   agentName: string
 }
 
-// 智能体详情数据类型
+// Agent details data type
 export interface AgentDetail {
   id: string
   userId: string
@@ -52,7 +52,7 @@ export interface AgentFunction {
   paramInfo: Record<string, string | number | boolean> | null
 }
 
-// 角色模板数据类型
+// Role template data type
 export interface RoleTemplate {
   id: string
   agentCode: string
@@ -77,7 +77,7 @@ export interface RoleTemplate {
   updatedAt: string
 }
 
-// 模型选项数据类型
+// Model options data type
 export interface ModelOption {
   id: string
   modelName: string
@@ -97,7 +97,7 @@ export interface PluginDefinition {
   modelType: string
   providerCode: string
   name: string
-  fields: PluginField[] // 注意：原始是字符串，需要先 JSON.parse
+  fields: PluginField[] // Note: Original is string, need to JSON.parse first
   sort: number
   updater: string
   updateDate: string

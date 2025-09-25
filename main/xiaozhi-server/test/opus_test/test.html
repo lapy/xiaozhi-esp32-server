@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Opus 编解码测试</title>
+    <title>Opus Codec Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -83,19 +83,19 @@
 </head>
 <body>
     <div class="container">
-        <h2>Opus 编解码录音播放测试</h2>
+        <h2>Opus Codec Recording and Playback Test</h2>
         
-        <div id="scriptStatus" class="info">正在加载Opus库...</div>
+        <div id="scriptStatus" class="info">Loading Opus library...</div>
         
         <div>
-            <button id="initAudio" style="background-color: #34a853;">初始化音频</button>
-            <button id="testMic" style="background-color: #fbbc05;">测试麦克风</button>
+            <button id="initAudio" style="background-color: #34a853;">Initialize Audio</button>
+            <button id="testMic" style="background-color: #fbbc05;">Test Microphone</button>
             <p></p>
-            <button id="start" disabled>开始录音</button>
-            <button id="stop" disabled>停止录音</button>
-            <button id="play" disabled>播放录音</button>
-            <p>录音状态: <span id="status">待机，正在初始化...</span></p>
-            <button id="showDebug">显示/隐藏调试信息</button>
+            <button id="start" disabled>Start Recording</button>
+            <button id="stop" disabled>Stop Recording</button>
+            <button id="play" disabled>Play Recording</button>
+            <p>Recording Status: <span id="status">Standby, initializing...</span></p>
+            <button id="showDebug">Show/Hide Debug Info</button>
             <div id="debugInfo"></div>
             <div id="audioMeter" style="margin-top: 10px; height: 20px; background-color: #eee; border-radius: 4px; overflow: hidden; display: none;">
                 <div id="audioLevel" style="height: 100%; width: 0%; background-color: #4285f4; transition: width 0.1s;"></div>
@@ -103,9 +103,9 @@
         </div>
     </div>
 
-    <!-- Opus解码库 - 这个库会设置一个全局Module变量 -->
+    <!-- Opus decoding library - this library will set a global Module variable -->
     <script>
-        // 定义全局变量以跟踪库加载状态
+        // Define global variables to track library loading status
         window.opusLoaded = false;
         window.startButton = document.getElementById("start");
         window.stopButton = document.getElementById("stop");
@@ -115,23 +115,23 @@
         window.audioContextReady = false;
         window.testMicActive = false;
         
-        // 显示/隐藏调试信息
+        // Show/hide debug information
         document.getElementById("showDebug").addEventListener("click", function() {
             if (debugInfo.style.display === "none" || !debugInfo.style.display) {
                 debugInfo.style.display = "block";
-                this.textContent = "隐藏调试信息";
+                this.textContent = "Hide Debug Info";
             } else {
                 debugInfo.style.display = "none";
-                this.textContent = "显示调试信息";
+                this.textContent = "Show Debug Info";
             }
         });
         
-        // 添加初始化音频按钮事件
+        // Add initialize audio button event
         document.getElementById("initAudio").addEventListener("click", function() {
             initializeAudioSystem();
         });
         
-        // 添加测试麦克风按钮事件
+        // Add test microphone button event
         document.getElementById("testMic").addEventListener("click", function() {
             if (window.testMicActive) {
                 stopMicTest();
@@ -140,70 +140,70 @@
             }
         });
         
-        // 初始化音频系统
+        // Initialize audio system
         function initializeAudioSystem() {
             try {
-                log("初始化音频系统...");
-                // 创建临时AudioContext来触发用户授权
+                log("Initializing audio system...");
+                // Create temporary AudioContext to trigger user authorization
                 const tempContext = new (window.AudioContext || window.webkitAudioContext)({
                     sampleRate: 16000,
                     latencyHint: 'interactive'
                 });
                 
-                // 创建振荡器并播放短促的声音
+                // Create oscillator and play short sound
                 const oscillator = tempContext.createOscillator();
                 const gain = tempContext.createGain();
-                gain.gain.value = 0.1; // 很小的音量
+                gain.gain.value = 0.1; // Very small volume
                 oscillator.connect(gain);
                 gain.connect(tempContext.destination);
                 oscillator.frequency.value = 440; // A4
                 oscillator.start();
                 
-                // 0.2秒后停止
+                // Stop after 0.2 seconds
                 setTimeout(() => {
                     oscillator.stop();
-                    // 关闭上下文
+                    // Close context
                     tempContext.close().then(() => {
-                        log("音频系统初始化成功", "success");
-                        updateScriptStatus("音频系统已激活", "success");
+                        log("Audio system initialized successfully", "success");
+                        updateScriptStatus("Audio system activated", "success");
                         document.getElementById("initAudio").disabled = true;
-                        document.getElementById("initAudio").textContent = "音频已初始化";
+                        document.getElementById("initAudio").textContent = "Audio Initialized";
                         window.audioContextReady = true;
                         
-                        // 如果Opus已加载，启用开始录音按钮
+                        // If Opus is loaded, enable start recording button
                         if (window.opusLoaded) {
                             startButton.disabled = false;
                         }
                     });
                 }, 200);
             } catch (err) {
-                log("初始化音频系统失败: " + err.message, "error");
-                updateScriptStatus("初始化音频失败: " + err.message, "error");
+                log("Failed to initialize audio system: " + err.message, "error");
+                updateScriptStatus("Failed to initialize audio: " + err.message, "error");
             }
         }
         
-        // 测试麦克风
+        // Test microphone
         function startMicTest() {
             const audioMeter = document.getElementById("audioMeter");
             const audioLevel = document.getElementById("audioLevel");
             const testMicBtn = document.getElementById("testMic");
             
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                log("浏览器不支持麦克风访问", "error");
+                log("Browser does not support microphone access", "error");
                 return;
             }
             
-            log("开始麦克风测试...");
+            log("Starting microphone test...");
             audioMeter.style.display = "block";
-            testMicBtn.textContent = "停止测试";
+            testMicBtn.textContent = "Stop Test";
             testMicBtn.style.backgroundColor = "#ea4335";
             window.testMicActive = true;
             
-            // 创建音频上下文
+            // Create audio context
             const testContext = new (window.AudioContext || window.webkitAudioContext)();
             window.testContext = testContext;
             
-            // 获取麦克风权限
+            // Get microphone permission
             navigator.mediaDevices.getUserMedia({ 
                 audio: { 
                     echoCancellation: true, 
@@ -212,18 +212,18 @@
                 } 
             })
             .then(stream => {
-                log("已获取麦克风访问权限", "success");
+                log("Microphone access permission obtained", "success");
                 
-                // 保存流以便稍后关闭
+                // Save stream for later closing
                 window.testStream = stream;
                 
-                // 创建音频分析器
+                // Create audio analyzer
                 const source = testContext.createMediaStreamSource(stream);
                 const analyser = testContext.createAnalyser();
                 analyser.fftSize = 256;
                 source.connect(analyser);
                 
-                // 创建音量显示更新函数
+                // Create volume display update function
                 const bufferLength = analyser.frequencyBinCount;
                 const dataArray = new Uint8Array(bufferLength);
                 
@@ -232,7 +232,7 @@
                     
                     analyser.getByteFrequencyData(dataArray);
                     
-                    // 计算音量级别 (0-100)
+                    // Calculate volume level (0-100)
                     let sum = 0;
                     for (let i = 0; i < bufferLength; i++) {
                         sum += dataArray[i];
@@ -240,90 +240,90 @@
                     const average = sum / bufferLength;
                     const level = Math.min(100, Math.max(0, average * 2));
                     
-                    // 更新音量计
+                    // Update volume meter
                     audioLevel.style.width = level + "%";
                     
-                    // 如果有声音，记录日志
+                    // If there is sound, log it
                     if (level > 10) {
-                        log(`检测到声音: ${level.toFixed(1)}%`);
+                        log(`Sound detected: ${level.toFixed(1)}%`);
                     }
                     
-                    // 循环更新
+                    // Loop update
                     window.testMicAnimationFrame = requestAnimationFrame(updateMeter);
                 }
                 
-                // 开始更新
+                // Start update
                 updateMeter();
             })
             .catch(err => {
-                log("麦克风测试失败: " + err.message, "error");
+                log("Microphone test failed: " + err.message, "error");
                 window.testMicActive = false;
-                testMicBtn.textContent = "测试麦克风";
+                testMicBtn.textContent = "Test Microphone";
                 testMicBtn.style.backgroundColor = "#fbbc05";
                 audioMeter.style.display = "none";
             });
         }
         
-        // 停止麦克风测试
+        // Stop microphone test
         function stopMicTest() {
             const audioMeter = document.getElementById("audioMeter");
             const testMicBtn = document.getElementById("testMic");
             
-            log("停止麦克风测试");
+            log("Stop microphone test");
             window.testMicActive = false;
-            testMicBtn.textContent = "测试麦克风";
+            testMicBtn.textContent = "Test Microphone";
             testMicBtn.style.backgroundColor = "#fbbc05";
             
-            // 停止分析器动画
+            // Stop analyzer animation
             if (window.testMicAnimationFrame) {
                 cancelAnimationFrame(window.testMicAnimationFrame);
             }
             
-            // 停止麦克风流
+            // Stop microphone stream
             if (window.testStream) {
                 window.testStream.getTracks().forEach(track => track.stop());
             }
             
-            // 关闭测试上下文
+            // Close test context
             if (window.testContext) {
                 window.testContext.close();
             }
             
-            // 隐藏音量计
+            // Hide volume meter
             audioMeter.style.display = "none";
         }
         
-        // 初始化AudioContext
+        // Initialize AudioContext
         function initAudioContext() {
             try {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (!window.AudioContext) {
-                    throw new Error("浏览器不支持AudioContext");
+                    throw new Error("Browser does not support AudioContext");
                 }
                 
-                // 我们在app.js中会创建AudioContext，这里只检查兼容性
-                log("AudioContext API 可用");
+                // We will create AudioContext in app.js, here only check compatibility
+                log("AudioContext API available");
                 return true;
             } catch (err) {
-                log("AudioContext初始化失败: " + err.message, "error");
-                updateScriptStatus("AudioContext初始化失败，录音功能不可用", "error");
+                log("AudioContext initialization failed: " + err.message, "error");
+                updateScriptStatus("AudioContext initialization failed, recording function unavailable", "error");
                 return false;
             }
         }
         
-        // 检查麦克风权限
+        // Check microphone permissions
         function checkMicrophonePermission() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                log("浏览器不支持getUserMedia API", "error");
-                updateScriptStatus("浏览器不支持录音功能", "error");
+                log("Browser does not support getUserMedia API", "error");
+                updateScriptStatus("Browser does not support recording function", "error");
                 return false;
             }
             
-            log("getUserMedia API 可用");
+            log("getUserMedia API available");
             return true;
         }
         
-        // 添加调试日志
+        // Add debug logs
         function log(message, type = "info") {
             console.log(message);
             const time = new Date().toLocaleTimeString();
@@ -340,7 +340,7 @@
             debugInfo.scrollTop = debugInfo.scrollHeight;
         }
         
-        // 更新脚本状态显示
+        // Update script status display
         function updateScriptStatus(message, type) {
             const statusElement = document.getElementById('scriptStatus');
             if (statusElement) {
@@ -351,29 +351,29 @@
             log(message, type);
         }
         
-        // 检查Opus库是否已加载
+        // Check if Opus library is loaded
         function checkOpusLoaded() {
             try {
-                // 检查Module是否存在（本地库导出的全局变量）
+                // Check if Module exists (global variable exported by local library)
                 if (typeof Module === 'undefined') {
-                    log("Module对象不存在", "error");
-                    throw new Error('Opus库未加载，Module对象不存在');
+                    log("Module object does not exist", "error");
+                    throw new Error('Opus library not loaded, Module object does not exist');
                 }
 
-                // 记录Module对象结构以便调试
-                log("Module对象结构: " + Object.keys(Module).join(", "));
+                // Record Module object structure for debugging
+                log("Module object structure: " + Object.keys(Module).join(", "));
 
-                // 尝试使用全局Module函数
+                // Try to use global Module function
                 if (typeof Module._opus_decoder_get_size === 'function') {
                     window.ModuleInstance = Module;
-                    log('Opus库加载成功（使用全局Module）', "success");
-                    updateScriptStatus('Opus库加载成功', 'success');
+                    log('Opus library loaded successfully (using global Module)', "success");
+                    updateScriptStatus('Opus library loaded successfully', 'success');
                     
-                    // 启用开始录音按钮
+                    // Enable start recording button
                     startButton.disabled = false;
-                    statusLabel.textContent = "待机";
+                    statusLabel.textContent = "Standby";
                     
-                    // 3秒后隐藏状态
+                    // Hide status after 3 seconds
                     setTimeout(() => {
                         const statusElement = document.getElementById('scriptStatus');
                         if (statusElement) statusElement.style.display = 'none';
@@ -383,17 +383,17 @@
                     return true;
                 }
 
-                // 尝试使用Module.instance
+                // Try to use Module.instance
                 if (typeof Module.instance !== 'undefined' && typeof Module.instance._opus_decoder_get_size === 'function') {
                     window.ModuleInstance = Module.instance;
-                    log('Opus库加载成功（使用Module.instance）', "success");
-                    updateScriptStatus('Opus库加载成功', 'success');
+                    log('Opus library loaded successfully (using Module.instance)', "success");
+                    updateScriptStatus('Opus library loaded successfully', 'success');
                     
-                    // 启用开始录音按钮
+                    // Enable start recording button
                     startButton.disabled = false;
-                    statusLabel.textContent = "待机";
+                    statusLabel.textContent = "Standby";
                     
-                    // 3秒后隐藏状态
+                    // Hide status after 3 seconds
                     setTimeout(() => {
                         const statusElement = document.getElementById('scriptStatus');
                         if (statusElement) statusElement.style.display = 'none';
@@ -403,58 +403,58 @@
                     return true;
                 }
 
-                // 检查是否有其他导出方式
-                log("Module上可用方法: " + Object.getOwnPropertyNames(Module).filter(prop => typeof Module[prop] === 'function').join(", "));
+                // Check if there are other export methods
+                log("Available methods on Module: " + Object.getOwnPropertyNames(Module).filter(prop => typeof Module[prop] === 'function').join(", "));
                 
                 if (typeof Module.onRuntimeInitialized === 'function' || typeof Module.onRuntimeInitialized === 'undefined') {
-                    log("Module.onRuntimeInitialized 尚未执行，等待模块初始化完成...");
-                    // Module可能未完成初始化，注册回调
+                    log("Module.onRuntimeInitialized not yet executed, waiting for module initialization to complete...");
+                    // Module may not have completed initialization, register callback
                     Module.onRuntimeInitialized = function() {
-                        log("Opus库运行时初始化完成，重新检查");
+                        log("Opus library runtime initialization completed, rechecking");
                         checkOpusLoaded();
                     };
                     return false;
                 }
 
-                throw new Error('Opus解码函数未找到，可能Module结构不正确');
+                throw new Error('Opus decoding function not found, Module structure may be incorrect');
             } catch (err) {
-                log(`Opus库加载失败: ${err.message}`, "error");
-                updateScriptStatus(`Opus库加载失败: ${err.message}`, 'error');
-                statusLabel.textContent = "错误：Opus库加载失败";
+                log(`Opus library loading failed: ${err.message}`, "error");
+                updateScriptStatus(`Opus library loading failed: ${err.message}`, 'error');
+                statusLabel.textContent = "Error: Opus library loading failed";
                 return false;
             }
         }
         
-        // 页面加载完成后检查浏览器能力和Opus库
+        // Check browser capabilities and Opus library after page load
         window.addEventListener('load', function() {
-            log("页面加载完成，开始初始化...");
-            updateScriptStatus('正在初始化录音环境...', 'info');
+            log("Page load completed, starting initialization...");
+            updateScriptStatus('Initializing recording environment...', 'info');
             
-            // 检查浏览器能力
+            // Check browser capabilities
             const audioContextSupported = initAudioContext();
             const microphoneSupported = checkMicrophonePermission();
             
             if (!audioContextSupported || !microphoneSupported) {
-                log("浏览器不支持必要API，无法进行录音", "error");
-                updateScriptStatus('浏览器不支持录音功能', 'error');
+                log("Browser does not support necessary APIs, cannot record", "error");
+                updateScriptStatus('Browser does not support recording function', 'error');
                 return;
             }
             
-            log("检查环境完成，开始加载Opus库");
-            updateScriptStatus('正在加载Opus库...', 'info');
+            log("Environment check completed, starting to load Opus library");
+            updateScriptStatus('Loading Opus library...', 'info');
             
-            // 延迟一小段时间再检查，确保库有时间加载
+            // Delay for a short time before checking to ensure library has time to load
             setTimeout(function checkAndRetry() {
                 if (!checkOpusLoaded()) {
-                    // 如果加载失败，5秒后重试
-                    log("Opus库加载失败，5秒后重试...");
-                    updateScriptStatus('Opus库加载失败，正在重试...', 'error');
+                    // If loading fails, retry after 5 seconds
+                    log("Opus library loading failed, retrying in 5 seconds...");
+                    updateScriptStatus('Opus library loading failed, retrying...', 'error');
                     setTimeout(checkAndRetry, 5000);
                 }
             }, 1000);
         });
 
-        // 防止按钮误操作
+        // Prevent button misoperation
         document.getElementById("stop").disabled = true;
         document.getElementById("play").disabled = true;
     </script>

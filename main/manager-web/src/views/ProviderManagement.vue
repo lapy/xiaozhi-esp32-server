@@ -28,7 +28,7 @@
         <div class="content-area">
           <el-card class="provider-card" shadow="never">
             <el-table ref="providersTable" :data="filteredProvidersList" class="transparent-table" v-loading="loading"
-              element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading"
+              element-loading-text="Loading..." element-loading-spinner="el-icon-loading"
               element-loading-background="rgba(255, 255, 255, 0.7)" :header-cell-class-name="headerCellClassName">
               <el-table-column :label="$t('modelConfig.select')" align="center" width="120">
                 <template slot-scope="scope">
@@ -116,7 +116,7 @@
       </div>
     </div>
 
-    <!-- 新增/编辑供应器对话框 -->
+    <!-- Add/Edit provider dialog -->
     <provider-dialog :title="dialogTitle" :visible.sync="dialogVisible" :form="providerForm" :model-types="modelTypes"
       @submit="handleSubmit" @cancel="dialogVisible = false" />
 
@@ -155,7 +155,7 @@ export default {
       pageSizeOptions: [10, 20, 50, 100],
       total: 0,
       dialogVisible: false,
-      dialogTitle: "新增供应器",
+      dialogTitle: "Add Provider",
       isAllSelected: false,
       isDropdownOpen: false,
       sensitive_keys: ["api_key", "personal_access_token", "access_token", "token", "secret", "access_key_secret", "secret_key"],
@@ -214,7 +214,7 @@ export default {
 
       // list.sort((a, b) => a.sort - b.sort);
 
-      // // 分页处理
+      // // Pagination handling
       // const start = (this.currentPage - 1) * this.pageSize;
       // return list.slice(start, start + this.pageSize);
     }
@@ -243,7 +243,7 @@ export default {
             this.total = data.data.total;
           } else {
             this.$message.error({
-              message: data.msg || '获取参数列表失败'
+              message: data.msg || 'Failed to get parameter list'
             });
           }
         }
@@ -287,11 +287,11 @@ export default {
     handleSubmit({ form, done }) {
       this.loading = true;
       if (form.id) {
-        // 编辑
+        // Edit
         Api.model.updateModelProvider(form, ({ data }) => {
 
           if (data.code === 0) {
-            this.fetchProviders(); // 刷新表格
+            this.fetchProviders(); // Refresh table
             this.$message.success({
             message: this.$t('common.updateSuccess'),
             showClose: true
@@ -299,10 +299,10 @@ export default {
           }
         });
       } else {
-        // 新增
+        // Add
         Api.model.addModelProvider(form, ({ data }) => {
           if (data.code === 0) {
-            this.fetchProviders(); // 刷新表格
+            this.fetchProviders(); // Refresh table
             this.$message.success({
             message: this.$t('common.addSuccess'),
             showClose: true
@@ -340,7 +340,7 @@ export default {
           if (data.code === 0) {
 
             this.isAllSelected = false;
-            this.fetchProviders(); // 刷新表格
+            this.fetchProviders(); // Refresh table
 
             this.$message.success({
               message: this.$t('common.deleteSuccess'),
@@ -398,7 +398,7 @@ export default {
       return "custom-selection-cell";
     },
     updateSelectionHeaderText() {
-      // 确保表格已渲染
+      // Ensure table is rendered
       this.$nextTick(() => {
         if (this.$refs.providersTable && this.$refs.providersTable.$el) {
           const headerCheckbox = this.$refs.providersTable.$el.querySelector('.custom-selection-header .el-checkbox .el-checkbox__label');
@@ -902,7 +902,7 @@ export default {
   color: #409EFF;
 }
 
-/* 确保选择列标题样式正确 */
+/* Ensure selection column header style is correct */
 .custom-selection-header {
   position: relative;
 }
