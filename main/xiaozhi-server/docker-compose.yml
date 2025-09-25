@@ -11,7 +11,7 @@ services:
     security_opt:
       - seccomp:unconfined
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=UTC
     ports:
       # WebSocket server
       - "8000:8000"

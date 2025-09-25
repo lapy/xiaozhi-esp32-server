@@ -3,9 +3,8 @@ FROM python:3.10-slim AS builder
 
 WORKDIR /app
 
-# Configure pip to use domestic mirror source (Alibaba Cloud) and set timeout and retry
-RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ && \
-    pip config set global.trusted-host mirrors.aliyun.com && \
+# Configure pip to use official PyPI and set timeout and retry
+RUN pip config set global.index-url https://pypi.org/simple/ && \
     pip config set global.timeout 120 && \
     pip config set install.retries 5
 
