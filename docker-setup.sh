@@ -311,32 +311,6 @@ else
     echo "Directory xiaozhi-server/data already exists, skipping creation"
 fi
 
-# Check and create model directory
-if [ ! -d /opt/xiaozhi-server/models/SenseVoiceSmall ]; then
-    mkdir -p /opt/xiaozhi-server/models/SenseVoiceSmall
-    echo "Created model directory: /opt/xiaozhi-server/models/SenseVoiceSmall"
-else
-    echo "Directory xiaozhi-server/models/SenseVoiceSmall already exists, skipping creation"
-fi
-
-echo "------------------------------------------------------------"
-echo "Starting to download speech recognition model"
-# Download model files
-MODEL_PATH="/opt/xiaozhi-server/models/SenseVoiceSmall/model.pt"
-if [ ! -f "$MODEL_PATH" ]; then
-    (
-    for i in {1..20}; do
-        echo $((i*5))
-        sleep 0.5
-    done
-    ) | whiptail --title "Downloading" --gauge "Starting to download speech recognition model..." 10 60 0
-    curl -fL --progress-bar https://huggingface.co/iic/SenseVoiceSmall/resolve/main/model.pt -o "$MODEL_PATH" || {
-        whiptail --title "Error" --msgbox "model.pt file download failed" 10 50
-        exit 1
-    }
-else
-    echo "model.pt file already exists, skipping download"
-fi
 
 # Only execute download if upgrade is not completed
 if [ -z "$UPGRADE_COMPLETED" ]; then
