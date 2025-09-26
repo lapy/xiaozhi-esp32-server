@@ -21,4 +21,4 @@ services:
       # Configuration file directory
       - ./data:/opt/xiaozhi-esp32-server/data
       # Model file mount, very important
-      - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt
+      - ./models:/opt/xiaozhi-esp32-server/models

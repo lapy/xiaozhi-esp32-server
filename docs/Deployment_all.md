@@ -53,6 +53,53 @@ xiaozhi-server
 
 This project now uses English-supporting ASR services (OpenAI ASR, Groq ASR, etc.) instead of Chinese-focused models. Most ASR services require API keys, while VoskASR requires manual model downloads from https://alphacephei.com/vosk/models (recommended: vosk-model-en-us-0.22 for English).
 
+**For VoskASR (Recommended for English):**
+
+1. **Download the Vosk English Model:**
+   - Visit the official Vosk models page: https://alphacephei.com/vosk/models
+   - Download the English model: `vosk-model-en-us-0.22.zip` (approximately 1.8 GB)
+   - For smaller systems, you can use `vosk-model-small-en-us-0.15.zip` (approximately 40 MB)
+
+2. **Extract the Model:**
+   ```bash
+   # Navigate to your xiaozhi-server directory
+   cd xiaozhi-server
+   
+   # Create a vosk directory inside models
+   mkdir -p models/vosk
+   
+   # Extract the downloaded model to the vosk directory
+   # Replace 'vosk-model-en-us-0.22.zip' with the actual filename you downloaded
+   unzip vosk-model-en-us-0.22.zip -d models/vosk/
+   ```
+
+3. **Verify the Model Structure:**
+   After extraction, your directory structure should look like:
+   ```
+   xiaozhi-server
+     ├─ data
+     ├─ models
+        ├─ vosk
+           ├─ vosk-model-en-us-0.22
+              ├─ am
+              ├─ graph
+              ├─ ivector
+              └─ conf
+   ```
+
+4. **Configure the Model Path:**
+   In your `.config.yaml` file (located in the `data` folder), set the correct model path:
+   ```yaml
+   selected_module:
+     ASR: VoskASR
+   
+   ASR:
+     VoskASR:
+       type: vosk
+       model_path: models/vosk/vosk-model-en-us-0.22
+       output_dir: tmp/
+   ```
+
 
 #### 1.2.3 Download Configuration Files
 
@@ -366,7 +413,53 @@ pIP install -r requirements.txt
 ### 7. Download Speech Recognition Model Files
 
 This project now uses English-supporting ASR services (OpenAI ASR, Groq ASR, etc.) instead of Chinese-focused models. Most ASR services require API keys, while VoskASR requires manual model downloads from https://alphacephei.com/vosk/models (recommended: vosk-model-en-us-0.22 for English).
-  `qvna`
+
+**For VoskASR (Recommended for English):**
+
+1. **Download the Vosk English Model:**
+   - Visit the official Vosk models page: https://alphacephei.com/vosk/models
+   - Download the English model: `vosk-model-en-us-0.22.zip` (approximately 1.8 GB)
+   - For smaller systems, you can use `vosk-model-small-en-us-0.15.zip` (approximately 40 MB)
+
+2. **Extract the Model:**
+   ```bash
+   # Navigate to your xiaozhi-server directory
+   cd main/xiaozhi-server
+   
+   # Create a vosk directory inside models
+   mkdir -p models/vosk
+   
+   # Extract the downloaded model to the vosk directory
+   # Replace 'vosk-model-en-us-0.22.zip' with the actual filename you downloaded
+   unzip vosk-model-en-us-0.22.zip -d models/vosk/
+   ```
+
+3. **Verify the Model Structure:**
+   After extraction, your directory structure should look like:
+   ```
+   main/xiaozhi-server
+     ├─ data
+     ├─ models
+        ├─ vosk
+           ├─ vosk-model-en-us-0.22
+              ├─ am
+              ├─ graph
+              ├─ ivector
+              └─ conf
+   ```
+
+4. **Configure the Model Path:**
+   In your `.config.yaml` file (located in the `data` folder), set the correct model path:
+   ```yaml
+   selected_module:
+     ASR: VoskASR
+   
+   ASR:
+     VoskASR:
+       type: vosk
+       model_path: models/vosk/vosk-model-en-us-0.22
+       output_dir: tmp/
+   ```
 
 ## 8. Configure Project Files
 

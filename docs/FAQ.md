@@ -2,7 +2,7 @@
 
 ### 1. Why does Xiaozhi recognize multiple languages when I speak? 🌍
 
-Suggestion: Check if the `models/SenseVoiceSmall` directory has a `model.pt` file. If not, download it from [here](Deployment.md#model-files).
+Suggestion: Check if the `models` directory has model files. If not, download it from [here](Deployment.md#model-files).
 
 ### 2. Why does the error "TTS task failed: file not found" occur? 📁
 

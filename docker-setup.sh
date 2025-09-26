@@ -311,6 +311,81 @@ else
     echo "Directory xiaozhi-server/data already exists, skipping creation"
 fi
 
+# Check and create models directory
+if [ ! -d /opt/xiaozhi-server/models ]; then
+    mkdir -p /opt/xiaozhi-server/models
+    echo "Created models directory: /opt/xiaozhi-server/models"
+else
+    echo "Directory xiaozhi-server/models already exists, skipping creation"
+fi
+
+# Download and extract Vosk English model
+download_vosk_model() {
+    echo "------------------------------------------------------------"
+    echo "Checking Vosk English model..."
+    
+    VOSK_MODEL_DIR="/opt/xiaozhi-server/models/vosk"
+    VOSK_MODEL_PATH="$VOSK_MODEL_DIR/vosk-model-en-us-0.22"
+    
+    # Check if model is already downloaded and extracted
+    if [ -d "$VOSK_MODEL_PATH" ] && [ -f "$VOSK_MODEL_PATH/am/final.mdl" ]; then
+        echo "Vosk English model already exists, skipping download"
+        return 0
+    fi
+    
+    echo "Vosk English model not found, starting download..."
+    
+    # Create vosk directory
+    mkdir -p "$VOSK_MODEL_DIR"
+    
+    # Download the model
+    MODEL_URL="https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip"
+    MODEL_ZIP="$VOSK_MODEL_DIR/vosk-model-en-us-0.22.zip"
+    
+    echo "Downloading Vosk English model from $MODEL_URL"
+    echo "This may take several minutes depending on your internet connection..."
+    
+    if ! curl -L --progress-bar "$MODEL_URL" -o "$MODEL_ZIP"; then
+        echo "Warning: Failed to download Vosk model. You can download it manually later."
+        echo "Visit: https://alphacephei.com/vosk/models"
+        echo "Download: vosk-model-en-us-0.22.zip"
+        echo "Extract to: $VOSK_MODEL_DIR/"
+        return 1
+    fi
+    
+    # Check if download was successful
+    if [ ! -f "$MODEL_ZIP" ]; then
+        echo "Warning: Vosk model download failed. You can download it manually later."
+        return 1
+    fi
+    
+    echo "Download completed, extracting model..."
+    
+    # Check if unzip is available
+    if ! command -v unzip &> /dev/null; then
+        echo "Installing unzip..."
+        apt update
+        apt install -y unzip
+    fi
+    
+    # Extract the model
+    if unzip -q "$MODEL_ZIP" -d "$VOSK_MODEL_DIR/"; then
+        echo "Vosk model extracted successfully"
+        # Clean up zip file
+        rm "$MODEL_ZIP"
+        echo "Vosk English model setup completed: $VOSK_MODEL_PATH"
+    else
+        echo "Warning: Failed to extract Vosk model. You can extract it manually later."
+        echo "Extract $MODEL_ZIP to $VOSK_MODEL_DIR/"
+        return 1
+    fi
+}
+
+# Only download Vosk model if not upgrading
+if [ -z "$UPGRADE_COMPLETED" ]; then
+    download_vosk_model
+fi
+
 
 # Only execute download if upgrade is not completed
 if [ -z "$UPGRADE_COMPLETED" ]; then

@@ -16,7 +16,7 @@ After installing Docker, continue below.
 
 After installing Docker, you need to find a directory to place configuration files for this project. For example, we can create a new folder called `xiaozhi-server`.
 
-After creating the directory, you need to create `data` and `models` folders under `xiaozhi-server`, and create `SenseVoiceSmall` folder under `models`.
+After creating the directory, you need to create `data` and `models` folders under `xiaozhi-server`.
 
 The final directory structure is as follows:
 
@@ -24,13 +24,59 @@ The final directory structure is as follows:
 xiaozhi-server
   ├─ data
   ├─ models
-     ├─ SenseVoiceSmall
 ```
 
 #### 1.1.2 Download Speech Recognition Model Files
 
 You need to download speech recognition model files because this project uses local offline speech recognition by default. You can download them using this method:
 [Jump to Download Speech Recognition Model Files](#model-files)
+
+**For VoskASR (Recommended for English):**
+
+1. **Download the Vosk English Model:**
+   - Visit the official Vosk models page: https://alphacephei.com/vosk/models
+   - Download the English model: `vosk-model-en-us-0.22.zip` (approximately 1.8 GB)
+   - For smaller systems, you can use `vosk-model-small-en-us-0.15.zip` (approximately 40 MB)
+
+2. **Extract the Model:**
+   ```bash
+   # Navigate to your xiaozhi-server directory
+   cd xiaozhi-server
+   
+   # Create a vosk directory inside models
+   mkdir -p models/vosk
+   
+   # Extract the downloaded model to the vosk directory
+   # Replace 'vosk-model-en-us-0.22.zip' with the actual filename you downloaded
+   unzip vosk-model-en-us-0.22.zip -d models/vosk/
+   ```
+
+3. **Verify the Model Structure:**
+   After extraction, your directory structure should look like:
+   ```
+   xiaozhi-server
+     ├─ data
+     ├─ models
+        ├─ vosk
+           ├─ vosk-model-en-us-0.22
+              ├─ am
+              ├─ graph
+              ├─ ivector
+              └─ conf
+   ```
+
+4. **Configure the Model Path:**
+   In your `.config.yaml` file (located in the `data` folder), set the correct model path:
+   ```yaml
+   selected_module:
+     ASR: VoskASR
+   
+   ASR:
+     VoskASR:
+       type: vosk
+       model_path: models/vosk/vosk-model-en-us-0.22
+       output_dir: tmp/
+   ```
 
 After downloading, return to this tutorial.
 
@@ -60,8 +106,6 @@ xiaozhi-server
   ├─ data
     ├─ .config.yaml
   ├─ models
-     ├─ SenseVoiceSmall
-       ├─ model.pt
 ```
 
 If your file directory structure is the same as above, continue below. If not, check carefully to see if you missed any operations.
@@ -221,7 +265,57 @@ For example, if you want to change models, just modify the configuration under `
 ## Model Files
 
 This project now uses English-supporting ASR services (OpenAI ASR, Groq ASR, etc.) instead of Chinese-focused models. Most ASR services require API keys, while VoskASR requires manual model downloads from https://alphacephei.com/vosk/models (recommended: vosk-model-en-us-0.22 for English).
-  `qvna`
+
+### Downloading and Setting Up Vosk English Model
+
+**Step 1: Download the Model**
+1. Visit the official Vosk models page: https://alphacephei.com/vosk/models
+2. Download the English model: `vosk-model-en-us-0.22.zip` (approximately 1.8 GB)
+3. For systems with limited storage, you can use `vosk-model-small-en-us-0.15.zip` (approximately 40 MB)
+
+**Step 2: Extract the Model**
+```bash
+# Navigate to your xiaozhi-server directory
+cd xiaozhi-server
+
+# Create a vosk directory inside models
+mkdir -p models/vosk
+
+# Extract the downloaded model to the vosk directory
+# Replace 'vosk-model-en-us-0.22.zip' with the actual filename you downloaded
+unzip vosk-model-en-us-0.22.zip -d models/vosk/
+```
+
+**Step 3: Verify Directory Structure**
+After extraction, your directory structure should look like:
+```
+xiaozhi-server
+  ├─ data
+  ├─ models
+     ├─ vosk
+        ├─ vosk-model-en-us-0.22
+           ├─ am
+           ├─ graph
+           ├─ ivector
+           └─ conf
+```
+
+**Step 4: Configure in .config.yaml**
+In your `.config.yaml` file (located in the `data` folder), add or update the VoskASR configuration:
+```yaml
+selected_module:
+  ASR: VoskASR
+
+ASR:
+  VoskASR:
+    type: vosk
+    model_path: models/vosk/vosk-model-en-us-0.22
+    output_dir: tmp/
+    enable_lid: true  # Automatic language detection
+    enable_itn: true  # Inverse text normalization
+```
+
+**Note:** VoskASR provides completely offline speech recognition and does not require an internet connection or API keys once the model is downloaded and configured.
 
 ## Running Status Confirmation
 

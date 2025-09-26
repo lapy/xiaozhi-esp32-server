@@ -65,18 +65,18 @@ async def main():
     ota_task = asyncio.create_task(ota_server.start())
 
     read_config_from_api = config.get("read_config_from_api", False)
-    port = int(config["server"].get("http_port", 8003))
+    port = int(config["server"].get("http_port", 8002))
     if not read_config_from_api:
         logger.bind(tag=TAG).info(
             "OTA interface is\t\thttp://{}:{}/xiaozhi/ota/",
             get_local_ip(),
-            port,
+            8002,
         )
-    logger.bind(tag=TAG).info(
-        "Vision analysis interface is\thttp://{}:{}/mcp/vision/explain",
-        get_local_ip(),
-        port,
-    )
+        logger.bind(tag=TAG).info(
+            "Vision analysis interface is\thttp://{}:{}/mcp/vision/explain",
+            get_local_ip(),
+            8003,
+        )
     mcp_endpoint = config.get("mcp_endpoint", None)
     if mcp_endpoint is not None and "your" not in mcp_endpoint:
         # Validate MCP endpoint format
