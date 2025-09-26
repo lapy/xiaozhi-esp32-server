@@ -49,6 +49,7 @@ class LLMProvider(LLMProviderBase):
         self.client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url, timeout=httpx.Timeout(self.timeout))
 
     def response(self, session_id, dialogue, **kwargs):
+        logger.bind(tag=TAG).debug(f"Sending request to OpenAI with model: {self.model_name}, dialogue length: {len(dialogue)}")
         try:
             responses = self.client.chat.completions.create(
                 model=self.model_name,
@@ -61,9 +62,10 @@ class LLMProvider(LLMProviderBase):
                     "frequency_penalty", self.frequency_penalty
                 ),
             )
-
+            logger.bind(tag=TAG).debug(f"Received response from OpenAI with model: {self.model_name}, dialogue length: {len(dialogue)}")
             is_active = True
             for chunk in responses:
+                logger.bind(tag=TAG).debug(f"Received chunk from OpenAI with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 try:
                     # Check if there is a valid choice and content is not empty
                     delta = (
@@ -71,10 +73,14 @@ class LLMProvider(LLMProviderBase):
                         if getattr(chunk, "choices", None)
                         else None
                     )
+                    logger.bind(tag=TAG).debug(f"Received delta from OpenAI with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     content = delta.content if hasattr(delta, "content") else ""
+                    logger.bind(tag=TAG).debug(f"Extracted content from OpenAI with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 except IndexError:
+                    logger.bind(tag=TAG).debug(f"Received index error from OpenAI with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     content = ""
                 if content:
+                    logger.bind(tag=TAG).debug(f"Received content from OpenAI with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     # Handle tags spanning multiple chunks
                     if "<think>" in content:
                         is_active = False
@@ -83,6 +89,7 @@ class LLMProvider(LLMProviderBase):
                         is_active = True
                         content = content.split("</think>")[-1]
                     if is_active:
+                        logger.bind(tag=TAG).debug(f"Yielding content from OpenAI with model: {self.model_name}, dialogue length: {len(dialogue)}")
                         yield content
 
         except Exception as e:

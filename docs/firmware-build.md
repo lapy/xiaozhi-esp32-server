@@ -22,7 +22,7 @@ After success, please proceed to Step 2
 ### If you are using Full Module Deployment
 At this time, please open your OTA address with a browser, for example my OTA address
 ```
-http://192.168.1.25:8002/xiaozhi/ota/
+http://192.168.1.25:8003/xiaozhi/ota/
 ```
 
 If it displays "OTA interface is running normally, websocket cluster count: X". Then proceed to step 2.
@@ -54,7 +54,7 @@ After downloading, open the `xiaozhi-esp32/main/Kconfig.projbuild` file.
 ## Step 4: Modify OTA Address
 
 Find the content of `default` for `OTA_URL`, change `https://api.tenclass.net/xiaozhi/ota/`
-   to your own address. For example, if my interface address is `http://192.168.1.25:8002/xiaozhi/ota/`, change the content to this.
+   to your own address. For example, if my interface address is `http://192.168.1.25:8003/xiaozhi/ota/`, change the content to this.
 
 Before modification:
 ```
@@ -68,7 +68,7 @@ After modification:
 ```
 config OTA_URL
     string "Default OTA URL"
-    default "http://192.168.1.25:8002/xiaozhi/ota/"
+    default "http://192.168.1.25:8003/xiaozhi/ota/"
     help
         The application will access this URL to check for new firmwares and server address.
 ```

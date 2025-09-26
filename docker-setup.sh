@@ -455,7 +455,7 @@ LOCAL_IP=$(hostname -I | awk '{print $1}')
 whiptail --title "Installation Complete!" --msgbox "\
 Server related addresses are as follows:\n\
 Management backend access address: http://$LOCAL_IP:8002\n\
-OTA address: http://$LOCAL_IP:8002/xiaozhi/ota/\n\
+OTA address: http://$LOCAL_IP:8003/xiaozhi/ota/\n\
 Vision analysis interface address: http://$LOCAL_IP:8003/mcp/vision/explain\n\
 WebSocket address: ws://$LOCAL_IP:8000/xiaozhi/v1/\n\
 \nInstallation complete! Thank you for using!\nPress Enter to exit..." 16 70

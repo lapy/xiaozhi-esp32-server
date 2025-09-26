@@ -745,6 +745,7 @@ class ConnectionHandler:
 
     def chat(self, query, depth=0):
         self.logger.bind(tag=TAG).info(f"LLM received user message: {query}")
+        self.logger.bind(tag=TAG).debug(f"Chat method called with depth={depth}, intent_type={self.intent_type}")
         self.llm_finish_task = False
 
         # Create new session ID and send FIRST request for top level
@@ -763,33 +764,46 @@ class ConnectionHandler:
         functions = None
         if self.intent_type == "function_call" and hasattr(self, "func_handler"):
             functions = self.func_handler.get_functions()
+            self.logger.bind(tag=TAG).debug(f"Functions loaded: {len(functions) if functions else 0}")
+        else:
+            self.logger.bind(tag=TAG).debug(f"No functions - intent_type={self.intent_type}, has_func_handler={hasattr(self, 'func_handler')}")
         response_message = []
 
         try:
             # Use dialogue with memory
             memory_str = None
             if self.memory is not None:
+                self.logger.bind(tag=TAG).debug("Querying memory...")
                 future = asyncio.run_coroutine_threadsafe(
                     self.memory.query_memory(query), self.loop
                 )
                 memory_str = future.result()
+                self.logger.bind(tag=TAG).debug(f"Memory query completed, result length: {len(memory_str) if memory_str else 0}")
+            else:
+                self.logger.bind(tag=TAG).debug("No memory provider available")
+
+            # Prepare dialogue data
+            dialogue_data = self.dialogue.get_llm_dialogue_with_memory(
+                memory_str, self.config.get("voiceprint", {})
+            )
+            self.logger.bind(tag=TAG).debug(f"Dialogue data prepared with {len(dialogue_data)} messages")
 
             if self.intent_type == "function_call" and functions is not None:
                 # Use streaming interface that supports functions
+                self.logger.bind(tag=TAG).debug("Calling LLM with functions...")
                 llm_responses = self.llm.response_with_functions(
                     self.session_id,
-                    self.dialogue.get_llm_dialogue_with_memory(
-                        memory_str, self.config.get("voiceprint", {})
-                    ),
+                    dialogue_data,
                     functions=functions,
                 )
             else:
+                # Use regular streaming interface
+                self.logger.bind(tag=TAG).debug("Calling LLM without functions...")
                 llm_responses = self.llm.response(
                     self.session_id,
-                    self.dialogue.get_llm_dialogue_with_memory(
-                        memory_str, self.config.get("voiceprint", {})
-                    ),
+                    dialogue_data,
                 )
+            self.logger.bind(tag=TAG).debug("LLM call completed, starting to process responses...")
         except Exception as e:
             self.logger.bind(tag=TAG).error(f"LLM processing error {query}: {e}")
             return None
@@ -802,10 +816,16 @@ class ConnectionHandler:
         content_arguments = ""
         self.client_abort = False
         emotion_flag = True
+        self.logger.bind(tag=TAG).debug("Starting to iterate over LLM responses...")
+        response_count = 0
         for response in llm_responses:
+            response_count += 1
+            self.logger.bind(tag=TAG).debug(f"Processing response #{response_count}: {type(response)}")
             if self.client_abort:
+                self.logger.bind(tag=TAG).debug(f"Client aborted, breaking out of loop")
                 break
             if self.intent_type == "function_call" and functions is not None:
+                self.logger.bind(tag=TAG).debug(f"Processing function call: {response}")
                 content, tools_call = response
                 if "content" in response:
                     content = response["content"]
@@ -826,6 +846,7 @@ class ConnectionHandler:
                     if tools_call[0].function.arguments is not None:
                         function_arguments += tools_call[0].function.arguments
             else:
+                self.logger.bind(tag=TAG).debug(f"Processing response: {response}")
                 content = response
 
             # Get emotion expression from LLM response, only get once at the beginning of each conversation round
@@ -837,8 +858,10 @@ class ConnectionHandler:
                 emotion_flag = False
 
             if content is not None and len(content) > 0:
+                self.logger.bind(tag=TAG).debug(f"Processing content: '{content[:50]}...' (length: {len(content)})")
                 if not tool_call_flag:
                     response_message.append(content)
+                    self.logger.bind(tag=TAG).debug("Adding content to TTS queue...")
                     self.tts.tts_text_queue.put(
                         TTSMessageDTO(
                             sentence_id=self.sentence_id,
@@ -901,6 +924,7 @@ class ConnectionHandler:
             self.tts_MessageText = text_buff
             self.dialogue.put(Message(role="assistant", content=text_buff))
         if depth == 0:
+            self.logger.bind(tag=TAG).debug("Adding LAST TTS message to queue...")
             self.tts.tts_text_queue.put(
                 TTSMessageDTO(
                     sentence_id=self.sentence_id,
@@ -909,6 +933,7 @@ class ConnectionHandler:
                 )
             )
         self.llm_finish_task = True
+        self.logger.bind(tag=TAG).debug(f"Chat method completed successfully. Total responses processed: {response_count}")
         # Use lambda for lazy evaluation, only execute get_llm_dialogue() at DEBUG level
         self.logger.bind(tag=TAG).debug(
             lambda: json.dumps(

@@ -243,7 +243,7 @@ Since you are deploying all modules, you have two important interfaces that need
 
 OTA Interface:
 ```
-http://your-host-machine-lan-IP:8002/xiaozhi/ota/
+http://your-host-machine-lan-IP:8003/xiaozhi/ota/
 ```
 
 Websocket Interface:
@@ -508,7 +508,7 @@ Since you are deploying all modules, you have two important interfaces.
 
 OTA Interface:
 ```
-http://your-computer-lan-IP:8002/xiaozhi/ota/
+http://your-computer-lan-IP:8003/xiaozhi/ota/
 ```
 
 Websocket Interface:

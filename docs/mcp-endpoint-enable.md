@@ -109,8 +109,8 @@ After configuration, starting the single module will output the following logs.
 ```
 250705[__main__]-INFO-Component initialization: vad successful SileroVAD
 250705[__main__]-INFO-Component initialization: asr successful OpenaiASR
-250705[__main__]-INFO-OTA interface is          http://192.168.1.25:8002/xiaozhi/ota/
-250705[__main__]-INFO-Vision analysis interface is     http://192.168.1.25:8002/mcp/vision/explain
+250705[__main__]-INFO-OTA interface is          http://192.168.1.25:8003/xiaozhi/ota/
+250705[__main__]-INFO-Vision analysis interface is     http://192.168.1.25:8003/mcp/vision/explain
 250705[__main__]-INFO-MCP endpoint is        ws://192.168.1.25:8004/mcp_endpoint/mcp/?token=abc
 250705[__main__]-INFO-Websocket address is    ws://192.168.1.25:8000/xiaozhi/v1/
 250705[__main__]-INFO-=======The above addresses are websocket protocol addresses, do not access with browser=======
