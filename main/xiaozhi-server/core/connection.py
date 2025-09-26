@@ -756,14 +756,19 @@ class ConnectionHandler:
             self.logger.bind(tag=TAG).debug(f"Step 3: Session ID created: {self.sentence_id}")
             self.dialogue.put(Message(role="user", content=query))
             self.logger.bind(tag=TAG).debug("Step 4: Message added to dialogue")
-            self.tts.tts_text_queue.put(
-                TTSMessageDTO(
-                    sentence_id=self.sentence_id,
-                    sentence_type=SentenceType.FIRST,
-                    content_type=ContentType.ACTION,
+            try:
+                self.tts.tts_text_queue.put(
+                    TTSMessageDTO(
+                        sentence_id=self.sentence_id,
+                        sentence_type=SentenceType.FIRST,
+                        content_type=ContentType.ACTION,
+                    ),
+                    timeout=5.0  # 5 second timeout
                 )
-            )
-            self.logger.bind(tag=TAG).debug("Step 5: FIRST TTS message added to queue")
+                self.logger.bind(tag=TAG).debug("Step 5: FIRST TTS message added to queue")
+            except Exception as e:
+                self.logger.bind(tag=TAG).error(f"Step 5 FAILED: TTS queue put failed: {e}")
+                # Continue without TTS to prevent hanging
 
         # Define intent functions
         functions = None
@@ -872,14 +877,20 @@ class ConnectionHandler:
                 if not tool_call_flag:
                     response_message.append(content)
                     self.logger.bind(tag=TAG).debug("Adding content to TTS queue...")
-                    self.tts.tts_text_queue.put(
-                        TTSMessageDTO(
-                            sentence_id=self.sentence_id,
-                            sentence_type=SentenceType.MIDDLE,
-                            content_type=ContentType.TEXT,
-                            content_detail=content,
+                    try:
+                        self.tts.tts_text_queue.put(
+                            TTSMessageDTO(
+                                sentence_id=self.sentence_id,
+                                sentence_type=SentenceType.MIDDLE,
+                                content_type=ContentType.TEXT,
+                                content_detail=content,
+                            ),
+                            timeout=5.0  # 5 second timeout
                         )
-                    )
+                        self.logger.bind(tag=TAG).debug("Content added to TTS queue successfully")
+                    except Exception as e:
+                        self.logger.bind(tag=TAG).error(f"TTS queue put failed for content: {e}")
+                        # Continue without TTS to prevent hanging
         # Process function call
         if tool_call_flag:
             bHasError = False
@@ -935,13 +946,19 @@ class ConnectionHandler:
             self.dialogue.put(Message(role="assistant", content=text_buff))
         if depth == 0:
             self.logger.bind(tag=TAG).debug("Adding LAST TTS message to queue...")
-            self.tts.tts_text_queue.put(
-                TTSMessageDTO(
-                    sentence_id=self.sentence_id,
-                    sentence_type=SentenceType.LAST,
-                    content_type=ContentType.ACTION,
+            try:
+                self.tts.tts_text_queue.put(
+                    TTSMessageDTO(
+                        sentence_id=self.sentence_id,
+                        sentence_type=SentenceType.LAST,
+                        content_type=ContentType.ACTION,
+                    ),
+                    timeout=5.0  # 5 second timeout
                 )
-            )
+                self.logger.bind(tag=TAG).debug("LAST TTS message added to queue successfully")
+            except Exception as e:
+                self.logger.bind(tag=TAG).error(f"LAST TTS queue put failed: {e}")
+                # Continue without TTS to prevent hanging
         self.llm_finish_task = True
         self.logger.bind(tag=TAG).debug(f"Chat method completed successfully. Total responses processed: {response_count}")
         # Use lambda for lazy evaluation, only execute get_llm_dialogue() at DEBUG level

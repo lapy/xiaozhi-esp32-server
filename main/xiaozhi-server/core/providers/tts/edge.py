@@ -30,7 +30,7 @@ class TTSProvider(TTSProviderBase):
                     pass
 
                 # Stream write audio data
-                    with open(output_file, "ab") as f:  # Change to append mode to avoid overwriting
+                with open(output_file, "ab") as f:  # Change to append mode to avoid overwriting
                     async for chunk in communicate.stream():
                         if chunk["type"] == "audio":  # Only process audio data chunks
                             f.write(chunk["data"])
