@@ -747,11 +747,15 @@ class ConnectionHandler:
         self.logger.bind(tag=TAG).info(f"LLM received user message: {query}")
         self.logger.bind(tag=TAG).debug(f"Chat method called with depth={depth}, intent_type={self.intent_type}")
         self.llm_finish_task = False
+        self.logger.bind(tag=TAG).debug("Step 1: Set llm_finish_task = False")
 
         # Create new session ID and send FIRST request for top level
         if depth == 0:
+            self.logger.bind(tag=TAG).debug("Step 2: Creating session ID...")
             self.sentence_id = str(uuid.uuid4().hex)
+            self.logger.bind(tag=TAG).debug(f"Step 3: Session ID created: {self.sentence_id}")
             self.dialogue.put(Message(role="user", content=query))
+            self.logger.bind(tag=TAG).debug("Step 4: Message added to dialogue")
             self.tts.tts_text_queue.put(
                 TTSMessageDTO(
                     sentence_id=self.sentence_id,
@@ -759,21 +763,25 @@ class ConnectionHandler:
                     content_type=ContentType.ACTION,
                 )
             )
+            self.logger.bind(tag=TAG).debug("Step 5: FIRST TTS message added to queue")
 
         # Define intent functions
         functions = None
+        self.logger.bind(tag=TAG).debug("Step 6: Checking functions...")
         if self.intent_type == "function_call" and hasattr(self, "func_handler"):
             functions = self.func_handler.get_functions()
             self.logger.bind(tag=TAG).debug(f"Functions loaded: {len(functions) if functions else 0}")
         else:
             self.logger.bind(tag=TAG).debug(f"No functions - intent_type={self.intent_type}, has_func_handler={hasattr(self, 'func_handler')}")
         response_message = []
+        self.logger.bind(tag=TAG).debug("Step 7: Functions check completed")
 
         try:
             # Use dialogue with memory
             memory_str = None
+            self.logger.bind(tag=TAG).debug("Step 8: Checking memory...")
             if self.memory is not None:
-                self.logger.bind(tag=TAG).debug("Querying memory...")
+                self.logger.bind(tag=TAG).debug("Step 9: Querying memory...")
                 future = asyncio.run_coroutine_threadsafe(
                     self.memory.query_memory(query), self.loop
                 )
@@ -781,16 +789,18 @@ class ConnectionHandler:
                 self.logger.bind(tag=TAG).debug(f"Memory query completed, result length: {len(memory_str) if memory_str else 0}")
             else:
                 self.logger.bind(tag=TAG).debug("No memory provider available")
+            self.logger.bind(tag=TAG).debug("Step 10: Memory check completed")
 
             # Prepare dialogue data
+            self.logger.bind(tag=TAG).debug("Step 11: Preparing dialogue data...")
             dialogue_data = self.dialogue.get_llm_dialogue_with_memory(
                 memory_str, self.config.get("voiceprint", {})
             )
-            self.logger.bind(tag=TAG).debug(f"Dialogue data prepared with {len(dialogue_data)} messages")
+            self.logger.bind(tag=TAG).debug(f"Step 12: Dialogue data prepared with {len(dialogue_data)} messages")
 
             if self.intent_type == "function_call" and functions is not None:
                 # Use streaming interface that supports functions
-                self.logger.bind(tag=TAG).debug("Calling LLM with functions...")
+                self.logger.bind(tag=TAG).debug("Step 13: Calling LLM with functions...")
                 llm_responses = self.llm.response_with_functions(
                     self.session_id,
                     dialogue_data,
@@ -798,12 +808,12 @@ class ConnectionHandler:
                 )
             else:
                 # Use regular streaming interface
-                self.logger.bind(tag=TAG).debug("Calling LLM without functions...")
+                self.logger.bind(tag=TAG).debug("Step 14: Calling LLM without functions...")
                 llm_responses = self.llm.response(
                     self.session_id,
                     dialogue_data,
                 )
-            self.logger.bind(tag=TAG).debug("LLM call completed, starting to process responses...")
+            self.logger.bind(tag=TAG).debug("Step 15: LLM call completed, starting to process responses...")
         except Exception as e:
             self.logger.bind(tag=TAG).error(f"LLM processing error {query}: {e}")
             return None
