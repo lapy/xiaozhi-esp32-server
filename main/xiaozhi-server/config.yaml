@@ -187,7 +187,7 @@ selected_module:
   # Vision Language Large Model
   VLLM: ChatGLMVLLM
   # TTS will call actual TTS adapter based on configuration name corresponding type
-  TTS: AliBLTTS
+  TTS: EdgeTTS
   # Memory module, memory is not enabled by default; if you want to use ultra-long memory, recommend using mem0ai; if you value privacy, use local mem_local_short
   Memory: nomem
   # After enabling intent recognition module, you can play music, control volume, recognize exit commands.
@@ -446,8 +446,11 @@ VLLM:
     # You can find your API key here https://bailian.console.aliyun.com/?apiKey=1#/api-key
     api_key: your_api_key
 TTS:
-  # Currently supported types are edge, openai, custom, alibl_stream
-
+  EdgeTTS:
+    # Define TTS API type
+    type: edge
+    voice: en-US-AriaNeural
+    output_dir: tmp/
   OpenAITTS:
     # OpenAI official text-to-speech service, supports most languages worldwide
     type: openai
@@ -488,18 +491,3 @@ TTS:
     speed: 1.0  # Speech rate, 1.0 means normal speed, >1 means faster, <1 means slower
     volume: 1.0  # Volume, 1.0 means normal volume, >1 means increase, <1 means decrease
     save_path:   # Save path
-  AliBLTTS:
-    # CosyVoice large model streaming text-to-speech synthesis
-    # You can find your api_key here https://bailian.console.aliyun.com/?apiKey=1#/api-key
-    # cosyvoice-v3 and some voices need to apply for activation
-    type: alibl_stream
-    api_key: your_api_key
-    model: "cosyvoice-v2"
-    voice: "longcheng_v2"
-    output_dir: tmp/
-    # The following can be left unset, using default settings
-    # format: pcm  # Audio format: pcm, wav, mp3, opus
-    # sample_rate: 24000  # Sample rate: 16000, 24000, 48000
-    # volume: 50  # Volume: 0-100
-    # rate: 1  # Speech rate: 0.5~2
-    # pitch: 1  # Pitch: 0.5~2

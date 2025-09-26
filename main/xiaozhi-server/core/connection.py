@@ -428,33 +428,68 @@ class ConnectionHandler:
                 )
 
             """Initialize local components"""
+            self.logger.bind(tag=TAG).debug("=== STARTING COMPONENT INITIALIZATION ===")
+            
             if self.vad is None:
+                self.logger.bind(tag=TAG).debug("Initializing VAD...")
                 self.vad = self._vad
+                self.logger.bind(tag=TAG).debug(f"VAD initialized: {type(self.vad)}")
+            else:
+                self.logger.bind(tag=TAG).debug(f"VAD already exists: {type(self.vad)}")
+                
             if self.asr is None:
+                self.logger.bind(tag=TAG).debug("Initializing ASR...")
                 self.asr = self._initialize_asr()
+                self.logger.bind(tag=TAG).debug(f"ASR initialized: {type(self.asr)}")
+            else:
+                self.logger.bind(tag=TAG).debug(f"ASR already exists: {type(self.asr)}")
 
             # Initialize voiceprint recognition
+            self.logger.bind(tag=TAG).debug("Initializing voiceprint recognition...")
             self._initialize_voiceprint()
+            self.logger.bind(tag=TAG).debug("Voiceprint recognition initialization completed")
 
             # Open speech recognition channel
+            self.logger.bind(tag=TAG).debug("Opening ASR audio channels...")
             asyncio.run_coroutine_threadsafe(
                 self.asr.open_audio_channels(self), self.loop
             )
+            self.logger.bind(tag=TAG).debug("ASR audio channels opened successfully")
+            
             if self.tts is None:
+                self.logger.bind(tag=TAG).debug("TTS is None, initializing...")
                 self.tts = self._initialize_tts()
+            else:
+                self.logger.bind(tag=TAG).debug(f"TTS already exists: {type(self.tts)}")
+                
             # Open speech synthesis channel
+            self.logger.bind(tag=TAG).debug("Opening TTS audio channels...")
             asyncio.run_coroutine_threadsafe(
                 self.tts.open_audio_channels(self), self.loop
             )
+            self.logger.bind(tag=TAG).debug("TTS audio channels opened successfully")
 
             """Load memory"""
+            self.logger.bind(tag=TAG).debug("Initializing memory...")
             self._initialize_memory()
+            self.logger.bind(tag=TAG).debug("Memory initialization completed")
+            
             """Load intent recognition"""
+            self.logger.bind(tag=TAG).debug("Initializing intent recognition...")
             self._initialize_intent()
+            self.logger.bind(tag=TAG).debug("Intent recognition initialization completed")
+            
             """Initialize reporting threads"""
+            self.logger.bind(tag=TAG).debug("Initializing report threads...")
             self._init_report_threads()
+            self.logger.bind(tag=TAG).debug("Report threads initialization completed")
+            
             """Update system prompt"""
+            self.logger.bind(tag=TAG).debug("Initializing prompt enhancement...")
             self._init_prompt_enhancement()
+            self.logger.bind(tag=TAG).debug("Prompt enhancement initialization completed")
+            
+            self.logger.bind(tag=TAG).debug("=== COMPONENT INITIALIZATION COMPLETED SUCCESSFULLY ===")
 
         except Exception as e:
             self.logger.bind(tag=TAG).error(f"Failed to instantiate components: {e}")
@@ -484,13 +519,18 @@ class ConnectionHandler:
 
     def _initialize_tts(self):
         """Initialize TTS"""
+        self.logger.bind(tag=TAG).debug("Initializing TTS service...")
         tts = None
         if not self.need_bind:
+            self.logger.bind(tag=TAG).debug("Calling initialize_tts...")
             tts = initialize_tts(self.config)
+            self.logger.bind(tag=TAG).debug(f"initialize_tts returned: {type(tts)}")
 
         if tts is None:
+            self.logger.bind(tag=TAG).debug("Using DefaultTTS fallback...")
             tts = DefaultTTS(self.config, delete_audio_file=True)
 
+        self.logger.bind(tag=TAG).debug(f"TTS service initialized: {type(tts)}")
         return tts
 
     def _initialize_asr(self):
@@ -648,21 +688,27 @@ class ConnectionHandler:
             self.memory = modules["memory"]
 
     def _initialize_memory(self):
+        self.logger.bind(tag=TAG).debug("Starting memory initialization...")
         if self.memory is None:
+            self.logger.bind(tag=TAG).debug("Memory is None, skipping initialization")
             return
         """Initialize memory module"""
+        self.logger.bind(tag=TAG).debug("Calling memory.init_memory...")
         self.memory.init_memory(
             role_id=self.device_id,
             llm=self.llm,
             summary_memory=self.config.get("summaryMemory", None),
             save_to_file=not self.read_config_from_api,
         )
+        self.logger.bind(tag=TAG).debug("Memory init_memory completed")
 
         # Get memory summary configuration
+        self.logger.bind(tag=TAG).debug("Getting memory configuration...")
         memory_config = self.config["Memory"]
         memory_type = self.config["Memory"][self.config["selected_module"]["Memory"]][
             "type"
         ]
+        self.logger.bind(tag=TAG).debug(f"Memory type: {memory_type}")
         # If using nomen, return directly
         if memory_type == "nomem":
             return
@@ -690,22 +736,30 @@ class ConnectionHandler:
                 self.logger.bind(tag=TAG).info("Using main LLM as intent recognition model")
 
     def _initialize_intent(self):
+        self.logger.bind(tag=TAG).debug("Starting intent initialization...")
         if self.intent is None:
+            self.logger.bind(tag=TAG).debug("Intent is None, skipping initialization")
             return
+        self.logger.bind(tag=TAG).debug("Getting intent type from config...")
         self.intent_type = self.config["Intent"][
             self.config["selected_module"]["Intent"]
         ]["type"]
+        self.logger.bind(tag=TAG).debug(f"Intent type: {self.intent_type}")
         if self.intent_type == "function_call" or self.intent_type == "intent_llm":
+            self.logger.bind(tag=TAG).debug("Setting load_function_plugin = True")
             self.load_function_plugin = True
         """Initialize intent recognition module"""
         # Get intent recognition configuration
+        self.logger.bind(tag=TAG).debug("Getting intent configuration...")
         intent_config = self.config["Intent"]
         intent_type = self.config["Intent"][self.config["selected_module"]["Intent"]][
             "type"
         ]
+        self.logger.bind(tag=TAG).debug(f"Intent type from config: {intent_type}")
 
         # If using nointent, return directly
         if intent_type == "nointent":
+            self.logger.bind(tag=TAG).debug("Intent type is nointent, returning early")
             return
         # Use intent_llm mode
         elif intent_type == "intent_llm":

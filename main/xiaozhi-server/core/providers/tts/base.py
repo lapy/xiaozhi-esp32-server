@@ -252,24 +252,35 @@ class TTSProviderBase(ABC):
 
     async def open_audio_channels(self, conn):
         self.conn = conn
+        logger.bind(tag=TAG).debug("Starting TTS audio channels initialization...")
         # TTS processing thread
+        logger.bind(tag=TAG).debug("Creating TTS processing thread...")
         self.tts_priority_thread = threading.Thread(
             target=self.tts_text_priority_thread, daemon=True
         )
+        logger.bind(tag=TAG).debug("Starting TTS processing thread...")
         self.tts_priority_thread.start()
+        logger.bind(tag=TAG).debug("TTS processing thread started successfully")
 
         # Audio playback processing thread
+        logger.bind(tag=TAG).debug("Creating audio playback thread...")
         self.audio_play_priority_thread = threading.Thread(
             target=self._audio_play_priority_thread, daemon=True
         )
+        logger.bind(tag=TAG).debug("Starting audio playback thread...")
         self.audio_play_priority_thread.start()
+        logger.bind(tag=TAG).debug("Audio playback thread started successfully")
+        logger.bind(tag=TAG).debug("TTS audio channels initialization completed")
 
     # Default non-streaming processing method
     # Streaming processing method should be overridden in subclasses
     def tts_text_priority_thread(self):
+        logger.bind(tag=TAG).debug("TTS text processing thread started")
         while not self.conn.stop_event.is_set():
             try:
+                logger.bind(tag=TAG).debug("Waiting for TTS message from queue...")
                 message = self.tts_text_queue.get(timeout=1)
+                logger.bind(tag=TAG).debug(f"Received TTS message: {message.sentence_type}")
                 if message.sentence_type == SentenceType.FIRST:
                     self.conn.client_abort = False
                 if self.conn.client_abort:
