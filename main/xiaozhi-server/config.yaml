@@ -108,15 +108,20 @@ wakeup_words:
 mcp_endpoint: your_endpoint_websocket_address
 # Basic plugin configuration
 plugins:
-  # Weather plugin configuration, fill in your api_key here
-  # This key is a shared project key, may be limited with heavy usage
-  # For stability, apply for your own replacement, 1000 free calls per day
-  # Application address: https://console.qweather.com/#/apps/create-key/over
-  # After application, find your apihost through this link: https://console.qweather.com/setting?lang=zh
+  # Weather plugin configuration using OpenWeatherMap API
+  # Free tier: 1000 calls/day, 60 calls/minute
+  # Get your API key at: https://openweathermap.org/api
+  # For production use, consider upgrading to a paid plan
   get_weather:
-    api_host: "mj7p3y7naa.re.qweatherapi.com"
-    api_key: "a861d0d5e7bf4ee1a83d9a9e4f96d4da"
-    default_location: "Guangzhou"
+    api_key: "your_openweathermap_api_key"
+    default_location: "New York"
+  # News plugin configuration - RSS feeds from major news sources
+  # The plugin automatically uses multiple sources with fallback for reliability
+  get_news:
+    default_rss_url: "https://feeds.reuters.com/reuters/worldNews"
+    # Built-in sources include: Reuters, CNN, BBC, Guardian, TechCrunch, and more
+    # These are automatically rotated for variety and reliability
+    # Custom sources can be added here if needed
   home_assistant:
     devices:
       - Living Room,Toy Light,switch.cuco_cn_460494544_cp1_on_p_2_1
@@ -208,6 +213,7 @@ Intent:
     # Below are examples of loading weather query, role switching, and news query plugins
     functions:
       - get_weather
+      - get_news
       - play_music
   function_call:
     # No need to change type
@@ -218,6 +224,7 @@ Intent:
     functions:
       - change_role
       - get_weather
+      - get_news
       # play_music is server's built-in music playback, hass_play_music is independent external program music playback controlled through home assistant
       # If you use hass_play_music, don't enable play_music, only keep one of the two
       - play_music
