@@ -88,8 +88,7 @@ class LLMProvider(LLMProviderBase):
         # Configure API key
         genai.configure(api_key=self.api_key)
 
-        # Set request timeout (seconds)
-        self.timeout = cfg.get("timeout", 120)  # Default 120 seconds
+        # Note: timeout parameter is not supported in current google-generativeai version
 
         # Create model instance
         self.model = genai.GenerativeModel(self.model_name)
@@ -186,7 +185,6 @@ class LLMProvider(LLMProviderBase):
             generation_config=self.gen_cfg,
             tools=tools,
             stream=True,
-            timeout=self.timeout,
         )
 
         log.bind(tag=TAG).debug(f"Received response from Gemini with model: {self.model_name}, dialogue length: {len(dialogue)}")
