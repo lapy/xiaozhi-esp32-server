@@ -143,7 +143,7 @@ export default {
     },
     // Get current language
     currentLanguage() {
-      return i18n.locale || 'zh_CN';
+      return i18n.locale || 'en';
     },
     // Get current language display text
     currentLanguageText() {
@@ -156,7 +156,7 @@ export default {
         case 'en':
           return this.$t('language.en');
         default:
-          return this.$t('language.zhCN');
+          return this.$t('language.en');
       }
     }
   },
