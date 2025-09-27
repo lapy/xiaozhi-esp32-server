@@ -574,7 +574,6 @@ INSERT INTO `sys_params` VALUES (102,'server.secret','a1186299-4c43-4a71-987e-80
 (110,'server.beian_ga_num','null','string',1,'Public security filing number, set to null to disable',NULL,NULL,NULL,NULL),
 (111,'server.enable_mobile_register','false','boolean',1,'Whether to enable mobile phone registration',NULL,NULL,NULL,NULL),
 (112,'server.sms_max_send_count','10','number',1,'Maximum SMS messages per phone number per day',NULL,NULL,NULL,NULL),
-(113,'server.enable_mobile_register','false','boolean',1,'Enable mobile phone number registration functionality',NULL,NULL,NULL,NULL),
 (118,'twilio.sms.account_sid','','string',1,'Twilio Account SID for SMS service',NULL,NULL,NULL,NULL),
 (119,'twilio.sms.auth_token','','string',1,'Twilio Auth Token for SMS service',NULL,NULL,NULL,NULL),
 (120,'twilio.sms.phone_number','','string',1,'Twilio phone number for sending SMS messages',NULL,NULL,NULL,NULL),
