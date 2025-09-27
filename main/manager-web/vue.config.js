@@ -19,6 +19,11 @@ function resolve(dir) {
 // Ensure .env file is loaded
 dotenv.config();
 
+// Set default title if not defined in environment
+if (!process.env.VUE_APP_TITLE) {
+  process.env.VUE_APP_TITLE = 'XiaoZhi Console';
+}
+
 // Define CDN resource list, ensure Service Worker can also access
 const cdnResources = {
   css: [
