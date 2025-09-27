@@ -140,8 +140,8 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                 throw new RenException(ErrorCode.LLM_NOT_EXIST);
             }
             String type = modelConfigEntity.getConfigJson().get("type").toString();
-            // If the queried large language model is openai or ollama, intent recognition parameters can be selected
-            if (!"openai".equals(type) && !"ollama".equals(type)) {
+            // If the queried large language model is openai, ollama, or gemini, intent recognition parameters can be selected
+            if (!"openai".equals(type) && !"ollama".equals(type) && !"gemini".equals(type)) {
                 throw new RenException(ErrorCode.INVALID_LLM_TYPE);
             }
         }

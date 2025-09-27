@@ -12,6 +12,8 @@ services:
       - seccomp:unconfined
     environment:
       - TZ=UTC
+    mem_limit: 4g
+    mem_reservation: 2g
     ports:
       # WebSocket server
       - "8000:8000"
@@ -22,6 +24,8 @@ services:
       - ./data:/opt/xiaozhi-esp32-server/data
       # Model file mount, very important
       - ./models/vosk:/opt/xiaozhi-esp32-server/models/vosk
+      # Whisper model mount
+      - ./models/whisper:/opt/xiaozhi-esp32-server/models/whisper
       # Sherpa ONNX model mounts
       - ./models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17:/opt/xiaozhi-esp32-server/models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17
       - ./models/sherpa-onnx-paraformer-zh-small-2024-03-09:/opt/xiaozhi-esp32-server/models/sherpa-onnx-paraformer-zh-small-2024-03-09

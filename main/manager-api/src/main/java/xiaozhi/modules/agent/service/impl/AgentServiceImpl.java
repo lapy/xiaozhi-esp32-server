@@ -347,11 +347,11 @@ public class AgentServiceImpl extends BaseServiceImpl<AgentDao, AgentEntity> imp
         }
         ModelConfigEntity llmModelData = modelConfigService.selectById(llmModelId);
         String type = llmModelData.getConfigJson().get("type").toString();
-        // If LLM is openai or ollama, any intent recognition parameter is allowed
-        if ("openai".equals(type) || "ollama".equals(type)) {
+        // If LLM is openai, ollama, or gemini, any intent recognition parameter is allowed
+        if ("openai".equals(type) || "ollama".equals(type) || "gemini".equals(type)) {
             return true;
         }
-        // Except for openai and ollama types, cannot select intent recognition with id Intent_function_call (function call)
+        // Except for openai, ollama, and gemini types, cannot select intent recognition with id Intent_function_call (function call)
         return !"Intent_function_call".equals(intentModelId);
     }
 
