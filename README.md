@@ -314,8 +314,8 @@ In fact, any VLLM that supports OpenAI interface calls can be integrated and use
 
 | Usage Method | Supported Platforms | Free Platforms |
 |:---:|:---:|:---:|
-| Local use | SherpaASR, VoskASR | SherpaASR, VoskASR |
-| Interface calls | OpenaiASR, GroqASR | OpenaiASR, GroqASR |
+| Local use | SherpaASR, VoskASR, **WhisperASR** | SherpaASR, VoskASR, **WhisperASR** |
+| Interface calls | OpenaiASR, GroqASR, GeminiASR | OpenaiASR, GroqASR, GeminiASR |
 
 ---
 

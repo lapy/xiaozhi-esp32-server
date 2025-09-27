@@ -9,3 +9,10 @@ databaseChangeLog:
         - sqlFile:
             encoding: utf8
             path: classpath:db/changelog/202509221000.sql
+   - changeSet:
+      id: 202509270000
+      author: ai_assistant
+      changes:
+        - sqlFile:
+            encoding: utf8
+            path: classpath:db/changelog/202509270000.sql

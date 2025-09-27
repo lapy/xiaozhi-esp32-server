@@ -381,9 +381,318 @@ download_vosk_model() {
     fi
 }
 
-# Only download Vosk model if not upgrading
+# Download Sherpa ONNX models function
+download_sherpa_models() {
+    echo "------------------------------------------------------------"
+    echo "Checking Sherpa ONNX ASR models..."
+    
+    SHERPA_BASE_DIR="/opt/xiaozhi-server/models"
+    SHERPA_SENSE_VOICE_DIR="$SHERPA_BASE_DIR/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17"
+    SHERPA_PARAFORMER_DIR="$SHERPA_BASE_DIR/sherpa-onnx-paraformer-zh-small-2024-03-09"
+    
+    # Check if models are already downloaded
+    SENSE_VOICE_EXISTS=false
+    PARAFORMER_EXISTS=false
+    
+    if [ -f "$SHERPA_SENSE_VOICE_DIR/model.int8.onnx" ] && [ -f "$SHERPA_SENSE_VOICE_DIR/tokens.txt" ]; then
+        SENSE_VOICE_EXISTS=true
+        echo "Sherpa ONNX Sense Voice model already exists, skipping download"
+    fi
+    
+    if [ -f "$SHERPA_PARAFORMER_DIR/model.int8.onnx" ] && [ -f "$SHERPA_PARAFORMER_DIR/tokens.txt" ]; then
+        PARAFORMER_EXISTS=true
+        echo "Sherpa ONNX Paraformer model already exists, skipping download"
+    fi
+    
+    # If both models exist, skip download
+    if [ "$SENSE_VOICE_EXISTS" = true ] && [ "$PARAFORMER_EXISTS" = true ]; then
+        echo "All Sherpa ONNX models already exist, skipping download"
+        return 0
+    fi
+    
+    echo "Sherpa ONNX models not found, starting download..."
+    
+    # Download Sense Voice model if needed
+    if [ "$SENSE_VOICE_EXISTS" = false ]; then
+        echo "Downloading Sherpa ONNX Sense Voice model..."
+        mkdir -p "$SHERPA_SENSE_VOICE_DIR"
+        
+        SENSE_VOICE_URL="https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2"
+        SENSE_VOICE_ARCHIVE="$SHERPA_SENSE_VOICE_DIR/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2"
+        
+        echo "Downloading from $SENSE_VOICE_URL"
+        echo "This may take several minutes depending on your internet connection..."
+        
+        if curl -L --progress-bar "$SENSE_VOICE_URL" -o "$SENSE_VOICE_ARCHIVE"; then
+            echo "Download completed, extracting Sense Voice model..."
+            
+            # Check if tar is available
+            if ! command -v tar &> /dev/null; then
+                echo "Installing tar..."
+                apt update
+                apt install -y tar
+            fi
+            
+            # Extract the model
+            if tar -xjf "$SENSE_VOICE_ARCHIVE" -C "$SHERPA_SENSE_VOICE_DIR/"; then
+                echo "Sense Voice model extracted successfully"
+                rm "$SENSE_VOICE_ARCHIVE"
+                echo "Sherpa ONNX Sense Voice model setup completed: $SHERPA_SENSE_VOICE_DIR"
+            else
+                echo "Warning: Failed to extract Sense Voice model"
+                return 1
+            fi
+        else
+            echo "Warning: Failed to download Sense Voice model"
+            return 1
+        fi
+    fi
+    
+    # Download Paraformer model if needed
+    if [ "$PARAFORMER_EXISTS" = false ]; then
+        echo "Downloading Sherpa ONNX Paraformer model..."
+        mkdir -p "$SHERPA_PARAFORMER_DIR"
+        
+        PARAFORMER_URL="https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-paraformer-zh-small-2024-03-09.tar.bz2"
+        PARAFORMER_ARCHIVE="$SHERPA_PARAFORMER_DIR/sherpa-onnx-paraformer-zh-small-2024-03-09.tar.bz2"
+        
+        echo "Downloading from $PARAFORMER_URL"
+        echo "This may take several minutes depending on your internet connection..."
+        
+        if curl -L --progress-bar "$PARAFORMER_URL" -o "$PARAFORMER_ARCHIVE"; then
+            echo "Download completed, extracting Paraformer model..."
+            
+            # Extract the model
+            if tar -xjf "$PARAFORMER_ARCHIVE" -C "$SHERPA_PARAFORMER_DIR/"; then
+                echo "Paraformer model extracted successfully"
+                rm "$PARAFORMER_ARCHIVE"
+                echo "Sherpa ONNX Paraformer model setup completed: $SHERPA_PARAFORMER_DIR"
+            else
+                echo "Warning: Failed to extract Paraformer model"
+                return 1
+            fi
+        else
+            echo "Warning: Failed to download Paraformer model"
+            return 1
+        fi
+    fi
+    
+    echo "All Sherpa ONNX models downloaded successfully!"
+    echo "Models are now available for Docker deployment"
+}
+
+# Download Whisper models function
+download_whisper_models() {
+    echo "------------------------------------------------------------"
+    echo "Checking Whisper models..."
+    
+    WHISPER_BASE_DIR="/opt/xiaozhi-server/models/whisper"
+    
+    # Check if Whisper models directory exists
+    if [ ! -d "$WHISPER_BASE_DIR" ]; then
+        mkdir -p "$WHISPER_BASE_DIR"
+        echo "Created Whisper models directory: $WHISPER_BASE_DIR"
+    fi
+    
+    # Define available Whisper models
+    WHISPER_MODELS=(
+        "tiny.en"
+        "tiny"
+        "base.en"
+        "base"
+        "small.en"
+        "small"
+        "medium.en"
+        "medium"
+        "large-v1"
+        "large-v2"
+        "large-v3"
+    )
+    
+    # Check which models are already downloaded
+    EXISTING_MODELS=()
+    MISSING_MODELS=()
+    
+    for model in "${WHISPER_MODELS[@]}"; do
+        MODEL_PATH="$WHISPER_BASE_DIR/$model"
+        if [ -d "$MODEL_PATH" ] && [ -f "$MODEL_PATH/encoder.onnx" ] || [ -f "$MODEL_PATH/encoder.pt" ]; then
+            EXISTING_MODELS+=("$model")
+            echo "Whisper model '$model' already exists, skipping download"
+        else
+            MISSING_MODELS+=("$model")
+        fi
+    done
+    
+    # If all models exist, skip download
+    if [ ${#MISSING_MODELS[@]} -eq 0 ]; then
+        echo "All Whisper models already exist, skipping download"
+        return 0
+    fi
+    
+    echo "Whisper models not found, starting download..."
+    echo "Available models: ${WHISPER_MODELS[*]}"
+    echo "Missing models: ${MISSING_MODELS[*]}"
+    
+    # Note: Whisper models are downloaded automatically by the Python whisper library
+    # when first used. We'll create placeholder directories and download scripts.
+    echo "Creating Whisper model download setup..."
+    
+    # Create a Python script to download models
+    cat > "$WHISPER_BASE_DIR/download_models.py" << 'EOF'
+#!/usr/bin/env python3
+"""
+Whisper model download script
+This script downloads Whisper models to the specified directory
+"""
+import os
+import sys
+import whisper
+import argparse
+
+def download_whisper_model(model_name, download_dir):
+    """Download a Whisper model to the specified directory"""
+    try:
+        print(f"Downloading Whisper model: {model_name}")
+        
+        # Set the cache directory for Whisper
+        os.environ['WHISPER_CACHE_DIR'] = download_dir
+        
+        # Load the model (this will download it if not present)
+        model = whisper.load_model(model_name)
+        
+        print(f"Successfully downloaded Whisper model: {model_name}")
+        return True
+        
+    except Exception as e:
+        print(f"Failed to download Whisper model {model_name}: {e}")
+        return False
+
+def main():
+    parser = argparse.ArgumentParser(description='Download Whisper models')
+    parser.add_argument('--model', required=True, help='Model name to download')
+    parser.add_argument('--dir', required=True, help='Download directory')
+    
+    args = parser.parse_args()
+    
+    success = download_whisper_model(args.model, args.dir)
+    sys.exit(0 if success else 1)
+
+if __name__ == '__main__':
+    main()
+EOF
+    
+    chmod +x "$WHISPER_BASE_DIR/download_models.py"
+    
+    # Create a shell script for easy model downloads
+    cat > "$WHISPER_BASE_DIR/download_all_models.sh" << 'EOF'
+#!/bin/bash
+# Whisper model download script
+
+WHISPER_MODELS=(
+    "tiny.en"
+    "tiny"
+    "base.en"
+    "base"
+    "small.en"
+    "small"
+    "medium.en"
+    "medium"
+    "large-v1"
+    "large-v2"
+    "large-v3"
+)
+
+DOWNLOAD_DIR="/opt/xiaozhi-server/models/whisper"
+
+echo "Starting Whisper model downloads..."
+echo "This may take a long time depending on your internet connection"
+echo "Models will be downloaded to: $DOWNLOAD_DIR"
+
+for model in "${WHISPER_MODELS[@]}"; do
+    echo "Downloading model: $model"
+    python3 "$DOWNLOAD_DIR/download_models.py" --model "$model" --dir "$DOWNLOAD_DIR"
+    if [ $? -eq 0 ]; then
+        echo "Successfully downloaded: $model"
+    else
+        echo "Failed to download: $model"
+    fi
+    echo "---"
+done
+
+echo "Whisper model download process completed"
+EOF
+    
+    chmod +x "$WHISPER_BASE_DIR/download_all_models.sh"
+    
+    # Create model info file
+    cat > "$WHISPER_BASE_DIR/MODELS.md" << 'EOF'
+# Whisper Models
+
+This directory contains Whisper ASR models for offline speech recognition.
+
+## Available Models
+
+- **tiny.en** - Fastest, English only (~39 MB)
+- **tiny** - Fastest, multilingual (~39 MB)
+- **base.en** - Small, English only (~74 MB)
+- **base** - Small, multilingual (~74 MB)
+- **small.en** - Medium, English only (~244 MB)
+- **small** - Medium, multilingual (~244 MB)
+- **medium.en** - Large, English only (~769 MB)
+- **medium** - Large, multilingual (~769 MB)
+- **large-v1** - Very large, multilingual (~1550 MB)
+- **large-v2** - Very large, multilingual (~1550 MB)
+- **large-v3** - Very large, multilingual (~1550 MB)
+
+## Usage
+
+Models are automatically downloaded when first used by the Whisper ASR provider.
+You can also download them manually using the provided scripts:
+
+```bash
+# Download a specific model
+python3 /opt/xiaozhi-server/models/whisper/download_models.py --model base --dir /opt/xiaozhi-server/models/whisper
+
+# Download all models (takes a long time)
+/opt/xiaozhi-server/models/whisper/download_all_models.sh
+```
+
+## Configuration
+
+Configure Whisper models in your config.yaml:
+
+```yaml
+ASR:
+  WhisperASR:
+    type: whisper
+    model_name: base  # Choose from available models above
+    device: auto      # auto, cpu, cuda
+    language: null    # null for auto-detect, or specific language code
+    output_dir: tmp/
+```
+
+## Performance Notes
+
+- **tiny/tiny.en**: Fastest, lowest accuracy, good for real-time applications
+- **base/base.en**: Good balance of speed and accuracy
+- **small/small.en**: Better accuracy, slower than base
+- **medium/medium.en**: High accuracy, significantly slower
+- **large-v1/v2/v3**: Highest accuracy, slowest processing
+
+Choose the model based on your accuracy vs speed requirements.
+EOF
+    
+    echo "Whisper model setup completed!"
+    echo "Models will be downloaded automatically when first used"
+    echo "Manual download scripts available in: $WHISPER_BASE_DIR"
+    echo "Model information available in: $WHISPER_BASE_DIR/MODELS.md"
+}
+
+# Only download models if not upgrading
 if [ -z "$UPGRADE_COMPLETED" ]; then
     download_vosk_model
+    download_sherpa_models
+    download_whisper_models
 fi
 
 

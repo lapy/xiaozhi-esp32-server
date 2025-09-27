@@ -43,6 +43,10 @@ class ASRProvider(ASRProviderBase):
         self.model_type = config.get("model_type", "sense_voice")  # Supports paraformer
         self.delete_audio_file = delete_audio_file
 
+        logger.debug(
+            f"Sherpa ONNX ASR parameters initialized: model_dir={self.model_dir}, output_dir={self.output_dir}, model_type={self.model_type}, delete_audio_file={self.delete_audio_file}"
+        )
+
         # Ensure output directory exists
         os.makedirs(self.output_dir, exist_ok=True)
 
@@ -124,14 +128,20 @@ class ASRProvider(ASRProviderBase):
         self, opus_data: List[bytes], session_id: str, audio_format="opus"
     ) -> Tuple[Optional[str], Optional[str]]:
         """Main speech-to-text processing logic"""
+        logger.bind(tag=TAG).debug(f"Sending Sherpa ONNX ASR request with session_id: {session_id}, audio_format: {audio_format}")
+        
         file_path = None
         try:
             # Save audio file
             start_time = time.time()
             if audio_format == "pcm":
                 pcm_data = opus_data
+                logger.bind(tag=TAG).debug(f"Using PCM data directly, length: {len(opus_data)}")
             else:
+                logger.bind(tag=TAG).debug(f"Decoding Opus data to PCM")
                 pcm_data = self.decode_opus(opus_data)
+                logger.bind(tag=TAG).debug(f"Decoded PCM data length: {len(pcm_data) if pcm_data else 0}")
+                
             file_path = self.save_audio_to_file(pcm_data, session_id)
             logger.bind(tag=TAG).debug(
                 f"Audio file save time: {time.time() - start_time:.3f}s | Path: {file_path}"
@@ -139,10 +149,18 @@ class ASRProvider(ASRProviderBase):
 
             # Speech recognition
             start_time = time.time()
+            logger.bind(tag=TAG).debug(f"Starting Sherpa ONNX speech recognition with model_type: {self.model_type}")
+            
             s = self.model.create_stream()
             samples, sample_rate = self.read_wave(file_path)
+            logger.bind(tag=TAG).debug(f"Read wave file: {len(samples)} samples at {sample_rate}Hz")
+            
             s.accept_waveform(sample_rate, samples)
+            logger.bind(tag=TAG).debug(f"Accepted waveform data")
+            
             self.model.decode_stream(s)
+            logger.bind(tag=TAG).debug(f"Decoded stream")
+            
             text = s.result.text
             logger.bind(tag=TAG).debug(
                 f"Speech recognition time: {time.time() - start_time:.3f}s | Result: {text}"

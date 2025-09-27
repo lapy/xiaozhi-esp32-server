@@ -24,7 +24,7 @@ Suggestion: The default configuration of this project is a low-cost solution. We
 
 | Module Name | Default Free Configuration | Streaming Configuration |
 |:---:|:---:|:---:|
-| ASR (Speech Recognition) | OpenaiASR (API) | 👍OpenaiASR (API) or 👍GroqASR (API) |
+| ASR (Speech Recognition) | OpenaiASR (API) or **WhisperASR (Local)** | 👍OpenaiASR (API) or 👍GroqASR (API) or **👍WhisperASR (Local)** |
 | LLM (Large Model) | ChatGLMLLM (ZhIPu glm-4-flash) | 👍AliLLM (qwen3-235b-a22b-instruct-2507) |
 | VLLM (Visual Large Model) | ChatGLMVLLM (ZhIPu glm-4v-flash) | 👍QwenVLVLLM (Qwen qwen2.5-vl-3b-instructh) |
 | TTS (Text-to-Speech) | ✅EdgeTTS (Microsoft Edge TTS) | 👍OpenAITTS (OpenAI TTS) |
@@ -56,16 +56,46 @@ VAD:
 1. [How to compile the firmware yourself](./firmware-build.md)<br/>
 2. [How to modify the OTA address based on the firmware compiled](./firmware-setting.md)<br/>
 
-### 9. Expansion-related tutorials
+### 9. How to use Whisper ASR for offline speech recognition? 🎤
+
+**Whisper ASR** is a powerful offline speech recognition solution that provides excellent accuracy for multilingual speech recognition.
+
+**Configuration:**
+```yaml
+ASR:
+  WhisperASR:
+    type: whisper
+    model_name: base  # Choose from: tiny, base, small, medium, large-v1, large-v2, large-v3
+    device: auto      # auto, cpu, cuda
+    language: null    # null for auto-detect, or specific language code
+    output_dir: tmp/
+```
+
+**Key Features:**
+- **Offline Operation**: Complete offline after initial model download
+- **Multilingual Support**: Supports 99+ languages with auto-detection
+- **Multiple Model Sizes**: From tiny (39MB) to large-v3 (1.5GB)
+- **GPU Acceleration**: Automatic CUDA detection and usage
+- **High Accuracy**: State-of-the-art accuracy for speech recognition
+
+**Model Selection Guide:**
+- **tiny/base**: Fast processing, good for real-time applications
+- **small/medium**: Better accuracy, slower processing
+- **large-v1/v2/v3**: Highest accuracy, slowest processing
+
+For detailed setup instructions, see: [Whisper ASR Integration Guide](./whisper-asr-integration.md)
+
+### 10. Expansion-related tutorials
 
 1. [How to enable phone number registration](./ali-sms-integration.md)<br/>
-2. [How to integrate with HomeAssistant to control smart home devices](./homeassistant-integration.md)<br/>
-3. [How to enable visual models to recognize objects](./mcp-vision-integration.md)<br/>
-4. [How to deploy the MCP endpoint](./mcp-endpoint-enable.md)<br/>
-5. [How to integrate with the MCP endpoint](./mcp-endpoint-integration.md)<br/>
-6. [How to enable voiceprint recognition](./voiceprint-integration.md)<br/>
+2. [How to configure Whisper ASR](./whisper-asr-integration.md)<br/>
+3. [How to integrate with HomeAssistant to control smart home devices](./homeassistant-integration.md)<br/>
+4. [How to enable visual models to recognize objects](./mcp-vision-integration.md)<br/>
+5. [How to deploy the MCP endpoint](./mcp-endpoint-enable.md)<br/>
+6. [How to integrate with the MCP endpoint](./mcp-endpoint-integration.md)<br/>
+7. [How to enable voiceprint recognition](./voiceprint-integration.md)<br/>
 
-### 10. Performance testing tutorials
+### 11. Performance testing tutorials
 
 1. [Performance testing tutorial for each module](./performance_tester.md)<br/>
 2. [Regularly published performance test results](https://github.com/xinnan-tech/xiaozhi-performance-research)<br/>

@@ -264,7 +264,39 @@ For example, if you want to change models, just modify the configuration under `
 
 ## Model Files
 
-This project now uses English-supporting ASR services (OpenAI ASR, Groq ASR, etc.) instead of Chinese-focused models. Most ASR services require API keys, while VoskASR requires manual model downloads from https://alphacephei.com/vosk/models (recommended: vosk-model-en-us-0.22 for English).
+This project now uses English-supporting ASR services (OpenAI ASR, Groq ASR, Whisper ASR, etc.) instead of Chinese-focused models. Most ASR services require API keys, while VoskASR and WhisperASR require manual model downloads.
+
+**ASR Options:**
+- **WhisperASR**: Offline, high accuracy, multilingual support (models: tiny to large-v3)
+- **VoskASR**: Offline, good accuracy, limited languages (download from https://alphacephei.com/vosk/models)
+- **OpenAI ASR/Groq ASR**: Online, API-based, requires API keys
+
+### Setting Up Whisper ASR (Recommended)
+
+**WhisperASR** is the recommended offline ASR solution, providing excellent accuracy and multilingual support.
+
+**Configuration:**
+```yaml
+selected_module:
+  ASR: WhisperASR
+
+ASR:
+  WhisperASR:
+    type: whisper
+    model_name: base  # Choose from: tiny, base, small, medium, large-v1, large-v2, large-v3
+    device: auto      # auto, cpu, cuda
+    language: null    # null for auto-detect, or specific language code
+    output_dir: tmp/
+```
+
+**Key Features:**
+- **Offline Operation**: Complete offline after initial model download
+- **Multilingual Support**: Supports 99+ languages with auto-detection
+- **Multiple Model Sizes**: From tiny (39MB) to large-v3 (1.5GB)
+- **GPU Acceleration**: Automatic CUDA detection and usage
+- **High Accuracy**: State-of-the-art accuracy for speech recognition
+
+Models are automatically downloaded when first used. For detailed setup instructions, see: [Whisper ASR Integration Guide](./whisper-asr-integration.md)
 
 ### Downloading and Setting Up Vosk English Model
 

@@ -18,6 +18,10 @@ class ASRProvider(ASRProviderBase):
         self.output_dir = config.get("output_dir", "tmp/")
         self.delete_audio_file = delete_audio_file
         
+        logger.debug(
+            f"Vosk ASR parameters initialized: model_path={self.model_path}, output_dir={self.output_dir}, delete_audio_file={self.delete_audio_file}"
+        )
+        
         # Initialize VOSK model
         self.model = None
         self.recognizer = None
@@ -47,6 +51,8 @@ class ASRProvider(ASRProviderBase):
         self, audio_data: List[bytes], session_id: str, audio_format: str = "opus"
     ) -> Tuple[Optional[str], Optional[str]]:
         """Convert speech data to text"""
+        logger.bind(tag=TAG).debug(f"Sending Vosk ASR request with session_id: {session_id}, audio_format: {audio_format}")
+        
         file_path = None
         try:
             # Check if model loaded successfully
@@ -57,8 +63,11 @@ class ASRProvider(ASRProviderBase):
             # Decode audio (if original format is Opus)
             if audio_format == "pcm":
                 pcm_data = audio_data
+                logger.bind(tag=TAG).debug(f"Using PCM data directly, length: {len(audio_data)}")
             else:
+                logger.bind(tag=TAG).debug(f"Decoding Opus data to PCM")
                 pcm_data = self.decode_opus(audio_data)
+                logger.bind(tag=TAG).debug(f"Decoded PCM data length: {len(pcm_data) if pcm_data else 0}")
                 
             if not pcm_data:
                 logger.bind(tag=TAG).warning("Decoded PCM data is empty, cannot perform recognition")
@@ -70,33 +79,41 @@ class ASRProvider(ASRProviderBase):
                 logger.bind(tag=TAG).warning("Merged PCM data is empty")
                 return "", None
 
+            logger.bind(tag=TAG).debug(f"Merged PCM data size: {len(combined_pcm_data)} bytes")
+
             # Determine whether to save as WAV file
             if not self.delete_audio_file:
                 file_path = self.save_audio_to_file(pcm_data, session_id)
+                logger.bind(tag=TAG).debug(f"Saved audio file: {file_path}")
 
             start_time = time.time()
             
+            logger.bind(tag=TAG).debug(f"Starting Vosk speech recognition")
             
             # Perform recognition (VOSK recommends sending 2000 bytes of data each time)
             chunk_size = 2000
             text_result = ""
+            chunk_count = 0
             
             for i in range(0, len(combined_pcm_data), chunk_size):
                 chunk = combined_pcm_data[i:i+chunk_size]
+                chunk_count += 1
                 if self.recognizer.AcceptWaveform(chunk):
                     result = json.loads(self.recognizer.Result())
                     text = result.get('text', '')
                     if text:
                         text_result += text + " "
+                        logger.bind(tag=TAG).debug(f"Vosk recognized text chunk {chunk_count}: {text}")
             
             # Get final result
             final_result = json.loads(self.recognizer.FinalResult())
             final_text = final_result.get('text', '')
             if final_text:
                 text_result += final_text
+                logger.bind(tag=TAG).debug(f"Vosk final result: {final_text}")
             
             logger.bind(tag=TAG).debug(
-                f"VOSK speech recognition time: {time.time() - start_time:.3f}s | Result: {text_result.strip()}"
+                f"VOSK speech recognition time: {time.time() - start_time:.3f}s | Processed {chunk_count} chunks | Result: {text_result.strip()}"
             )
             
             return text_result.strip(), file_path

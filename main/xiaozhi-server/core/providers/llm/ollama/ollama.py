@@ -24,7 +24,12 @@ class LLMProvider(LLMProviderBase):
         # Check if it's a qwen3 model
         self.is_qwen3 = self.model_name and self.model_name.lower().startswith("qwen3")
 
+        logger.debug(
+            f"Intent recognition parameters initialized: model_name={self.model_name}, base_url={self.base_url}, is_qwen3={self.is_qwen3}"
+        )
+
     def response(self, session_id, dialogue, **kwargs):
+        logger.bind(tag=TAG).debug(f"Sending request to Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
         try:
             # If it's a qwen3 model, add /no_think instruction to user's last message
             if self.is_qwen3:
@@ -47,18 +52,22 @@ class LLMProvider(LLMProviderBase):
             responses = self.client.chat.completions.create(
                 model=self.model_name, messages=dialogue, stream=True
             )
+            logger.bind(tag=TAG).debug(f"Received response from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
             is_active = True
             # Used to handle cross-chunk tags
             buffer = ""
 
             for chunk in responses:
+                logger.bind(tag=TAG).debug(f"Received chunk from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 try:
                     delta = (
                         chunk.choices[0].delta
                         if getattr(chunk, "choices", None)
                         else None
                     )
+                    logger.bind(tag=TAG).debug(f"Received delta from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     content = delta.content if hasattr(delta, "content") else ""
+                    logger.bind(tag=TAG).debug(f"Extracted content from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
 
                     if content:
                         # Add content to buffer
@@ -83,6 +92,7 @@ class LLMProvider(LLMProviderBase):
 
                         # If currently active and buffer has content, output
                         if is_active and buffer:
+                            logger.bind(tag=TAG).debug(f"Yielding content from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
                             yield buffer
                             buffer = ""  # Clear buffer
 
@@ -94,6 +104,7 @@ class LLMProvider(LLMProviderBase):
             yield "【Ollama service response exception】"
 
     def response_with_functions(self, session_id, dialogue, functions=None):
+        logger.bind(tag=TAG).debug(f"Sending function request to Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
         try:
             # If it's a qwen3 model, add /no_think instruction to user's last message
             if self.is_qwen3:
@@ -120,16 +131,19 @@ class LLMProvider(LLMProviderBase):
                 tools=functions,
             )
 
+            logger.bind(tag=TAG).debug(f"Received function response from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
             is_active = True
             buffer = ""
 
             for chunk in stream:
+                logger.bind(tag=TAG).debug(f"Received function chunk from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 try:
                     delta = (
                         chunk.choices[0].delta
                         if getattr(chunk, "choices", None)
                         else None
                     )
+                    logger.bind(tag=TAG).debug(f"Received function delta from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     content = delta.content if hasattr(delta, "content") else None
                     tool_calls = (
                         delta.tool_calls if hasattr(delta, "tool_calls") else None
@@ -137,11 +151,13 @@ class LLMProvider(LLMProviderBase):
 
                     # If it's a tool call, pass directly
                     if tool_calls:
+                        logger.bind(tag=TAG).debug(f"Received tool call from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
                         yield None, tool_calls
                         continue
 
                     # Process text content
                     if content:
+                        logger.bind(tag=TAG).debug(f"Received function text content from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
                         # Add content to buffer
                         buffer += content
 
@@ -164,6 +180,7 @@ class LLMProvider(LLMProviderBase):
 
                         # If currently active and buffer has content, output
                         if is_active and buffer:
+                            logger.bind(tag=TAG).debug(f"Yielding function content from Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
                             yield buffer, None
                             buffer = ""  # Clear buffer
                 except Exception as e:

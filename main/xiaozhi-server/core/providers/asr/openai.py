@@ -19,16 +19,26 @@ class ASRProvider(ASRProviderBase):
         self.output_dir = config.get("output_dir")
         self.delete_audio_file = delete_audio_file
 
+        logger.debug(
+            f"ASR parameters initialized: model={self.model}, api_url={self.api_url}, output_dir={self.output_dir}, delete_audio_file={self.delete_audio_file}"
+        )
+
         os.makedirs(self.output_dir, exist_ok=True)
 
     async def speech_to_text(self, opus_data: List[bytes], session_id: str, audio_format="opus") -> Tuple[Optional[str], Optional[str]]:
+        logger.bind(tag=TAG).debug(f"Sending ASR request to OpenAI with model: {self.model}, session_id: {session_id}, audio_format: {audio_format}")
+        
         file_path = None
         try:
             start_time = time.time()
             if audio_format == "pcm":
                 pcm_data = opus_data
+                logger.bind(tag=TAG).debug(f"Using PCM data directly, length: {len(opus_data)}")
             else:
+                logger.bind(tag=TAG).debug(f"Decoding Opus data to PCM")
                 pcm_data = self.decode_opus(opus_data)
+                logger.bind(tag=TAG).debug(f"Decoded PCM data length: {len(pcm_data) if pcm_data else 0}")
+                
             file_path = self.save_audio_to_file(pcm_data, session_id)
 
             logger.bind(tag=TAG).debug(
@@ -45,6 +55,7 @@ class ASRProvider(ASRProviderBase):
                 "model": self.model
             }
 
+            logger.bind(tag=TAG).debug(f"Making OpenAI ASR API request to: {self.api_url}")
 
             with open(file_path, "rb") as audio_file:  # Use with statement to ensure file is closed
                 files = {
@@ -59,13 +70,15 @@ class ASRProvider(ASRProviderBase):
                     headers=headers
                 )
                 logger.bind(tag=TAG).debug(
-                    f"Speech recognition time: {time.time() - start_time:.3f}s | Result: {response.text}"
+                    f"Speech recognition time: {time.time() - start_time:.3f}s | Status: {response.status_code} | Result: {response.text}"
                 )
 
             if response.status_code == 200:
                 text = response.json().get("text", "")
+                logger.bind(tag=TAG).debug(f"Successfully extracted text from OpenAI ASR response: {text}")
                 return text, file_path
             else:
+                logger.bind(tag=TAG).error(f"OpenAI ASR API request failed: {response.status_code} - {response.text}")
                 raise Exception(f"API request failed: {response.status_code} - {response.text}")
                 
         except Exception as e:

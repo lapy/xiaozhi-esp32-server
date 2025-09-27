@@ -20,6 +20,10 @@ class LLMProvider(LLMProviderBase):
             f"Initializing Xinference LLM provider with model: {self.model_name}, base_url: {self.base_url}"
         )
 
+        logger.debug(
+            f"Intent recognition parameters initialized: model_name={self.model_name}, base_url={self.base_url}"
+        )
+
         try:
             self.client = OpenAI(
                 base_url=self.base_url,
@@ -38,15 +42,20 @@ class LLMProvider(LLMProviderBase):
             responses = self.client.chat.completions.create(
                 model=self.model_name, messages=dialogue, stream=True
             )
+            logger.bind(tag=TAG).debug(f"Received response from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
             is_active = True
             for chunk in responses:
+                logger.bind(tag=TAG).debug(f"Received chunk from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 try:
                     delta = (
                         chunk.choices[0].delta
                         if getattr(chunk, "choices", None)
                         else None
                     )
+                    logger.bind(tag=TAG).debug(f"Received delta from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     content = delta.content if hasattr(delta, "content") else ""
+                    logger.bind(tag=TAG).debug(f"Extracted content from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
+                    
                     if content:
                         if "<think>" in content:
                             is_active = False
@@ -55,6 +64,7 @@ class LLMProvider(LLMProviderBase):
                             is_active = True
                             content = content.split("</think>")[-1]
                         if is_active:
+                            logger.bind(tag=TAG).debug(f"Yielding content from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                             yield content
                 except Exception as e:
                     logger.bind(tag=TAG).error(f"Error processing chunk: {e}")
@@ -80,14 +90,20 @@ class LLMProvider(LLMProviderBase):
                 tools=functions,
             )
 
+            logger.bind(tag=TAG).debug(f"Received function response from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
+
             for chunk in stream:
+                logger.bind(tag=TAG).debug(f"Received function chunk from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 delta = chunk.choices[0].delta
+                logger.bind(tag=TAG).debug(f"Received function delta from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 content = delta.content
                 tool_calls = delta.tool_calls
 
                 if content:
+                    logger.bind(tag=TAG).debug(f"Received function text content from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     yield content, tool_calls
                 elif tool_calls:
+                    logger.bind(tag=TAG).debug(f"Received tool call from Xinference with model: {self.model_name}, dialogue length: {len(dialogue)}")
                     yield None, tool_calls
 
         except Exception as e:

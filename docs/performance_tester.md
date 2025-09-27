@@ -20,6 +20,12 @@ TTS:
 VLLM:
 
 ASR:
+  WhisperASR:
+    type: whisper
+    model_name: base
+    device: auto
+    language: null
+    output_dir: tmp/
 ```
 4. Run performance_tester.py under main/xiaozhi-server directory: 
 ```

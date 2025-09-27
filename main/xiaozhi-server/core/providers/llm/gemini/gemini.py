@@ -101,6 +101,10 @@ class LLMProvider(LLMProviderBase):
             max_output_tokens=2048,
         )
 
+        log.debug(
+            f"Intent recognition parameters initialized: {self.gen_cfg.temperature}, {self.gen_cfg.max_output_tokens}, {self.gen_cfg.top_p}, {self.gen_cfg.top_k}"
+        )
+
     @staticmethod
     def _build_tools(funcs: List[Dict[str, Any]] | None):
         if not funcs:
@@ -120,10 +124,20 @@ class LLMProvider(LLMProviderBase):
 
     # Gemini documentation mentions no need to maintain session-id, directly concatenate with dialogue
     def response(self, session_id, dialogue, **kwargs):
-        yield from self._generate(dialogue, None)
+        log.bind(tag=TAG).debug(f"Sending request to Gemini with model: {self.model_name}, dialogue length: {len(dialogue)}")
+        try:
+            yield from self._generate(dialogue, None)
+        except Exception as e:
+            log.bind(tag=TAG).error(f"Error in Gemini response generation: {e}")
+            yield f"【Gemini service response exception: {e}】"
 
     def response_with_functions(self, session_id, dialogue, functions=None):
-        yield from self._generate(dialogue, self._build_tools(functions))
+        log.bind(tag=TAG).debug(f"Sending function request to Gemini with model: {self.model_name}, dialogue length: {len(dialogue)}")
+        try:
+            yield from self._generate(dialogue, self._build_tools(functions))
+        except Exception as e:
+            log.bind(tag=TAG).error(f"Error in Gemini function call streaming: {e}")
+            yield f"【Gemini service response exception: {e}】", None
 
     def _generate(self, dialogue, tools):
         role_map = {"assistant": "model", "user": "user"}
@@ -165,6 +179,8 @@ class LLMProvider(LLMProviderBase):
                 }
             )
 
+        log.bind(tag=TAG).debug(f"Generated content request for Gemini with model: {self.model_name}, dialogue length: {len(dialogue)}")
+        
         stream: GenerateContentResponse = self.model.generate_content(
             contents=contents,
             generation_config=self.gen_cfg,
@@ -173,13 +189,18 @@ class LLMProvider(LLMProviderBase):
             timeout=self.timeout,
         )
 
+        log.bind(tag=TAG).debug(f"Received response from Gemini with model: {self.model_name}, dialogue length: {len(dialogue)}")
+
         try:
             for chunk in stream:
+                log.bind(tag=TAG).debug(f"Received chunk from Gemini with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 cand = chunk.candidates[0]
+                log.bind(tag=TAG).debug(f"Processing candidate from Gemini with model: {self.model_name}, dialogue length: {len(dialogue)}")
                 for part in cand.content.parts:
                     # a) Function call - usually the last part is the function call
                     if getattr(part, "function_call", None):
                         fc = part.function_call
+                        log.bind(tag=TAG).debug(f"Received function call from Gemini with model: {self.model_name}, dialogue length: {len(dialogue)}")
                         yield None, [
                             SimpleNamespace(
                                 id=uuid.uuid4().hex,
@@ -195,8 +216,12 @@ class LLMProvider(LLMProviderBase):
                         return
                     # b) Plain text
                     if getattr(part, "text", None):
+                        log.bind(tag=TAG).debug(f"Received text content from Gemini with model: {self.model_name}, dialogue length: {len(dialogue)}")
                         yield part.text if tools is None else (part.text, None)
 
+        except Exception as e:
+            log.bind(tag=TAG).error(f"Error in Gemini _generate method: {e}")
+            raise
         finally:
             if tools is not None:
                 yield None, None  # function-mode ends, return dummy packet

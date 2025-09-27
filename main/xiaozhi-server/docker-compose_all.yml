@@ -28,6 +28,9 @@ services:
       - ./data:/opt/xiaozhi-esp32-server/data
       # Model file mount, very important
       - ./models/vosk:/opt/xiaozhi-esp32-server/models/vosk
+      # Sherpa ONNX model mounts
+      - ./models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17:/opt/xiaozhi-esp32-server/models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17
+      - ./models/sherpa-onnx-paraformer-zh-small-2024-03-09:/opt/xiaozhi-esp32-server/models/sherpa-onnx-paraformer-zh-small-2024-03-09
   # manager-api and manager-web modules
   xiaozhi-esp32-server-web:
     build:
