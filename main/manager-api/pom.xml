@@ -30,8 +30,7 @@
         <captcha.version>1.6.2</captcha.version>
         <guava.version>33.0.0-jre</guava.version>
         <liquibase-core.version>4.20.0</liquibase-core.version>
-        <aliyun-sms-version>4.1.0</aliyun-sms-version>
-        <okio-version>3.4.0</okio-version>
+        <twilio-version>8.31.1</twilio-version>
     </properties>
 
     <dependencies>
@@ -221,17 +220,11 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
-        <!-- Alibaba Cloud SMS SDK -->
+        <!-- Twilio SMS SDK -->
         <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>dysmsapi20170525</artifactId>
-            <version>${aliyun-sms-version}</version>
-        </dependency>
-        <!-- Alibaba Cloud SMS SDK uses okio:1.15.0 version with security vulnerability: GHSA-w33c-445m-f8w7, now upgraded to secure version 3.4.0 -->
-        <dependency>
-            <groupId>com.squareup.okio</groupId>
-            <artifactId>okio</artifactId>
-            <version>${okio-version}</version>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>${twilio-version}</version>
         </dependency>
         <!-- H2 Database for testing -->
         <dependency>

@@ -227,10 +227,10 @@ public class SysParamsServiceImpl extends BaseServiceImpl<SysParamsDao, SysParam
         // Check if SMS related parameters are empty
         ArrayList<String> list = new ArrayList<String>();
         list.add(Constant.SysMSMParam.SERVER_SMS_MAX_SEND_COUNT.getValue());
-        list.add(Constant.SysMSMParam.ALIYUN_SMS_ACCESS_KEY_ID.getValue());
-        list.add(Constant.SysMSMParam.ALIYUN_SMS_ACCESS_KEY_SECRET.getValue());
-        list.add(Constant.SysMSMParam.ALIYUN_SMS_SIGN_NAME.getValue());
-        list.add(Constant.SysMSMParam.ALIYUN_SMS_SMS_CODE_TEMPLATE_CODE.getValue());
+        list.add(Constant.SysMSMParam.TWILIO_SMS_ACCOUNT_SID.getValue());
+        list.add(Constant.SysMSMParam.TWILIO_SMS_AUTH_TOKEN.getValue());
+        list.add(Constant.SysMSMParam.TWILIO_SMS_PHONE_NUMBER.getValue());
+        list.add(Constant.SysMSMParam.TWILIO_SMS_TEMPLATE_MESSAGE.getValue());
         StringBuilder str = new StringBuilder();
         list.forEach(item -> {
             if (!StringUtils.isNoneBlank(item)) {

@@ -166,21 +166,21 @@ public interface Constant {
      */
     enum SysMSMParam {
         /**
-         * Alibaba Cloud authorization key ID
+         * Twilio Account SID
          */
-        ALIYUN_SMS_ACCESS_KEY_ID("aliyun.sms.access_key_id"),
+        TWILIO_SMS_ACCOUNT_SID("twilio.sms.account_sid"),
         /**
-         * Alibaba Cloud authorization secret key
+         * Twilio Auth Token
          */
-        ALIYUN_SMS_ACCESS_KEY_SECRET("aliyun.sms.access_key_secret"),
+        TWILIO_SMS_AUTH_TOKEN("twilio.sms.auth_token"),
         /**
-         * Alibaba Cloud SMS signature
+         * Twilio Phone Number (Sender)
          */
-        ALIYUN_SMS_SIGN_NAME("aliyun.sms.sign_name"),
+        TWILIO_SMS_PHONE_NUMBER("twilio.sms.phone_number"),
         /**
-         * Alibaba Cloud SMS template
+         * Twilio SMS Template Message
          */
-        ALIYUN_SMS_SMS_CODE_TEMPLATE_CODE("aliyun.sms.sms_code_template_code"),
+        TWILIO_SMS_TEMPLATE_MESSAGE("twilio.sms.template_message"),
         /**
          * Maximum SMS send count per number
          */

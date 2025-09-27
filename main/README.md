@@ -176,7 +176,7 @@ The `manager-api` component is a powerful backend service built using Java and S
     *   **Spring MVC:** Module in the Spring framework for building web applications and RESTful APIs.
     *   **MyBatis-Plus:** An ORM (Object-Relational Mapping) framework that enhances MyBatis functionality. It simplifies database operations, provides powerful CRUD (Create, Read, Update, Delete) functionality, conditional constructors, code generators, etc., and integrates well with Spring Boot.
     *   **MySQL:** As the main backend relational database, used for storing all management data and configuration information that need to be persisted.
-    *   **Druid (Alibaba Druid):** A powerful JDBC connection pool implementation that provides rich monitoring capabilities and excellent performance for efficient database connection management.
+    *   **Druid:** A powerful JDBC connection pool implementation that provides rich monitoring capabilities and excellent performance for efficient database connection management.
     *   **Redis (through Spring Data Redis):** A high-performance in-memory data structure store, commonly used for implementing data caching (such as caching hot configuration data, user session information) to significantly improve API response speed.
     *   **Apache Shiro:** A mature and easy-to-use Java security framework responsible for handling application authentication (user identity verification) and authorization (API access permission control) requirements.
     *   **Liquibase:** An open-source tool for tracking, managing, and applying database schema changes. It allows developers to define and version database structure changes in a database-independent way.
@@ -184,7 +184,7 @@ The `manager-api` component is a powerful backend service built using Java and S
     *   **Maven:** Used for project build automation and dependency management.
     *   **Lombok:** A Java library that automatically generates constructors, getters/setters, equals/hashCode, toString, and other boilerplate code through annotations, reducing redundancy.
     *   **HuTool / Google Guava:** Provides a large number of utility classes to simplify common programming tasks.
-    *   **Aliyun Dysmsapi:** Alibaba Cloud SMS service SDK for integrating SMS sending functionality (such as verification codes, notifications).
+    *   **Twilio SDK:** Twilio SMS service SDK for integrating SMS sending functionality (such as verification codes, notifications).
 
 *   **Key Implementation Details:**
 
@@ -524,7 +524,7 @@ Configuration is key to customizing system behavior, especially in selecting AI 
 
 2.  **`manager-api` Configuration:**
     *   As a Spring Boot application, its configuration is mainly managed through `application.properties` or `application.yml` files located in the `src/main/resources` directory.
-    *   Key configuration items include: database connection information (MySQL URL, username, password), Redis server address and port, application service port (default 8002), Apache Shiro security-related settings, and configuration parameters for any integrated third-party services (such as Alibaba Cloud SMS).
+    *   Key configuration items include: database connection information (MySQL URL, username, password), Redis server address and port, application service port (default 8002), Apache Shiro security-related settings, and configuration parameters for any integrated third-party services (such as Twilio SMS).
 
 3.  **`manager-web` Configuration:**
     *   Environment-specific settings for the Vue.js frontend application are managed through `.env` series files (such as `.env`, `.env.development`, `.env.production`) in the project root directory.

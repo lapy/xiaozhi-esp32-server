@@ -27,7 +27,7 @@ services:
       # Configuration file directory
       - ./data:/opt/xiaozhi-esp32-server/data
       # Model file mount, very important
-      - ./models:/opt/xiaozhi-esp32-server/models
+      - ./models/vosk:/opt/xiaozhi-esp32-server/models/vosk
   # manager-api and manager-web modules
   xiaozhi-esp32-server-web:
     build:

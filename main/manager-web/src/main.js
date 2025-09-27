@@ -2,6 +2,7 @@ import 'element-ui/lib/theme-chalk/index.css';
 import 'normalize.css/normalize.css'; // A modern alternative to CSS resets
 import Vue from 'vue';
 import ElementUI from 'element-ui';
+import locale from 'element-ui/lib/locale/lang/en'; // Import English locale
 import App from './App.vue';
 import router from './router';
 import store from './store';
@@ -12,7 +13,7 @@ import { register as registerServiceWorker } from './registerServiceWorker';
 // Create event bus for component communication
 Vue.prototype.$eventBus = new Vue();
 
-Vue.use(ElementUI);
+Vue.use(ElementUI, { locale }); // Use English locale
 
 Vue.config.productionTip = false
 

@@ -480,8 +480,8 @@ def is_valid_image_file(file_data: bytes) -> bool:
 
 def sanitize_tool_name(name: str) -> str:
     """Sanitize tool names for OpenAI compatibility."""
-    # Support Chinese, English letters, numbers, underscores and hyphens
-    return re.sub(r"[^a-zA-Z0-9_\-\u4e00-\u9fff]", "_", name)
+    # Support letters, numbers, underscores and hyphens
+    return re.sub(r"[^a-zA-Z0-9_\-]", "_", name)
 
 
 def validate_mcp_endpoint(mcp_endpoint: str) -> bool:
