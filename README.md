@@ -1,5 +1,3 @@
-[![Banners](docs/images/banner1.png)](https://github.com/lapy/xiaozhi-esp32-server)
-
 <h1 align="center">Xiaozhi Backend Service xiaozhi-esp32-server</h1>
 
 <p align="center">
@@ -10,7 +8,7 @@ Supports MCP endpoints and voiceprint recognition
 </p>
 
 <p align="center">
-<a href="./docs/FAQ.md">FAQ</a>
+<a href="./docs/support/faq.md">FAQ</a>
 · <a href="https://github.com/lapy/xiaozhi-esp32-server/issues">Report Issues</a>
 · <a href="https://github.com/lapy/xiaozhi-esp32-server/releases">Release Notes</a>
 </p>
@@ -63,122 +61,6 @@ The core architecture, ESP32 communication protocol, and fundamental functionali
 
 This project requires ESP32 hardware devices to work. If you have purchased ESP32-related hardware, successfully connected to Brother Xia's deployed backend service, and want to build your own `xiaozhi-esp32` backend service independently, then this project is perfect for you.
 
-Want to see the usage effects? Click the videos below 🎥
-
-<table>
-  <tr>
-    <td>
-        <a href="https://www.bilibili.com/video/BV1FMFyejExX" target="_blank">
-         <picture>
-           <img alt="Xiaozhi ESP32 connecting to own backend model" src="docs/images/demo1.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV1zUW5zJEkq" target="_blank">
-         <picture>
-           <img alt="MQTT command issuance" src="docs/images/demo4.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV1CDKWemEU6" target="_blank">
-         <picture>
-           <img alt="Custom voice timbre" src="docs/images/demo2.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV12yA2egEaC" target="_blank">
-         <picture>
-           <img alt="Using Cantonese for communication" src="docs/images/demo3.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV1pNXWYGEx1" target="_blank">
-         <picture>
-           <img alt="Controlling home appliances" src="docs/images/demo5.png" />
-         </picture>
-        </a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-        <a href="https://www.bilibili.com/video/BV1vchQzaEse" target="_blank">
-         <picture>
-           <img alt="Custom voice timbre" src="docs/images/demo6.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV1VC96Y5EMH" target="_blank">
-         <picture>
-           <img alt="Playing music" src="docs/images/demo7.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV1Z8XuYZEAS" target="_blank">
-         <picture>
-           <img alt="Weather plugin" src="docs/images/demo8.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV178XuYfEpi" target="_blank">
-         <picture>
-           <img alt="IOT command control devices" src="docs/images/demo9.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV17LXWYvENb" target="_blank">
-         <picture>
-           <img alt="News broadcasting" src="docs/images/demo0.png" />
-         </picture>
-        </a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <a href="https://www.bilibili.com/video/BV12J7WzBEaH" target="_blank">
-         <picture>
-           <img alt="Real-time interruption" src="docs/images/demo10.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-      <a href="https://www.bilibili.com/video/BV1Co76z7EvK" target="_blank">
-         <picture>
-           <img alt="Photo recognition of objects" src="docs/images/demo12.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-      <a href="https://www.bilibili.com/video/BV1TJ7WzzEo6" target="_blank">
-         <picture>
-           <img alt="Multi-command tasks" src="docs/images/demo11.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV1ZQKUzYExM" target="_blank">
-         <picture>
-           <img alt="MCP endpoint" src="docs/images/demo13.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV1Exu3zqEDe" target="_blank">
-         <picture>
-           <img alt="Voiceprint recognition" src="docs/images/demo14.png" />
-         </picture>
-        </a>
-    </td>
-  </tr>
-</table>
-
 ---
 
 ## Warnings ⚠️
@@ -191,15 +73,13 @@ Want to see the usage effects? Click the videos below 🎥
 
 ## Deployment Documentation
 
-![Banners](docs/images/banner2.png)
-
 This project provides two deployment methods. Please choose based on your specific needs:
 
 #### 🚀 Deployment Method Selection
 | Deployment Method | Features | Applicable Scenarios | Deployment Docs | Configuration Requirements | Video Tutorials | 
 |---------|------|---------|---------|---------|---------|
-| **Simplified Installation** | Intelligent dialogue, IOT, MCP, visual perception | Low-configuration environments, data stored in config files, no database required | [①Docker Version](./docs/Deployment.md#method-1-docker-running-server-only) / [②Source Code Deployment](./docs/Deployment.md#method-2-local-source-code-running-server-only)| 2 cores 2GB if all APIs | - | 
-| **Full Module Installation** | Intelligent dialogue, IOT, MCP endpoints, voiceprint recognition, visual perception, OTA, intelligent control console | Complete functionality experience, data stored in database |[①Docker Version](./docs/Deployment_all.md#method-1-docker-running-full-modules) / [②Source Code Deployment](./docs/Deployment_all.md#method-2-local-source-code-running-full-modules) / [③Source Code Deployment Auto-Update Tutorial](./docs/dev-ops-integration.md) | 2 cores 4GB if all APIs| [Local Source Code Startup Video Tutorial](https://www.bilibili.com/video/BV1wBJhz4Ewe) | 
+| **Simplified Installation** | Intelligent dialogue, IOT, MCP, visual perception | Low-configuration environments, data stored in config files, no database required | [①Docker Version](./docs/installation/docker.md) / [②Source Code Deployment](./docs/installation/local.md)| 2 cores 2GB if all APIs | - | 
+| **Full Module Installation** | Intelligent dialogue, IOT, MCP endpoints, voiceprint recognition, visual perception, OTA, intelligent control console | Complete functionality experience, data stored in database |[①Docker Version](./docs/installation/docker.md) / [②Source Code Deployment](./docs/installation/local.md) | 2 cores 4GB if all APIs| - | 
 
 
 > 💡 Note: Below is a test platform deployed with the latest code. You can burn and test if needed. Concurrent users: 6, data will be cleared daily.
@@ -225,10 +105,10 @@ Websocket Interface Address: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 
 | Module Name | Entry Level Free Settings | Streaming Configuration |
 |:---:|:---:|:---:|
-| ASR(Speech Recognition) | OpenaiASR(API) | 👍OpenaiASR or 👍GroqASR |
-| LLM(Large Model) | OpenAILLM(OpenAI gpt-4o-mini) | 👍LMStudioLLM(Local llama3.1:8b) |
+| ASR(Speech Recognition) | ✅WhisperASR(Local, Offline) | 👍WhisperASR(Local, Offline) |
+| LLM(Large Model) | ✅LMStudioLLM(Local, Open Source) | 👍LMStudioLLM(Local, Open Source) |
 | VLLM(Vision Large Model) | OpenAILLMVLLM(OpenAI gpt-4o) | 👍OpenAILLMVLLM(OpenAI gpt-4o) |
-| TTS(Speech Synthesis) | ✅EdgeTTS(Microsoft Edge TTS) | 👍OpenAITTS(OpenAI TTS) |
+| TTS(Speech Synthesis) | ✅EdgeTTS(Microsoft Edge TTS) | 👍EdgeTTS(Microsoft Edge TTS) |
 | Intent(Intent Recognition) | function_call(Function calling) | function_call(Function calling) |
 | Memory(Memory function) | mem_local_short(Local short-term memory) | mem_local_short(Local short-term memory) |
 
@@ -246,10 +126,9 @@ This project provides the following testing tools to help you verify the system 
 ---
 ## Feature List ✨
 ### Implemented ✅
-![Please refer to - Full Module Installation Architecture Diagram](docs/images/deploy2.png)
 | Feature Module | Description |
 |:---:|:---|
-| Core Architecture | Based on [MQTT+UDP gateway](https://github.com/lapy/xiaozhi-esp32-server/blob/main/docs/mqtt-gateway-integration.md), WebSocket and HTTP servers, provides complete console management and authentication system |
+| Core Architecture | Based on [MQTT+UDP gateway](https://github.com/lapy/xiaozhi-esp32-server/blob/main/docs/guides/mqtt.md), WebSocket and HTTP servers, provides complete console management and authentication system |
 | Voice Interaction | Supports streaming ASR(speech recognition), streaming TTS(speech synthesis), VAD(voice activity detection), supports multi-language recognition and voice processing |
 | Voiceprint Recognition | Supports multi-user voiceprint registration, management, and recognition, processes in parallel with ASR, real-time speaker identity recognition and passes to LLM for personalized responses |
 | Intelligent Dialogue | Supports multiple LLM(large language models), implements intelligent dialogue |
@@ -267,7 +146,7 @@ This project provides the following testing tools to help you verify the system 
 
 To learn about specific development plan progress, [click here](https://github.com/users/lapy/projects/3)
 
-If you are a software developer, here is an [Open Letter to Developers](docs/contributor_open_letter.md). Welcome to join!
+If you are a software developer, here is our [Contributing Guide](docs/support/contributing.md). Welcome to join!
 
 ---
 
@@ -362,13 +241,13 @@ In fact, any VLLM that supports OpenAI interface calls can be integrated and use
 
 | Logo | Project/Company | Description |
 |:---:|:---:|:---|
-| <img src="./docs/images/logo_bailing.png" width="160"> | [Bailing Voice Dialogue Robot](https://github.com/wwbin2017/bailing) | This project is inspired by [Bailing Voice Dialogue Robot](https://github.com/wwbin2017/bailing) and implemented on its basis |
-| <img src="./docs/images/logo_tenclass.png" width="160"> | [Tenclass](https://www.tenclass.com/) | Thanks to [Tenclass](https://www.tenclass.com/) for formulating standard communication protocols, multi-device compatibility solutions, and high-concurrency scenario practice demonstrations for the Xiaozhi ecosystem; providing full-link technical documentation support for this project |
-| <img src="./docs/images/logo_xuanfeng.png" width="160"> | [Xuanfeng Technology](https://github.com/Eric0308) | Thanks to [Xuanfeng Technology](https://github.com/Eric0308) for contributing function calling framework, MCP communication protocol, and plugin-based calling mechanism implementation code. Through standardized instruction scheduling system and dynamic expansion capabilities, it significantly improves the interaction efficiency and functional extensibility of frontend devices (IoT) |
-| <img src="./docs/images/logo_junsen.png" width="160"> | [huangjunsen](https://github.com/huangjunsen0406) | Thanks to [huangjunsen](https://github.com/huangjunsen0406) for contributing the `Smart Control Console Mobile` module, which enables efficient control and real-time interaction across mobile devices, significantly enhancing the system's operational convenience and management efficiency in mobile scenarios. |
-| <img src="./docs/images/logo_huiyuan.png" width="160"> | [Huiyuan Design](http://ui.kwd988.net/) | Thanks to [Huiyuan Design](http://ui.kwd988.net/) for providing professional visual solutions for this project, using their design practical experience serving over a thousand enterprises to empower this project's product user experience |
-| <img src="./docs/images/logo_qinren.png" width="160"> | [Xi'an Qinren Information Technology](https://www.029app.com/) | Thanks to [Xi'an Qinren Information Technology](https://www.029app.com/) for deepening this project's visual system, ensuring consistency and extensibility of overall design style in multi-scenario applications |
-| <img src="./docs/images/logo_contributors.png" width="160"> | [Code Contributors](https://github.com/lapy/xiaozhi-esp32-server/graphs/contributors) | Thanks to [all code contributors](https://github.com/lapy/xiaozhi-esp32-server/graphs/contributors), your efforts have made the project more robust and powerful. |
+| 🎤 | [Bailing Voice Dialogue Robot](https://github.com/wwbin2017/bailing) | This project is inspired by [Bailing Voice Dialogue Robot](https://github.com/wwbin2017/bailing) and implemented on its basis |
+| 🏫 | [Tenclass](https://www.tenclass.com/) | Thanks to [Tenclass](https://www.tenclass.com/) for formulating standard communication protocols, multi-device compatibility solutions, and high-concurrency scenario practice demonstrations for the Xiaozhi ecosystem; providing full-link technical documentation support for this project |
+| 🌪️ | [Xuanfeng Technology](https://github.com/Eric0308) | Thanks to [Xuanfeng Technology](https://github.com/Eric0308) for contributing function calling framework, MCP communication protocol, and plugin-based calling mechanism implementation code. Through standardized instruction scheduling system and dynamic expansion capabilities, it significantly improves the interaction efficiency and functional extensibility of frontend devices (IoT) |
+| 📱 | [huangjunsen](https://github.com/huangjunsen0406) | Thanks to [huangjunsen](https://github.com/huangjunsen0406) for contributing the `Smart Control Console Mobile` module, which enables efficient control and real-time interaction across mobile devices, significantly enhancing the system's operational convenience and management efficiency in mobile scenarios. |
+| 🎨 | [Huiyuan Design](http://ui.kwd988.net/) | Thanks to [Huiyuan Design](http://ui.kwd988.net/) for providing professional visual solutions for this project, using their design practical experience serving over a thousand enterprises to empower this project's product user experience |
+| 🏢 | [Xi'an Qinren Information Technology](https://www.029app.com/) | Thanks to [Xi'an Qinren Information Technology](https://www.029app.com/) for deepening this project's visual system, ensuring consistency and extensibility of overall design style in multi-scenario applications |
+| 👥 | [Code Contributors](https://github.com/lapy/xiaozhi-esp32-server/graphs/contributors) | Thanks to [all code contributors](https://github.com/lapy/xiaozhi-esp32-server/graphs/contributors), your efforts have made the project more robust and powerful. |
 
 
 <a href="https://star-history.com/#lapy/xiaozhi-esp32-server&Date">
