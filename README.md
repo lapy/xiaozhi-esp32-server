@@ -144,8 +144,6 @@ This project provides the following testing tools to help you verify the system 
 
 ### Under Development 🚧
 
-To learn about specific development plan progress, [click here](https://github.com/users/lapy/projects/3)
-
 If you are a software developer, here is our [Contributing Guide](docs/support/contributing.md). Welcome to join!
 
 ---
@@ -166,10 +164,10 @@ Xiaozhi is an ecosystem. When using this product, you can also check out other [
 
 | Usage Method | Supported Platforms | Free Platforms |
 |:---:|:---:|:---:|
-| OpenAI interface calls | OpenAI, Gemini | Gemini |
-| Ollama interface calls | Ollama | - |
-| Dify interface calls | Dify | - |
-| FastGPT interface calls | FastGPT | - |
+| Local deployment | **LMStudioLLM**, OllamaLLM, XinferenceLLM | **LMStudioLLM**, OllamaLLM, XinferenceLLM |
+| OpenAI interface calls | OpenAILLM | - |
+| Google interface calls | GeminiLLM | GeminiLLM |
+| Platform integrations | DifyLLM, HomeAssistant | - |
 
 In fact, any LLM that supports OpenAI interface calls can be integrated and used, including Xinference and HomeAssistant interfaces.
 
@@ -179,7 +177,8 @@ In fact, any LLM that supports OpenAI interface calls can be integrated and used
 
 | Usage Method | Supported Platforms | Free Platforms |
 |:---:|:---:|:---:|
-| OpenAI interface calls | OpenAI | - |
+| OpenAI interface calls | OpenAILLMVLLM | - |
+| Google interface calls | GeminiVLLM | GeminiVLLM |
 
 In fact, any VLLM that supports OpenAI interface calls can be integrated and used.
 
@@ -189,7 +188,7 @@ In fact, any VLLM that supports OpenAI interface calls can be integrated and use
 
 | Usage Method | Supported Platforms | Free Platforms |
 |:---:|:---:|:---:|
-| Interface calls | AliBLTTS, OpenAITTS, EdgeTTS | EdgeTTS |
+| Interface calls | OpenAITTS, EdgeTTS | EdgeTTS |
 | Local services | CustomTTS | CustomTTS |
 
 ---
@@ -206,8 +205,9 @@ In fact, any VLLM that supports OpenAI interface calls can be integrated and use
 
 | Usage Method | Supported Platforms | Free Platforms |
 |:---:|:---:|:---:|
-| Local use | SherpaASR, VoskASR, **WhisperASR** | SherpaASR, VoskASR, **WhisperASR** |
-| Interface calls | OpenaiASR, GroqASR, GeminiASR | OpenaiASR, GroqASR, GeminiASR |
+| Local deployment | SherpaASR, VoskASR, **WhisperASR** | SherpaASR, VoskASR, **WhisperASR** |
+| OpenAI interface calls | OpenaiASR, GroqASR | OpenaiASR, GroqASR |
+| Google interface calls | GeminiASR | GeminiASR |
 
 ---
 
@@ -223,17 +223,19 @@ In fact, any VLLM that supports OpenAI interface calls can be integrated and use
 
 | Type | Platform Name | Usage Method | Pricing Model | Notes |
 |:------:|:---------------:|:----:|:---------:|:--:|
-| Memory | mem0ai | Interface calls | 1000 times/month quota | |
-| Memory | mem_local_short | Local summarization | Free | |
+| Memory | **mem_local_short** | Local summarization | Free | Local short-term memory with LLM summarization |
+| Memory | mem0ai | Interface calls | 1000 times/month quota | Cloud-based memory service |
+| Memory | nomem | No memory | Free | Disables memory functionality |
 
 ---
 
-### Intent Recognition
+Fix### Intent Recognition
 
 | Type | Platform Name | Usage Method | Pricing Model | Notes |
 |:------:|:-------------:|:----:|:-------:|:---------------------:|
-| Intent | intent_llm | Interface calls | Based on LLM pricing | Recognizes intent through large models, strong generalization |
-| Intent | function_call | Interface calls | Based on LLM pricing | Completes intent through large model function calling, fast speed, good effect |
+| Intent | **function_call** | Interface calls | Based on LLM pricing | Function calling through LLM, fast speed, good effect |
+| Intent | intent_llm | Interface calls | Based on LLM pricing | Intent recognition through LLM, strong generalization |
+| Intent | nointent | No intent | Free | Disables intent recognition |
 
 ---
 
