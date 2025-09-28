@@ -87,10 +87,10 @@ class ASRProvider(ASRProviderBase):
             # Create content with audio data
             content = [
                 prompt,
-                types.Part.from_data(
-                    mime_type="audio/wav",
-                    data=audio_data
-                )
+                {
+                    "mime_type": "audio/wav",
+                    "data": audio_base64
+                }
             ]
             
             logger.bind(tag=TAG).debug(f"Making Gemini ASR API request with model: {self.model_name}")
