@@ -1,47 +1,61 @@
-[![Banners](docs/images/banner1.png)](https://github.com/xinnan-tech/xiaozhi-esp32-server)
+[![Banners](docs/images/banner1.png)](https://github.com/lapy/xiaozhi-esp32-server)
 
 <h1 align="center">Xiaozhi Backend Service xiaozhi-esp32-server</h1>
 
 <p align="center">
 This project is based on human-machine symbiotic intelligence theory and technology to develop intelligent terminal hardware and software systems<br/>providing backend services for the open-source intelligent hardware project
 <a href="https://github.com/78/xiaozhi-esp32">xiaozhi-esp32</a><br/>
-Implemented using Python, Java, and Vue according to the <a href="https://ccnphfhqs21z.feishu.cn/wiki/M0XiwldO9iJwHikpXD5cEx71nKh">Xiaozhi Communication Protocol</a><br/>
+Implemented using Python, Java, and Vue according to the <a href="https://github.com/lapy/xiaozhi-esp32-server/wiki">Xiaozhi Communication Protocol</a><br/>
 Supports MCP endpoints and voiceprint recognition
 </p>
 
 <p align="center">
-<a href="./README_zh.md">中文 (Chinese)</a>
-· <a href="./docs/FAQ.md">FAQ</a>
-· <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/issues">Report Issues</a>
-· <a href="./README_zh.md#deployment-docs">Deployment Docs</a>
-· <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/releases">Release Notes</a>
+<a href="./docs/FAQ.md">FAQ</a>
+· <a href="https://github.com/lapy/xiaozhi-esp32-server/issues">Report Issues</a>
+· <a href="https://github.com/lapy/xiaozhi-esp32-server/releases">Release Notes</a>
 </p>
 <p align="center">
-  <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/releases">
-    <img alt="GitHub Contributors" src="https://img.shields.io/github/v/release/xinnan-tech/xiaozhi-esp32-server?logo=docker" />
+  <a href="https://github.com/lapy/xiaozhi-esp32-server/releases">
+    <img alt="GitHub Contributors" src="https://img.shields.io/github/v/release/lapy/xiaozhi-esp32-server?logo=docker" />
   </a>
-  <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/graphs/contributors">
-    <img alt="GitHub Contributors" src="https://img.shields.io/github/contributors/xinnan-tech/xiaozhi-esp32-server?logo=github" />
+  <a href="https://github.com/lapy/xiaozhi-esp32-server/graphs/contributors">
+    <img alt="GitHub Contributors" src="https://img.shields.io/github/contributors/lapy/xiaozhi-esp32-server?logo=github" />
   </a>
-  <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/issues">
-    <img alt="Issues" src="https://img.shields.io/github/issues/xinnan-tech/xiaozhi-esp32-server?color=0088ff" />
+  <a href="https://github.com/lapy/xiaozhi-esp32-server/issues">
+    <img alt="Issues" src="https://img.shields.io/github/issues/lapy/xiaozhi-esp32-server?color=0088ff" />
   </a>
-  <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/pulls">
-    <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/xinnan-tech/xiaozhi-esp32-server?color=0088ff" />
+  <a href="https://github.com/lapy/xiaozhi-esp32-server/pulls">
+    <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/lapy/xiaozhi-esp32-server?color=0088ff" />
   </a>
-  <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/LICENSE">
+  <a href="https://github.com/lapy/xiaozhi-esp32-server/blob/main/LICENSE">
     <img alt="GitHub pull requests" src="https://img.shields.io/badge/license-MIT-white?labelColor=black" />
   </a>
-  <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server">
-    <img alt="stars" src="https://img.shields.io/github/stars/xinnan-tech/xiaozhi-esp32-server?color=ffcb47&labelColor=black" />
+  <a href="https://github.com/lapy/xiaozhi-esp32-server">
+    <img alt="stars" src="https://img.shields.io/github/stars/lapy/xiaozhi-esp32-server?color=ffcb47&labelColor=black" />
   </a>
 </p>
 
-<p align="center">
-Spearheaded by Professor Siyuan Liu's Team (South China University of Technology)
-</br>
-<img src="./docs/images/hnlg.jpg" alt="South China University of Technology" width="50%">
-</p>
+
+---
+
+## ⚠️ Important Disclaimer
+
+**This is a complete port and refactoring of the original [xinnan-tech/xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) project, specifically adapted for Western users.**
+
+### Credits & Acknowledgments
+- **Original Project**: All credits for the original excellent work go to the [xinnan-tech](https://github.com/xinnan-tech) team
+- **Original Repository**: [xinnan-tech/xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server)
+- **This Port**: Adapted by [lapy](https://github.com/lapy) for Western users
+
+### What Changed
+This port removes Chinese AI providers and infrastructure dependencies, replacing them with Western alternatives:
+- **STT**: WhisperASR (offline, multilingual) instead of Chinese ASR services
+- **LLM**: LMStudioLLM (local, open-source) instead of Chinese LLM providers  
+- **TTS**: EdgeTTS (Microsoft, free) - kept as default
+- **Infrastructure**: Replaced Chinese mirrors with international alternatives
+- **Documentation**: Translated and adapted for Western users
+
+The core architecture, ESP32 communication protocol, and fundamental functionality remain unchanged from the original excellent work.
 
 ---
 
@@ -212,8 +226,8 @@ Websocket Interface Address: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 | Module Name | Entry Level Free Settings | Streaming Configuration |
 |:---:|:---:|:---:|
 | ASR(Speech Recognition) | OpenaiASR(API) | 👍OpenaiASR or 👍GroqASR |
-| LLM(Large Model) | ChatGLMLLM(Zhipu glm-4-flash) | 👍AliLLM(Alibaba qwen-turbo) |
-| VLLM(Vision Large Model) | ChatGLMVLLM(Zhipu glm-4v-flash) | 👍QwenVLVLLM(Qwen qwen2.5-vl-3b-instructh) |
+| LLM(Large Model) | OpenAILLM(OpenAI gpt-4o-mini) | 👍LMStudioLLM(Local llama3.1:8b) |
+| VLLM(Vision Large Model) | OpenAILLMVLLM(OpenAI gpt-4o) | 👍OpenAILLMVLLM(OpenAI gpt-4o) |
 | TTS(Speech Synthesis) | ✅EdgeTTS(Microsoft Edge TTS) | 👍OpenAITTS(OpenAI TTS) |
 | Intent(Intent Recognition) | function_call(Function calling) | function_call(Function calling) |
 | Memory(Memory function) | mem_local_short(Local short-term memory) | mem_local_short(Local short-term memory) |
@@ -235,7 +249,7 @@ This project provides the following testing tools to help you verify the system 
 ![Please refer to - Full Module Installation Architecture Diagram](docs/images/deploy2.png)
 | Feature Module | Description |
 |:---:|:---|
-| Core Architecture | Based on [MQTT+UDP gateway](https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/docs/mqtt-gateway-integration.md), WebSocket and HTTP servers, provides complete console management and authentication system |
+| Core Architecture | Based on [MQTT+UDP gateway](https://github.com/lapy/xiaozhi-esp32-server/blob/main/docs/mqtt-gateway-integration.md), WebSocket and HTTP servers, provides complete console management and authentication system |
 | Voice Interaction | Supports streaming ASR(speech recognition), streaming TTS(speech synthesis), VAD(voice activity detection), supports multi-language recognition and voice processing |
 | Voiceprint Recognition | Supports multi-user voiceprint registration, management, and recognition, processes in parallel with ASR, real-time speaker identity recognition and passes to LLM for personalized responses |
 | Intelligent Dialogue | Supports multiple LLM(large language models), implements intelligent dialogue |
@@ -244,14 +258,14 @@ This project provides the following testing tools to help you verify the system 
 | Memory System | Supports local short-term memory, mem0ai interface memory, with memory summarization functionality |
 | Command Delivery | Supports MCP command delivery to ESP32 devices via MQTT protocol from Smart Console |
 | Tool Calling | Supports client IOT protocol, client MCP protocol, server MCP protocol, MCP endpoint protocol, custom tool functions |
-| Management Backend | Provides Web management interface, supports user management, system configuration and device management; Supports English, Chinese (Simplified), and Chinese (Traditional) display |
+| Management Backend | Provides Web management interface, supports user management, system configuration and device management; Supports English display |
 | Testing Tools | Provides performance testing tools, vision model testing tools, and audio interaction testing tools |
 | Deployment Support | Supports Docker deployment and local deployment, provides complete configuration file management |
 | Plugin System | Supports functional plugin extensions, custom plugin development, and plugin hot-loading |
 
 ### Under Development 🚧
 
-To learn about specific development plan progress, [click here](https://github.com/users/xinnan-tech/projects/3)
+To learn about specific development plan progress, [click here](https://github.com/users/lapy/projects/3)
 
 If you are a software developer, here is an [Open Letter to Developers](docs/contributor_open_letter.md). Welcome to join!
 
@@ -273,11 +287,10 @@ Xiaozhi is an ecosystem. When using this product, you can also check out other [
 
 | Usage Method | Supported Platforms | Free Platforms |
 |:---:|:---:|:---:|
-| OpenAI interface calls | Alibaba Bailian, DeepSeek, Zhipu ChatGLM, Gemini | Zhipu ChatGLM, Gemini |
+| OpenAI interface calls | OpenAI, Gemini | Gemini |
 | Ollama interface calls | Ollama | - |
 | Dify interface calls | Dify | - |
 | FastGPT interface calls | FastGPT | - |
-| Coze interface calls | Coze | - |
 
 In fact, any LLM that supports OpenAI interface calls can be integrated and used, including Xinference and HomeAssistant interfaces.
 
@@ -287,7 +300,7 @@ In fact, any LLM that supports OpenAI interface calls can be integrated and used
 
 | Usage Method | Supported Platforms | Free Platforms |
 |:---:|:---:|:---:|
-| OpenAI interface calls | Alibaba Bailian, Zhipu ChatGLMVLLM | Zhipu ChatGLMVLLM |
+| OpenAI interface calls | OpenAI | - |
 
 In fact, any VLLM that supports OpenAI interface calls can be integrated and used.
 
@@ -355,15 +368,15 @@ In fact, any VLLM that supports OpenAI interface calls can be integrated and use
 | <img src="./docs/images/logo_junsen.png" width="160"> | [huangjunsen](https://github.com/huangjunsen0406) | Thanks to [huangjunsen](https://github.com/huangjunsen0406) for contributing the `Smart Control Console Mobile` module, which enables efficient control and real-time interaction across mobile devices, significantly enhancing the system's operational convenience and management efficiency in mobile scenarios. |
 | <img src="./docs/images/logo_huiyuan.png" width="160"> | [Huiyuan Design](http://ui.kwd988.net/) | Thanks to [Huiyuan Design](http://ui.kwd988.net/) for providing professional visual solutions for this project, using their design practical experience serving over a thousand enterprises to empower this project's product user experience |
 | <img src="./docs/images/logo_qinren.png" width="160"> | [Xi'an Qinren Information Technology](https://www.029app.com/) | Thanks to [Xi'an Qinren Information Technology](https://www.029app.com/) for deepening this project's visual system, ensuring consistency and extensibility of overall design style in multi-scenario applications |
-| <img src="./docs/images/logo_contributors.png" width="160"> | [Code Contributors](https://github.com/xinnan-tech/xiaozhi-esp32-server/graphs/contributors) | Thanks to [all code contributors](https://github.com/xinnan-tech/xiaozhi-esp32-server/graphs/contributors), your efforts have made the project more robust and powerful. |
+| <img src="./docs/images/logo_contributors.png" width="160"> | [Code Contributors](https://github.com/lapy/xiaozhi-esp32-server/graphs/contributors) | Thanks to [all code contributors](https://github.com/lapy/xiaozhi-esp32-server/graphs/contributors), your efforts have made the project more robust and powerful. |
 
 
-<a href="https://star-history.com/#xinnan-tech/xiaozhi-esp32-server&Date">
+<a href="https://star-history.com/#lapy/xiaozhi-esp32-server&Date">
 
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=xinnan-tech/xiaozhi-esp32-server&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=xinnan-tech/xiaozhi-esp32-server&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=xinnan-tech/xiaozhi-esp32-server&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=lapy/xiaozhi-esp32-server&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=lapy/xiaozhi-esp32-server&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=lapy/xiaozhi-esp32-server&type=Date" />
  </picture>
 </a>
 

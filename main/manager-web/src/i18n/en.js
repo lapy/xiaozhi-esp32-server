@@ -663,8 +663,6 @@ export default {
   'common.sensitive': 'Sensitive',
   
   // Language switch
-  'language.zhCN': 'Chinese (Simplified)',
-  'language.zhTW': 'Chinese (Traditional)',
   'language.en': 'English',
 
   // Home page text

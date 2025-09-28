@@ -104,7 +104,7 @@ wakeup_words:
   - "hello assistant"
   - "hey assistant"
 # MCP endpoint address, format: ws://your_mcp_endpoint_ip_or_domain:port/mcp/?token=your_token
-# Detailed tutorial https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/docs/mcp-endpoint-integration.md
+# Detailed tutorial https://github.com/lapy/xiaozhi-esp32-server/blob/main/docs/mcp-endpoint-integration.md
 mcp_endpoint: your_endpoint_websocket_address
 # Basic plugin configuration
 plugins:
@@ -178,10 +178,10 @@ end_prompt:
 selected_module:
   # Voice Activity Detection module, default uses SileroVAD model
   VAD: SileroVAD
-  # Speech Recognition module, default uses OpenAI ASR
-  ASR: OpenaiASR
+  # Speech Recognition module, default uses Whisper ASR
+  ASR: WhisperASR
   # Will call actual LLM adapter based on configuration name corresponding type
-  LLM: OpenAILLM
+  LLM: LMStudioLLM
   # Vision Language Large Model
   VLLM: OpenAILLMVLLM
   # TTS will call actual TTS adapter based on configuration name corresponding type

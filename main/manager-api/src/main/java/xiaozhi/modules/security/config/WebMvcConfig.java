@@ -122,15 +122,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                     String primaryLanguage = parts[0].trim();
                      
                     // Create Locale object directly based on frontend language code
-                    if (primaryLanguage.equals("zh-CN")) {
-                        return Locale.SIMPLIFIED_CHINESE;
-                    } else if (primaryLanguage.equals("zh-TW")) {
-                        return Locale.TRADITIONAL_CHINESE;
-                    } else if (primaryLanguage.equals("en-US")) {
+                    if (primaryLanguage.equals("en-US")) {
                         return Locale.US;
-                    } else if (primaryLanguage.startsWith("zh")) {
-                        // For other Chinese variants, default to Simplified Chinese
-                        return Locale.SIMPLIFIED_CHINESE;
                     } else if (primaryLanguage.startsWith("en")) {
                         // For other English variants, default to American English
                         return Locale.US;

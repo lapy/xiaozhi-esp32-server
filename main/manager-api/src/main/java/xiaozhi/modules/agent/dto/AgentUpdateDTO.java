@@ -63,7 +63,7 @@ public class AgentUpdateDTO implements Serializable {
     @Schema(description = "Language code", example = "zh_CN", nullable = true)
     private String langCode;
 
-    @Schema(description = "Interaction language", example = "Chinese", nullable = true)
+    @Schema(description = "Interaction language", example = "English", nullable = true)
     private String language;
 
     @Schema(description = "Sort order", example = "1", nullable = true)

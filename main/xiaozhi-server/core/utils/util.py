@@ -108,7 +108,7 @@ def get_ip_info(ip_addr, logger):
         # Cache miss, call API
         if is_private_ip(ip_addr):
             ip_addr = ""
-        url = f"https://whois.pconline.com.cn/ipJson.jsp?json=true&ip={ip_addr}"
+        url = f"https://ipapi.co/{ip_addr}/json/"
         resp = requests.get(url).json()
         ip_info = {"city": resp.get("city")}
 

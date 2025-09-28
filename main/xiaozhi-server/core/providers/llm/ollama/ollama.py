@@ -21,18 +21,18 @@ class LLMProvider(LLMProviderBase):
             api_key="ollama",  # Ollama doesn't need an API key but OpenAI client requires one
         )
 
-        # Check if it's a qwen3 model
-        self.is_qwen3 = self.model_name and self.model_name.lower().startswith("qwen3")
+        # Check if it's a specific model that needs special handling
+        self.needs_special_handling = self.model_name and self.model_name.lower().startswith("llama3")
 
         logger.debug(
-            f"Intent recognition parameters initialized: model_name={self.model_name}, base_url={self.base_url}, is_qwen3={self.is_qwen3}"
+            f"Intent recognition parameters initialized: model_name={self.model_name}, base_url={self.base_url}, needs_special_handling={self.needs_special_handling}"
         )
 
     def response(self, session_id, dialogue, **kwargs):
         logger.bind(tag=TAG).debug(f"Sending request to Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
         try:
-            # If it's a qwen3 model, add /no_think instruction to user's last message
-            if self.is_qwen3:
+            # If it's a specific model, add /no_think instruction to user's last message
+            if self.needs_special_handling:
                 # Copy dialogue list to avoid modifying original dialogue
                 dialogue_copy = dialogue.copy()
 
@@ -43,7 +43,7 @@ class LLMProvider(LLMProviderBase):
                         dialogue_copy[i]["content"] = (
                             "/no_think " + dialogue_copy[i]["content"]
                         )
-                        logger.bind(tag=TAG).debug(f"Added /no_think instruction for qwen3 model")
+                        logger.bind(tag=TAG).debug(f"Added /no_think instruction for specific model")
                         break
 
                 # Use modified dialogue
@@ -106,8 +106,8 @@ class LLMProvider(LLMProviderBase):
     def response_with_functions(self, session_id, dialogue, functions=None):
         logger.bind(tag=TAG).debug(f"Sending function request to Ollama with model: {self.model_name}, dialogue length: {len(dialogue)}")
         try:
-            # If it's a qwen3 model, add /no_think instruction to user's last message
-            if self.is_qwen3:
+            # If it's a specific model, add /no_think instruction to user's last message
+            if self.needs_special_handling:
                 # Copy dialogue list to avoid modifying original dialogue
                 dialogue_copy = dialogue.copy()
 
@@ -118,7 +118,7 @@ class LLMProvider(LLMProviderBase):
                         dialogue_copy[i]["content"] = (
                             "/no_think " + dialogue_copy[i]["content"]
                         )
-                        logger.bind(tag=TAG).debug(f"Added /no_think instruction for qwen3 model")
+                        logger.bind(tag=TAG).debug(f"Added /no_think instruction for specific model")
                         break
 
                 # Use modified dialogue

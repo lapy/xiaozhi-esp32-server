@@ -268,7 +268,7 @@ The `xiaozhi-esp32-server` system coordinates work through well-defined data flo
 This flow is real-time, primarily using WebSocket for low-latency, bidirectional data exchange.
 
 *   **Communication Protocol Documentation:**
-    *   Detailed communication protocol documentation can be accessed at: https://ccnphfhqs21z.feishu.cn/wiki/M0XiwldO9iJwHikpXD5cEx71nKh
+    *   Detailed communication protocol documentation can be accessed at: https://github.com/lapy/xiaozhi-esp32-server/wiki
     *   This document details the WebSocket communication protocol between ESP32 devices and `xiaozhi-server`, including:
         *   Connection establishment and handshake process
         *   Audio data transmission format

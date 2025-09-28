@@ -461,7 +461,7 @@ class LLMPerformanceTester:
         if self.config.get("LLM") is not None:
             for llm_name, config in self.config.get("LLM", {}).items():
                 # Check configuration validity
-                if llm_name == "CozeLLM":
+                if llm_name == "OpenAILLM":
                     if any(x in config.get("bot_id", "") for x in ["your"]) or any(
                         x in config.get("user_id", "") for x in ["your"]
                     ):

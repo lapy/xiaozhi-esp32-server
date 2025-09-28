@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  bin-wrapper: npm:bin-wrapper-china
+  bin-wrapper: npm:bin-wrapper
 
 patchedDependencies:
   '@dcloudio/uni-h5':

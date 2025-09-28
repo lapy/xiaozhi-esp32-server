@@ -64,8 +64,6 @@ const i18n = new VueI18n({
       'login.title': 'Login',
       'register.title': 'Create Account',
       'language.en': 'English',
-      'language.zhCN': 'Chinese (Simplified)',
-      'language.zhTW': 'Chinese (Traditional)',
       
       // Weather plugin translations
       'weather.current': 'Current Weather',

@@ -65,8 +65,8 @@ const DEFAULT_MODEL_CONFIG = {
   ttsModelId: "TTS_AliBLTTS",
   vadModelId: "VAD_SileroVAD",
   asrModelId: "ASR_OpenaiASR",
-  llmModelId: "LLM_ChatGLMLLM",
-  vllmModelId: "VLLM_ChatGLMVLLM",
+  llmModelId: "LLM_OpenAILLM",
+  vllmModelId: "VLLM_OpenAILLMVLLM",
   memModelId: "Memory_nomem",
   intentModelId: "Intent_function_call"
 };

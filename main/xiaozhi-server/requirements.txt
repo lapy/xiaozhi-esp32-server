@@ -16,14 +16,11 @@ ormsgpack==1.7.0
 ruamel.yaml==0.18.15
 loguru==0.7.3
 requests==2.32.5
-cozepy==0.19.0
 mem0ai==0.1.62
 bs4==0.0.2
-modelscope==1.23.2
 sherpa_onnx==1.12.11
 mcp==1.13.1
 PySocks==1.7.1
-dashscope==1.23.1
 chardet==5.2.0
 aioconsole==0.8.1
 markitdown==0.1.3

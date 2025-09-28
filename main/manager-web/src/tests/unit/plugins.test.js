@@ -23,9 +23,7 @@ const i18n = new VueI18n({
     en: {
       'login.title': 'Login',
       'register.title': 'Create Account',
-      'language.en': 'English',
-      'language.zhCN': 'Chinese (Simplified)',
-      'language.zhTW': 'Chinese (Traditional)'
+      'language.en': 'English'
     }
   }
 })

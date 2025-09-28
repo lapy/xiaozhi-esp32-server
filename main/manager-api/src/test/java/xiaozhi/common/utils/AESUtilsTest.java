@@ -54,7 +54,7 @@ public class AESUtilsTest {
                 "Hello World",
                 "Hello, Xiaozhi!",
                 "Special characters: !@#$%^&*()",
-                "Numbers 123 and Chinese mixed",
+                "Numbers 123 and mixed text",
                 "Emoji: 😀🎉🚀",
                 "Empty string test",
                 ""

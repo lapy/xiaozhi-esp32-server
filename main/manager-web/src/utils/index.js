@@ -148,8 +148,8 @@ export function validateMobile(mobile, areaCode) {
 
     // Use different validation rules based on different area codes
     switch (areaCode) {
-        case '+86': // China
-            return /^1[3-9]\d{9}$/.test(cleanMobile);
+        case '+1': // USA/Canada
+            return /^[2-9]\d{9}$/.test(cleanMobile);
         case '+852': // Hong Kong
             return /^[569]\d{7}$/.test(cleanMobile);
         case '+853': // Macau

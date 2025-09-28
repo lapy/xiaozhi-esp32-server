@@ -120,7 +120,7 @@ async def main():
     args = parser.parse_args()
 
     suite = ASRPerformanceSuite()
-    # No ASR testers registered - all Chinese-focused ASR services have been removed
+    # No ASR testers registered - ASR services have been updated
 
     await suite.run(args.count)
 
