@@ -229,7 +229,7 @@ In fact, any VLLM that supports OpenAI interface calls can be integrated and use
 
 ---
 
-Fix### Intent Recognition
+### Intent Recognition
 
 | Type | Platform Name | Usage Method | Pricing Model | Notes |
 |:------:|:-------------:|:----:|:-------:|:---------------------:|

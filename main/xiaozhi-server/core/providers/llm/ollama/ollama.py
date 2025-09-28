@@ -22,7 +22,7 @@ class LLMProvider(LLMProviderBase):
         )
 
         # Check if it's a specific model that needs special handling
-        self.needs_special_handling = self.model_name and self.model_name.lower().startswith("llama3")
+        self.needs_special_handling = self.model_name and self.model_name.lower().startswith("qwen3")
 
         logger.debug(
             f"Intent recognition parameters initialized: model_name={self.model_name}, base_url={self.base_url}, needs_special_handling={self.needs_special_handling}"
