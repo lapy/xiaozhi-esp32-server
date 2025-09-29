@@ -48,4 +48,4 @@ spring:
           max-active: 8      # Maximum connections in connection pool (negative value means no limit)
           max-idle: 8        # Maximum idle connections in connection pool
           min-idle: 0        # Minimum idle connections in connection pool
-        shutdown-timeout: 100ms  # Client graceful shutdown wait time
+        shutdown-timeout: 100ms

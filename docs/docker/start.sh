@@ -1,6 +1,7 @@
 #!/bin/bash
 # Start Java backend (listening on port 8003 in docker)
 java -jar /app/xiaozhi-esp32-api.jar \
+  --spring.profiles.active=prod \
   --server.port=8003 \
   --spring.datasource.druid.url=${SPRING_DATASOURCE_DRUID_URL} \
   --spring.datasource.druid.username=${SPRING_DATASOURCE_DRUID_USERNAME} \

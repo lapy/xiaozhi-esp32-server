@@ -11,7 +11,7 @@ FROM maven:3.9.4-eclipse-temurin-21 as api-builder
 WORKDIR /app
 COPY main/manager-api/pom.xml .
 COPY main/manager-api/src ./src
-RUN mvn clean package -Dmaven.test.skip=true
+RUN mvn clean package -Dmaven.test.skip=true -Dspring.profiles.active=prod
 
 # Stage 3: Build final image
 FROM bellsoft/liberica-runtime-container:jre-21-glibc
