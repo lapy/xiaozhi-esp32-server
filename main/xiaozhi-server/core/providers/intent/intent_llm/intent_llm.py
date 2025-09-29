@@ -63,7 +63,7 @@ class IntentProvider(IntentProviderBase):
             "- Ask current city (e.g.: where am I now, do you know which city I am in, etc.)"
             "System will directly construct answers based on context information.\n\n"
             "- If user uses interrogative words (like 'how', 'why', 'how to') to ask exit-related questions (e.g. 'how did it exit?'), note this is not asking you to exit, please return {'function_call': {'name': 'continue_chat'}\n"
-            "- Only when user explicitly uses 'exit system', 'end conversation', 'I don't want to talk to you anymore' and other commands, trigger handle_exit_intent\n\n"
+            "- Only when user explicitly uses 'exit system', 'end conversation', 'I don't want to talk to you anymore', 'bye', 'goodbye' and other commands, trigger handle_exit_intent\n\n"
             f"{functions_desc}\n"
             "Processing steps:\n"
             "1. Analyze user input, determine user intent\n"

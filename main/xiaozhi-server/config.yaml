@@ -79,6 +79,8 @@ stop_tts_notify_voice: "config/assets/tts_notify.mp3"
 exit_commands:
   - "exit"
   - "close"
+  - "bye"
+  - "goodbye"
 
 xiaozhi:
   type: hello
@@ -99,10 +101,25 @@ module_test:
 
 # Wake words, used to identify wake words or speech content
 wakeup_words:
-  - "hello xiaozhi"
-  - "hey hello"
-  - "hello assistant"
-  - "hey assistant"
+  - "Alexa"
+  - "Hi ESP"
+  - "Jarvis"
+  - "computer"
+  - "Hey Willow"
+  - "Sophia"
+  - "Hey Wanda"
+  - "Hi Jolly"
+  - "Hi Fairy"
+  - "Hey Printer"
+  - "Mycroft"
+  - "Hi Joy"
+  - "Hi Jason"
+  - "Astrolabe"
+  - "Hey Ily"
+  - "Blue Chip"
+  - "Hi Lily"
+  - "Hi Telly"
+  - "Hi Wall E"
 # MCP endpoint address, format: ws://your_mcp_endpoint_ip_or_domain:port/mcp/?token=your_token
 # Detailed tutorial https://github.com/lapy/xiaozhi-esp32-server/blob/main/docs/mcp-endpoint-integration.md
 mcp_endpoint: your_endpoint_websocket_address

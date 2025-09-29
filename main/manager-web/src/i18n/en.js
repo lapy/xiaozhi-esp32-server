@@ -667,7 +667,7 @@ export default {
 
   // Home page text
   'home.addAgent': 'Add Agent',
-  'home.greeting': 'Hi Jarvis',
+  'home.greeting': 'Welcome to XiaoZhi',
   'home.wish': "Let's have a wonderful day!",
   'home.languageModel': 'LLM',
   'home.voiceModel': 'TTS',
