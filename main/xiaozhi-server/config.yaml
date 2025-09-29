@@ -214,7 +214,11 @@ Intent:
     functions:
       - get_weather
       - get_news
+      - get_calendar
       - play_music
+      - hass_get_state
+      - hass_set_state
+      - hass_play_music
   function_call:
     # No need to change type
     type: function_call
@@ -225,12 +229,13 @@ Intent:
       - change_role
       - get_weather
       - get_news
+      - get_calendar
       # play_music is server's built-in music playback, hass_play_music is independent external program music playback controlled through home assistant
       # If you use hass_play_music, don't enable play_music, only keep one of the two
       - play_music
-      #- hass_get_state
-      #- hass_set_state
-      #- hass_play_music
+      - hass_get_state
+      - hass_set_state
+      - hass_play_music
 
 Memory:
   mem0ai:

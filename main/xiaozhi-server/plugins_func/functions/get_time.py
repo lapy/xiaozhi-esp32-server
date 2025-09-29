@@ -6,9 +6,9 @@ get_calendar_function_desc = {
     "function": {
         "name": "get_calendar",
         "description": (
-            "Used for calendar information for specific dates."
-            "Users can specify query content, such as: date information, weekday, day of year, week number, timezone information, etc."
-            "If no query content is specified, it defaults to querying basic date information."
+            "Get standard calendar information for specific dates. "
+            "Users can specify query content, such as: date information, weekday, day of year, week number, timezone information, etc. "
+            "If no query content is specified, it defaults to querying basic date information. "
             "For basic queries like 'what's today's date', 'today's date', please use the information in context directly, don't call this tool."
         ),
         "parameters": {
@@ -32,7 +32,7 @@ get_calendar_function_desc = {
 @register_function("get_calendar", get_calendar_function_desc, ToolType.WAIT)
 def get_calendar(date=None, query=None):
     """
-    Used to get calendar information for specific dates
+    Get standard calendar information for specific dates
     """
     from core.utils.cache.manager import cache_manager, CacheType
 
@@ -57,7 +57,7 @@ def get_calendar(date=None, query=None):
 
     # Try to get date information from cache
     date_cache_key = f"calendar_info_{current_date}"
-    cached_date_info = cache_manager.get(CacheType.LUNAR, date_cache_key)
+    cached_date_info = cache_manager.get(CacheType.CALENDAR, date_cache_key)
     if cached_date_info:
         return ActionResponse(Action.REQLLM, cached_date_info, None)
 
@@ -79,6 +79,6 @@ def get_calendar(date=None, query=None):
     )
 
     # Cache calendar information
-    cache_manager.set(CacheType.LUNAR, date_cache_key, response_text)
+    cache_manager.set(CacheType.CALENDAR, date_cache_key, response_text)
 
     return ActionResponse(Action.REQLLM, response_text, None)

@@ -100,7 +100,7 @@ async def process_intent_result(conn, intent_result, original_text):
                     
                     from core.utils.current_time import get_current_time_info
 
-                    current_time, today_date, today_weekday, lunar_date = get_current_time_info()
+                    current_time, today_date, today_weekday, formatted_date = get_current_time_info()
                     
                     # Build basic prompt with context
                     context_prompt = f"""Current time: {current_time}

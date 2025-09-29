@@ -52,7 +52,7 @@ class LLMPerformanceTester:
                 content = content.replace("{{current_time}}", "August 17, 2024 12:30:45")
                 content = content.replace("{{today_date}}", "August 17, 2024")
                 content = content.replace("{{today_weekday}}", "Saturday")
-                content = content.replace("{{lunar_date}}", "August 17, 2024")
+                content = content.replace("{{formatted_date}}", "August 17, 2024")
                 content = content.replace("{{local_address}}", "San Francisco")
                 content = content.replace("{{weather_info}}", "Today sunny, 25-32°C")
                 return content

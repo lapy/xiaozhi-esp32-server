@@ -59,7 +59,7 @@ class IntentProvider(IntentProviderBase):
             "【Important rules】For the following types of queries, directly return result_for_context without calling functions:\n"
             "- Ask current time (e.g.: what time is it now, current time, query time, etc.)\n"
             "- Ask today's date (e.g.: what date is today, what day of week is today, what is today's date, etc.)\n"
-            "- Ask today's lunar calendar (e.g.: what lunar date is today, what solar term is today, etc.)\n"
+            "- Ask today's calendar (e.g.: what calendar date is today, what weekday is today, etc.)\n"
             "- Ask current city (e.g.: where am I now, do you know which city I am in, etc.)"
             "System will directly construct answers based on context information.\n\n"
             "- If user uses interrogative words (like 'how', 'why', 'how to') to ask exit-related questions (e.g. 'how did it exit?'), note this is not asking you to exit, please return {'function_call': {'name': 'continue_chat'}\n"

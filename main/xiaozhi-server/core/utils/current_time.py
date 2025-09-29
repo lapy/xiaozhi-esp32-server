@@ -38,7 +38,7 @@ def get_current_weekday() -> str:
     return WEEKDAY_MAP[now.strftime("%A")]
 
 
-def get_current_lunar_date() -> str:
+def get_current_date_formatted() -> str:
     """
     Get current date in a more readable format
     """
@@ -52,11 +52,11 @@ def get_current_lunar_date() -> str:
 def get_current_time_info() -> tuple:
     """
     Get current time information
-    Returns: (current time string, today's date, today's weekday, lunar date)
+    Returns: (current time string, today's date, today's weekday, formatted date)
     """
     current_time = get_current_time()
     today_date = get_current_date()
     today_weekday = get_current_weekday()
-    lunar_date = get_current_lunar_date()
+    formatted_date = get_current_date_formatted()
     
-    return current_time, today_date, today_weekday, lunar_date
+    return current_time, today_date, today_weekday, formatted_date

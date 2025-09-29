@@ -116,13 +116,13 @@ class PromptManager:
 
     def _get_current_time_info(self) -> tuple:
         """Get current time information"""
-        from .current_time import get_current_date, get_current_weekday, get_current_lunar_date
+        from .current_time import get_current_date, get_current_weekday, get_current_date_formatted
         
         today_date = get_current_date()
         today_weekday = get_current_weekday()
-        lunar_date = get_current_lunar_date() + "\n"
+        formatted_date = get_current_date_formatted() + "\n"
 
-        return today_date, today_weekday, lunar_date
+        return today_date, today_weekday, formatted_date
 
     def _get_location_info(self, client_ip: str) -> str:
         """Get location information"""
@@ -191,7 +191,7 @@ class PromptManager:
 
         try:
             # Get latest time information (not cached)
-            today_date, today_weekday, lunar_date = (
+            today_date, today_weekday, formatted_date = (
                 self._get_current_time_info()
             )
 
@@ -219,7 +219,7 @@ class PromptManager:
                 current_time="{{current_time}}",
                 today_date=today_date,
                 today_weekday=today_weekday,
-                lunar_date=lunar_date,
+                formatted_date=formatted_date,
                 local_address=local_address,
                 weather_info=weather_info,
                 emojiList=EMOJI_List,
