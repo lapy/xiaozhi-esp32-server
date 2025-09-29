@@ -24,13 +24,13 @@ export default {
             }).send()
     },
     // Get captcha
-    getCaptcha(uuid, callback, failCallback) {
+    getCaptcha(uuid, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/user/captcha?uuid=${uuid}`)
             .method('GET')
             .type('blob')
             .header({
-                'Content-Type': 'image/gif',
+                'Accept': 'image/gif',
                 'Pragma': 'No-cache',
                 'Cache-Control': 'no-cache'
             })
@@ -38,17 +38,8 @@ export default {
                 RequestService.clearRequestTime();
                 callback(res);
             })
-            .fail((err) => {
-                RequestService.clearRequestTime();
-                if (failCallback) {
-                    failCallback(err);
-                }
-            })
-            .networkFail((err) => {
-                RequestService.clearRequestTime();
-                if (failCallback) {
-                    failCallback(err);
-                }
+            .networkFail((err) => {  // Add error parameter
+
             }).send()
     },
     // Send SMS verification code

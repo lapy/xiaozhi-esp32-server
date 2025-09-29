@@ -220,9 +220,6 @@ export default {
           } else {
             showDanger("Captcha loading failed, click to refresh");
           }
-        }, (err) => {
-          console.error('CAPTCHA loading error:', err);
-          showDanger("Captcha loading failed, click to refresh");
         });
       }
     },

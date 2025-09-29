@@ -20,6 +20,8 @@ const DEV_API_SERVICE = process.env.VUE_APP_API_BASE_URL
  * @returns {string}
  */
 export function getServiceUrl() {
+    console.log('DEV_API_SERVICE:', DEV_API_SERVICE);
+    console.log('process.env.VUE_APP_API_BASE_URL:', process.env.VUE_APP_API_BASE_URL);
     return DEV_API_SERVICE
 }
 
