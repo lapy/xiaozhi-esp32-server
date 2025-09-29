@@ -215,11 +215,14 @@ export default {
 
         Api.user.getCaptcha(this.captchaUuid, (res) => {
           if (res.status === 200) {
-            const blob = new Blob([res.data], { type: res.data.type });
+            const blob = new Blob([res.data], { type: 'image/gif' });
             this.captchaUrl = URL.createObjectURL(blob);
           } else {
             showDanger("Captcha loading failed, click to refresh");
           }
+        }, (err) => {
+          console.error('CAPTCHA loading error:', err);
+          showDanger("Captcha loading failed, click to refresh");
         });
       }
     },

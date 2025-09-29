@@ -24,7 +24,7 @@ export default {
             }).send()
     },
     // Get captcha
-    getCaptcha(uuid, callback) {
+    getCaptcha(uuid, callback, failCallback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/user/captcha?uuid=${uuid}`)
             .method('GET')
@@ -38,8 +38,17 @@ export default {
                 RequestService.clearRequestTime();
                 callback(res);
             })
-            .networkFail((err) => {  // Add error parameter
-
+            .fail((err) => {
+                RequestService.clearRequestTime();
+                if (failCallback) {
+                    failCallback(err);
+                }
+            })
+            .networkFail((err) => {
+                RequestService.clearRequestTime();
+                if (failCallback) {
+                    failCallback(err);
+                }
             }).send()
     },
     // Send SMS verification code
