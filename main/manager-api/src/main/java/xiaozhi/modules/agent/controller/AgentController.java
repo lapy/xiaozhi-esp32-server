@@ -199,7 +199,7 @@ public class AgentController {
 
         // Delete chat session
         agentChatHistoryService.deleteBySessionId(id, sessionId);
-        return new Result<Void>().ok();
+        return new Result<Void>().ok(null);
     }
 
     @DeleteMapping("/{id}/chat-history/all")
@@ -216,7 +216,7 @@ public class AgentController {
 
         // Delete all chat sessions for this agent
         agentChatHistoryService.deleteByAgentId(id, true, true);
-        return new Result<Void>().ok();
+        return new Result<Void>().ok(null);
     }
     @GetMapping("/{id}/chat-history/user")
     @Operation(summary = "Get agent chat history (User)")
