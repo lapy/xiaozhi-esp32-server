@@ -182,6 +182,42 @@ public class AgentController {
         List<AgentChatHistoryDTO> result = agentChatHistoryService.getChatHistoryBySessionId(id, sessionId);
         return new Result<List<AgentChatHistoryDTO>>().ok(result);
     }
+
+    @DeleteMapping("/{id}/chat-history/{sessionId}")
+    @Operation(summary = "Delete agent chat session")
+    @RequiresPermissions("sys:role:normal")
+    public Result<Void> deleteAgentChatSession(
+            @PathVariable("id") String id,
+            @PathVariable("sessionId") String sessionId) {
+        // Get current user
+        UserDetail user = SecurityUser.getUser();
+
+        // Check permissions
+        if (!agentService.checkAgentPermission(id, user.getId())) {
+            return new Result<Void>().error("No permission to delete this agent's chat history");
+        }
+
+        // Delete chat session
+        agentChatHistoryService.deleteBySessionId(id, sessionId);
+        return new Result<Void>().ok();
+    }
+
+    @DeleteMapping("/{id}/chat-history/all")
+    @Operation(summary = "Delete all agent chat sessions")
+    @RequiresPermissions("sys:role:normal")
+    public Result<Void> deleteAllAgentChatSessions(@PathVariable("id") String id) {
+        // Get current user
+        UserDetail user = SecurityUser.getUser();
+
+        // Check permissions
+        if (!agentService.checkAgentPermission(id, user.getId())) {
+            return new Result<Void>().error("No permission to delete this agent's chat history");
+        }
+
+        // Delete all chat sessions for this agent
+        agentChatHistoryService.deleteByAgentId(id, true, true);
+        return new Result<Void>().ok();
+    }
     @GetMapping("/{id}/chat-history/user")
     @Operation(summary = "Get agent chat history (User)")
     @RequiresPermissions("sys:role:normal")

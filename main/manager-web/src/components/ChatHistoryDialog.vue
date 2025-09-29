@@ -1,14 +1,36 @@
 <template>
-    <el-dialog :title="$t('chatHistory.with') + agentName + $t('chatHistory.dialogTitle') + (currentMacAddress ? '[' + currentMacAddress + ']' : '')"
+    <el-dialog :title="$t('chatHistory.with') + agentName + (currentMacAddress ? '[' + currentMacAddress + ']' : '')"
         :visible.sync="dialogVisible" width="80%" :before-close="handleClose" custom-class="chat-history-dialog">
         <div class="chat-container">
             <div class="session-list" @scroll="handleScroll">
+                <div class="session-list-header">
+                    <span class="session-count">{{ $t('chatHistory.sessionCount', { count: sessions.length }) }}</span>
+                    <el-button 
+                        v-if="sessions.length > 0"
+                        type="text" 
+                        size="mini" 
+                        class="delete-all-btn"
+                        @click="deleteAllSessions"
+                        :title="$t('chatHistory.deleteAllSessions')">
+                        {{ $t('chatHistory.deleteAll') }}
+                    </el-button>
+                </div>
                 <div v-for="session in sessions" :key="session.sessionId" class="session-item"
                     :class="{ active: currentSessionId === session.sessionId }" @click="selectSession(session)">
                     <img :src="getUserAvatar(session.sessionId)" class="avatar" />
                     <div class="session-info">
                         <div class="session-time">{{ formatTime(session.createdAt) }}</div>
                         <div class="message-count">{{ session.chatCount > 99 ? '99' : session.chatCount }}</div>
+                    </div>
+                    <div class="session-actions">
+                        <el-button 
+                            type="text" 
+                            icon="el-icon-delete" 
+                            size="mini" 
+                            class="delete-btn"
+                            @click.stop="deleteSession(session)"
+                            :title="$t('chatHistory.deleteSession')">
+                        </el-button>
                     </div>
                 </div>
                 <div v-if="loading" class="loading">{{ $t('chatHistory.loading') }}</div>
@@ -292,6 +314,64 @@ export default {
 
             // Return corresponding avatar image
             return require(`@/assets/user-avatar${avatarIndex}.png`);
+        },
+        deleteSession(session) {
+            this.$confirm(this.$t('chatHistory.deleteConfirm'), this.$t('common.warning'), {
+                confirmButtonText: this.$t('common.confirm'),
+                cancelButtonText: this.$t('common.cancel'),
+                type: 'warning'
+            }).then(() => {
+                Api.agent.deleteAgentChatSession(this.agentId, session.sessionId, (res) => {
+                    if (res.data && res.data.code === 200) {
+                        this.$message.success(this.$t('chatHistory.deleteSuccess'));
+                        
+                        // Remove session from list
+                        const index = this.sessions.findIndex(s => s.sessionId === session.sessionId);
+                        if (index > -1) {
+                            this.sessions.splice(index, 1);
+                        }
+                        
+                        // If deleted session was currently selected, clear selection
+                        if (this.currentSessionId === session.sessionId) {
+                            this.currentSessionId = '';
+                            this.messages = [];
+                            this.currentMacAddress = '';
+                        }
+                        
+                        // If no sessions left, reload the list
+                        if (this.sessions.length === 0) {
+                            this.resetData();
+                            this.loadSessions();
+                        }
+                    } else {
+                        this.$message.error(this.$t('chatHistory.deleteFailed'));
+                    }
+                });
+            }).catch(() => {
+                // User cancelled deletion
+            });
+        },
+        deleteAllSessions() {
+            this.$confirm(this.$t('chatHistory.deleteAllConfirm'), this.$t('common.warning'), {
+                confirmButtonText: this.$t('common.confirm'),
+                cancelButtonText: this.$t('common.cancel'),
+                type: 'warning'
+            }).then(() => {
+                // Delete all sessions by calling the existing deleteByAgentId method
+                Api.agent.deleteAllAgentChatSessions(this.agentId, (res) => {
+                    if (res.data && res.data.code === 200) {
+                        this.$message.success(this.$t('chatHistory.deleteAllSuccess'));
+                        
+                        // Clear all data
+                        this.resetData();
+                        this.loadSessions();
+                    } else {
+                        this.$message.error(this.$t('chatHistory.deleteAllFailed'));
+                    }
+                });
+            }).catch(() => {
+                // User cancelled deletion
+            });
         }
     }
 };
@@ -310,6 +390,32 @@ export default {
     padding: 10px;
 }
 
+.session-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+}
+
+.session-count {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+.delete-all-btn {
+    color: #f56c6c;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+.delete-all-btn:hover {
+    color: #f56c6c;
+    background-color: #fef0f0;
+}
+
 .session-item {
     display: flex;
     align-items: center;
@@ -317,6 +423,7 @@ export default {
     cursor: pointer;
     border-radius: 8px;
     margin-bottom: 10px;
+    position: relative;
 }
 
 .session-item:hover {
@@ -336,6 +443,26 @@ export default {
 
 .session-info {
     flex: 1;
+}
+
+.session-actions {
+    opacity: 0;
+    transition: opacity 0.2s;
+    margin-left: 10px;
+}
+
+.session-item:hover .session-actions {
+    opacity: 1;
+}
+
+.delete-btn {
+    color: #f56c6c;
+    padding: 4px;
+}
+
+.delete-btn:hover {
+    color: #f56c6c;
+    background-color: #fef0f0;
 }
 
 .session-time {

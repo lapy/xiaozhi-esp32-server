@@ -146,6 +146,36 @@ export default {
                 });
             }).send();
     },
+    // Delete agent chat session
+    deleteAgentChatSession(agentId, sessionId, callback) {
+        RequestService.sendRequest()
+            .url(`${getServiceUrl()}/agent/${agentId}/chat-history/${sessionId}`)
+            .method('DELETE')
+            .success((res) => {
+                RequestService.clearRequestTime();
+                callback(res);
+            })
+            .networkFail(() => {
+                RequestService.reAjaxFun(() => {
+                    this.deleteAgentChatSession(agentId, sessionId, callback);
+                });
+            }).send();
+    },
+    // Delete all agent chat sessions
+    deleteAllAgentChatSessions(agentId, callback) {
+        RequestService.sendRequest()
+            .url(`${getServiceUrl()}/agent/${agentId}/chat-history/all`)
+            .method('DELETE')
+            .success((res) => {
+                RequestService.clearRequestTime();
+                callback(res);
+            })
+            .networkFail(() => {
+                RequestService.reAjaxFun(() => {
+                    this.deleteAllAgentChatSessions(agentId, callback);
+                });
+            }).send();
+    },
     // Get audio download ID
     getAudioId(audioId, callback) {
         RequestService.sendRequest()

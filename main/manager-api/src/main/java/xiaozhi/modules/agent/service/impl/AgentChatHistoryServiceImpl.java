@@ -96,6 +96,18 @@ public class AgentChatHistoryServiceImpl extends ServiceImpl<AiAgentChatHistoryD
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteBySessionId(String agentId, String sessionId) {
+        // Build query conditions
+        QueryWrapper<AgentChatHistoryEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("agent_id", agentId)
+                .eq("session_id", sessionId);
+
+        // Delete chat history records for this session
+        remove(wrapper);
+    }
+
+    @Override
     public List<AgentChatHistoryUserVO> getRecentlyFiftyByAgentId(String agentId) {
         // Build query conditions (no need to add sorting by creation time, data is naturally ordered by primary key - larger id means later creation time
         // This avoids sorting overhead and full table scan during pagination)
