@@ -322,7 +322,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 Api.agent.deleteAgentChatSession(this.agentId, session.sessionId, (res) => {
-                    if (res.data && res.data.code === 200) {
+                    if (res.data && res.data.code === 0) {
                         this.$message.success(this.$t('chatHistory.deleteSuccess'));
                         
                         // Remove session from list
@@ -359,7 +359,7 @@ export default {
             }).then(() => {
                 // Delete all sessions by calling the existing deleteByAgentId method
                 Api.agent.deleteAllAgentChatSessions(this.agentId, (res) => {
-                    if (res.data && res.data.code === 200) {
+                    if (res.data && res.data.code === 0) {
                         this.$message.success(this.$t('chatHistory.deleteAllSuccess'));
                         
                         // Clear all data
