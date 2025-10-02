@@ -63,6 +63,13 @@ class TTSProvider(TTSProviderBase):
         model_key_msg = check_model_key("ElevenLabs TTS", self.api_key)
         if model_key_msg:
             logger.bind(tag=TAG).error(model_key_msg)
+            
+        # Validate API key format
+        if not self.api_key or self.api_key == "your_elevenlabs_api_key":
+            logger.bind(tag=TAG).error("ElevenLabs API key is not configured. Please set a valid API key in config.yaml")
+            
+        # Log configuration for debugging
+        logger.bind(tag=TAG).info(f"ElevenLabs TTS initialized with voice: {self.voice_id}, model: {self.model_id}")
 
     def generate_filename(self, extension=".mp3"):
         return os.path.join(
@@ -117,6 +124,15 @@ class TTSProvider(TTSProviderBase):
                     output_format=self.output_format
                 )
                 
+                # Handle both bytes and generator responses
+                if hasattr(audio_data, '__iter__') and not isinstance(audio_data, (bytes, str)):
+                    # It's a generator, collect the chunks
+                    audio_chunks = []
+                    for chunk in audio_data:
+                        if isinstance(chunk, bytes):
+                            audio_chunks.append(chunk)
+                    audio_data = b"".join(audio_chunks)
+                
                 logger.bind(tag=TAG).debug(f"ElevenLabs TTS convert successful, audio size: {len(audio_data)} bytes")
                 
                 if output_file:
@@ -133,7 +149,11 @@ class TTSProvider(TTSProviderBase):
             except Exception as e2:
                 # Final fallback to requests-based implementation
                 logger.bind(tag=TAG).warning(f"ElevenLabs SDK completely failed, falling back to requests: {str(e2)}")
-                await self._fallback_text_to_speak(text, output_file)
+                try:
+                    await self._fallback_text_to_speak(text, output_file)
+                except Exception as e3:
+                    logger.bind(tag=TAG).error(f"All ElevenLabs methods failed: SDK={str(e)}, Convert={str(e2)}, Requests={str(e3)}")
+                    raise Exception(f"ElevenLabs TTS completely failed. Please check API key and network connection.")
     
     async def _fallback_text_to_speak(self, text, output_file):
         """Fallback implementation using requests"""
@@ -182,7 +202,29 @@ class TTSProvider(TTSProviderBase):
                 else:
                     return response.content
             else:
-                error_msg = f"ElevenLabs TTS request failed: {response.status_code} - {response.text}"
+                # Parse error response for better error messages
+                error_detail = "Unknown error"
+                try:
+                    error_json = response.json()
+                    if 'detail' in error_json:
+                        if isinstance(error_json['detail'], dict) and 'message' in error_json['detail']:
+                            error_detail = error_json['detail']['message']
+                        else:
+                            error_detail = str(error_json['detail'])
+                    else:
+                        error_detail = response.text
+                except:
+                    error_detail = response.text
+                
+                if response.status_code == 401:
+                    error_msg = f"ElevenLabs API authentication failed: {error_detail}. Please check your API key and permissions."
+                elif response.status_code == 429:
+                    error_msg = f"ElevenLabs API rate limit exceeded: {error_detail}. Please wait and try again."
+                elif response.status_code == 400:
+                    error_msg = f"ElevenLabs API bad request: {error_detail}. Please check your configuration."
+                else:
+                    error_msg = f"ElevenLabs TTS request failed ({response.status_code}): {error_detail}"
+                
                 logger.bind(tag=TAG).error(error_msg)
                 raise Exception(error_msg)
                 
