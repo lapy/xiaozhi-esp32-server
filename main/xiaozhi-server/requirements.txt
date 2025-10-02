@@ -2,7 +2,7 @@
 # Core ML/AI frameworks
 torch==2.4.1
 torchaudio==2.4.1
-numpy==1.26.4
+numpy>=2.0.2  # Updated for kokoro-tts compatibility (PyTorch 2.4.1 supports NumPy 2.x)
 silero_vad==6.0.0
 
 # Web frameworks and networking
