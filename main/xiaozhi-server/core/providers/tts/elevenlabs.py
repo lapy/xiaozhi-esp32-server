@@ -7,10 +7,15 @@ from core.providers.tts.base import TTSProviderBase
 from config.logger import setup_logging
 
 try:
-    from elevenlabs import ElevenLabs
+    from elevenlabs.client import ElevenLabs
     ELEVENLABS_AVAILABLE = True
 except ImportError:
-    ELEVENLABS_AVAILABLE = False
+    try:
+        # Fallback import pattern
+        from elevenlabs import ElevenLabs
+        ELEVENLABS_AVAILABLE = True
+    except ImportError:
+        ELEVENLABS_AVAILABLE = False
 
 TAG = __name__
 logger = setup_logging()
@@ -40,6 +45,11 @@ class TTSProvider(TTSProviderBase):
         try:
             self.client = ElevenLabs(api_key=self.api_key)
             logger.bind(tag=TAG).debug("ElevenLabs client initialized successfully")
+            
+            # Debug: Log available methods on the client
+            available_methods = [method for method in dir(self.client) if not method.startswith('_')]
+            logger.bind(tag=TAG).debug(f"Available ElevenLabs client methods: {available_methods}")
+            
         except Exception as e:
             logger.bind(tag=TAG).error(f"Failed to initialize ElevenLabs client: {e}")
             raise ImportError("Could not initialize ElevenLabs client. Please check SDK version and API key.")
@@ -64,20 +74,25 @@ class TTSProvider(TTSProviderBase):
         logger.bind(tag=TAG).debug(f"Sending ElevenLabs TTS request with voice_id: {self.voice_id}, text length: {len(text)}")
         
         try:
-            # Generate audio using ElevenLabs SDK 2.16.0+
-            logger.bind(tag=TAG).debug(f"Generating audio with ElevenLabs SDK")
+            # Use ElevenLabs SDK 2.16.0+ streaming API for better performance
+            logger.bind(tag=TAG).debug(f"Generating audio with ElevenLabs SDK streaming")
             
-            audio_data = self.client.generate(
+            # Use the streaming method for real-time audio generation
+            audio_stream = self.client.text_to_speech.stream(
                 text=text,
-                voice=self.voice_id,
-                model=self.model_id
+                voice_id=self.voice_id,
+                model_id=self.model_id,
+                output_format=self.output_format
             )
             
-            # If it's a generator, collect the chunks
-            if hasattr(audio_data, '__iter__') and not isinstance(audio_data, (bytes, str)):
-                audio_data = b"".join(audio_data)
+            # Collect all audio chunks from the stream
+            audio_chunks = []
+            for chunk in audio_stream:
+                if isinstance(chunk, bytes):
+                    audio_chunks.append(chunk)
             
-            logger.bind(tag=TAG).debug(f"ElevenLabs TTS generation successful, audio size: {len(audio_data)} bytes")
+            audio_data = b"".join(audio_chunks)
+            logger.bind(tag=TAG).debug(f"ElevenLabs TTS streaming successful, audio size: {len(audio_data)} bytes")
             
             if output_file:
                 # Ensure directory exists
@@ -91,9 +106,34 @@ class TTSProvider(TTSProviderBase):
                 return audio_data
                 
         except Exception as e:
-            # Fallback to requests-based implementation if SDK fails
-            logger.bind(tag=TAG).warning(f"ElevenLabs SDK failed, falling back to requests: {str(e)}")
-            await self._fallback_text_to_speak(text, output_file)
+            # Fallback to non-streaming method if streaming fails
+            logger.bind(tag=TAG).warning(f"ElevenLabs streaming failed, trying convert method: {str(e)}")
+            try:
+                # Try the convert method as fallback
+                audio_data = self.client.text_to_speech.convert(
+                    text=text,
+                    voice_id=self.voice_id,
+                    model_id=self.model_id,
+                    output_format=self.output_format
+                )
+                
+                logger.bind(tag=TAG).debug(f"ElevenLabs TTS convert successful, audio size: {len(audio_data)} bytes")
+                
+                if output_file:
+                    # Ensure directory exists
+                    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+                    
+                    with open(output_file, "wb") as f:
+                        f.write(audio_data)
+                    
+                    logger.bind(tag=TAG).debug(f"ElevenLabs TTS audio saved to: {output_file}")
+                else:
+                    return audio_data
+                    
+            except Exception as e2:
+                # Final fallback to requests-based implementation
+                logger.bind(tag=TAG).warning(f"ElevenLabs SDK completely failed, falling back to requests: {str(e2)}")
+                await self._fallback_text_to_speak(text, output_file)
     
     async def _fallback_text_to_speak(self, text, output_file):
         """Fallback implementation using requests"""
