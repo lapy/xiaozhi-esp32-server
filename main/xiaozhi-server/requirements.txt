@@ -6,10 +6,10 @@ numpy>=2.0.2  # Updated for kokoro-tts compatibility (PyTorch 2.4.1 supports Num
 silero_vad==6.0.0
 
 # Web frameworks and networking
-websockets==14.2
+websockets==15.0.1
 aiohttp==3.12.15
 aiohttp_cors==0.7.0
-httpx==0.27.2
+httpx==0.28.1
 requests==2.32.5
 
 # Audio processing
@@ -17,10 +17,11 @@ pydub==0.25.1
 opuslib_next==1.1.2
 
 # AI/LLM APIs
-openai==1.107.0
+openai==2.0.1
 google-generativeai==0.8.5
 elevenlabs==2.16.0
-kokoro-tts==2.3.0
+# kokoro-tts==2.3.0  # DISABLED: Requires Python 3.9-3.12 (not compatible with Python 3.13+)
+# If needed, use Docker with Python 3.11 or downgrade your Python version
 
 # TTS services
 edge_tts==7.0.0
@@ -38,7 +39,7 @@ Jinja2==3.1.6
 
 # Security and authentication
 PyJWT==2.8.0
-cryptography==41.0.7
+cryptography==46.0.2
 PySocks==1.7.1
 
 # Text processing and parsing
@@ -59,6 +60,6 @@ modelscope==1.9.5
 dashscope==1.14.1
 
 # Memory and MCP
-mem0ai==0.1.62
-mcp==1.13.1
+mem0ai==0.1.118
+mcp==1.16.0
 mcp-proxy==0.8.2
