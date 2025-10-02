@@ -20,8 +20,7 @@ opuslib_next==1.1.2
 openai==2.0.1
 google-generativeai==0.8.5
 elevenlabs==2.16.0
-# kokoro-tts==2.3.0  # DISABLED: Requires Python 3.9-3.12 (not compatible with Python 3.13+)
-# If needed, use Docker with Python 3.11 or downgrade your Python version
+kokoro-tts==2.3.0  # DISABLED: Requires Python 3.9-3.12 (not compatible with Python 3.13+)
 
 # TTS services
 edge_tts==7.0.0
