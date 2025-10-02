@@ -7,7 +7,7 @@ from core.providers.tts.base import TTSProviderBase
 from config.logger import setup_logging
 
 try:
-    from elevenlabs import ElevenLabs, Voice, VoiceSettings
+    from elevenlabs import ElevenLabs
     ELEVENLABS_AVAILABLE = True
 except ImportError:
     ELEVENLABS_AVAILABLE = False
@@ -21,7 +21,7 @@ class TTSProvider(TTSProviderBase):
         super().__init__(config, delete_audio_file)
         
         if not ELEVENLABS_AVAILABLE:
-            raise ImportError("ElevenLabs package not installed. Please run: pip install elevenlabs==1.8.0")
+            raise ImportError("ElevenLabs package not installed. Please run: pip install elevenlabs==2.16.0")
         
         self.api_key = config.get("api_key")
         self.api_url = config.get("api_url", "https://api.elevenlabs.io/v1/text-to-speech")
@@ -37,7 +37,12 @@ class TTSProvider(TTSProviderBase):
         self.output_file = config.get("output_dir", "tmp/")
 
         # Initialize ElevenLabs client
-        self.client = ElevenLabs(api_key=self.api_key)
+        try:
+            self.client = ElevenLabs(api_key=self.api_key)
+            logger.bind(tag=TAG).debug("ElevenLabs client initialized successfully")
+        except Exception as e:
+            logger.bind(tag=TAG).error(f"Failed to initialize ElevenLabs client: {e}")
+            raise ImportError("Could not initialize ElevenLabs client. Please check SDK version and API key.")
 
         logger.debug(
             f"ElevenLabs TTS parameters initialized: voice_id={self.voice_id}, "
@@ -59,27 +64,18 @@ class TTSProvider(TTSProviderBase):
         logger.bind(tag=TAG).debug(f"Sending ElevenLabs TTS request with voice_id: {self.voice_id}, text length: {len(text)}")
         
         try:
-            # Create voice settings
-            voice_settings = VoiceSettings(
-                stability=self.stability,
-                similarity_boost=self.similarity_boost,
-                style=self.style,
-                use_speaker_boost=self.use_speaker_boost
-            )
-            
-            # Generate audio using ElevenLabs SDK
+            # Generate audio using ElevenLabs SDK 2.16.0+
             logger.bind(tag=TAG).debug(f"Generating audio with ElevenLabs SDK")
             
-            audio_generator = self.client.generate(
+            audio_data = self.client.generate(
                 text=text,
-                voice=Voice(voice_id=self.voice_id),
-                voice_settings=voice_settings,
-                model=self.model_id,
-                output_format=self.output_format if self.output_format != "mp3_44100_128" else None
+                voice=self.voice_id,
+                model=self.model_id
             )
             
-            # Collect all audio chunks
-            audio_data = b"".join(audio_generator)
+            # If it's a generator, collect the chunks
+            if hasattr(audio_data, '__iter__') and not isinstance(audio_data, (bytes, str)):
+                audio_data = b"".join(audio_data)
             
             logger.bind(tag=TAG).debug(f"ElevenLabs TTS generation successful, audio size: {len(audio_data)} bytes")
             
