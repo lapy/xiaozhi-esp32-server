@@ -506,3 +506,51 @@ TTS:
     speed: 1.0  # Speech rate, 1.0 means normal speed, >1 means faster, <1 means slower
     volume: 1.0  # Volume, 1.0 means normal volume, >1 means increase, <1 means decrease
     save_path:   # Save path
+  ElevenLabsTTS:
+    # ElevenLabs text-to-speech service, high-quality AI voices
+    type: elevenlabs
+    # Get your API key from https://elevenlabs.io/
+    api_key: your_elevenlabs_api_key
+    # API endpoint URL (default is the official ElevenLabs API)
+    api_url: https://api.elevenlabs.io/v1/text-to-speech
+    # Voice ID - you can get voice IDs from ElevenLabs dashboard
+    # Default is Rachel (21m00Tcm4TlvDq8ikWAM)
+    # Popular voices available:
+    # American English:
+    # - Rachel: 21m00Tcm4TlvDq8ikWAM (Calm, Young Adult Female)
+    # - Adam: pNInz6obpgDQGcFmaJgB (Deep, Middle-aged Male)
+    # - Antoni: ErXwobaYiN019PkySvjV (Well-rounded, Middle-aged Male)
+    # - Arnold: VR6AewLTigWG4xSOukaG (Crisp, Middle-aged Male)
+    # - Bella: EXAVITQu4vr4xnSDxMaL (Soft, Young Adult Female)
+    # - Domi: AZnzlk1XvdvUeBnXmlld (Strong, Young Adult Female)
+    # - Elli: MF3mGyEYCl7XYWbV9V6O (Emotional, Young Adult Female)
+    # - Josh: TxGEqnHWrfWFTfGW9XjX (Deep, Young Adult Male)
+    # - Sam: yoZ06aMxZJJ28mfd3POQ (Raspy, Young Adult Male)
+    # - Matilda: XrExE9yKIg1WjnnlVkGX (Warm, Middle-aged Female)
+    # - Hope: uYXf8XasLslADfZ2MB4u (Friendly, Engaging Female)
+    # - Freya: jsCqWAovK2LkecY7zXl4 (Confident, Professional Female)
+    # - Grace: oWAxZDx7w5VEj9dCyTzz (Gentle, Soothing Female)
+    # British English:
+    # - Matthew: Yko7PKHZNXotIFUBG7I9 (Clear, Middle-aged Male)
+    # - Daniel: onwK6e5U6N7xDrBOmXO (Energetic, Enthusiastic Male)
+    # - Lily: pFZP5JQG7iQjIQuC4Bku (Warm, Pleasant Female)
+    # Australian English:
+    # - James: ZQe5CqHNLWdS2F4s9BqK (Calm, Young Adult Male)
+    # - Charlie: IK2y5XjIqaOfvMWOhSXy (Casual, Friendly Male)
+    voice_id: 21m00Tcm4TlvDq8ikWAM
+    # Model ID for voice generation
+    # Options: eleven_monolingual_v1, eleven_multilingual_v1, eleven_multilingual_v2, eleven_turbo_v2, eleven_turbo_v2_5
+    # eleven_turbo_v2_5 is the latest and fastest model with the lowest latency
+    model_id: eleven_turbo_v2_5
+    # Voice settings (0.0 to 1.0)
+    stability: 0.5  # Higher values make voice more consistent but less expressive
+    similarity_boost: 0.5  # Higher values make voice closer to original but may reduce quality
+    style: 0.0  # Style exaggeration (0.0 to 1.0)
+    use_speaker_boost: true  # Boost similarity to speaker
+    # Streaming optimization (0-4, higher = lower latency but may reduce quality)
+    optimize_streaming_latency: 0
+    # Output format options:
+    # mp3_22050_32, mp3_44100_32, mp3_44100_64, mp3_44100_96, mp3_44100_128, mp3_44100_192
+    # pcm_16000, pcm_22050, pcm_24000, pcm_44100, ulaw_8000
+    output_format: mp3_44100_128
+    output_dir: tmp/

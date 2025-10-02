@@ -34,3 +34,4 @@ vosk==0.3.45
 openai-whisper==20240930
 modelscope==1.9.5
 dashscope==1.14.1
+elevenlabs==1.8.0
