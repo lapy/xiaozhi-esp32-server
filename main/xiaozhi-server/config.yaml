@@ -554,3 +554,35 @@ TTS:
     # pcm_16000, pcm_22050, pcm_24000, pcm_44100, ulaw_8000
     output_format: mp3_44100_128
     output_dir: tmp/
+  KokoroTTS:
+    # Kokoro TTS - High-quality neural text-to-speech
+    # Supports API mode (server deployment), Python package mode, and CLI mode
+    type: kokoro
+    # API mode settings (set use_api: true to use server deployment)
+    # If false, will use kokoro-tts Python package (recommended) or CLI fallback
+    use_api: false
+    # API endpoint URL (for server deployment)
+    api_url: http://localhost:8000/api/v1/audio/speech
+    # API key (optional, depends on server configuration)
+    api_key: ""
+    # Model selection
+    # Options: model_fp32, model_fp16 (fp32 for better quality, fp16 for speed)
+    model: model_fp32
+    # Voice selection - Kokoro TTS 2025 Complete Voice Library:
+    # American English Female: af_alloy, af_aoede, af_bella, af_heart, af_jessica, af_kore, af_nicole, af_nova, af_river, af_sarah, af_sky
+    # American English Male: am_adam, am_echo, am_eric, am_fenrir, am_liam, am_michael, am_onyx, am_puck
+    # British English Female: bf_alice, bf_emma, bf_isabella, bf_lily
+    # British English Male: bm_daniel, bm_fable, bm_george, bm_lewis
+    # Japanese: jf_alpha, jf_gongitsune, jf_nezumi, jf_tebukuro, jm_kumo
+    # Chinese: zf_xiaobei, zf_xiaoni, zf_xiaoxiao, zf_xiaoyi, zm_yunjian, zm_yunxi, zm_yunxia, zm_yunyang
+    # European: ff_siwis (French), if_sara (Italian F), im_nicola (Italian M)
+    voice: af_heart
+    # Language code (for CLI mode)
+    # Options: en-us, en-gb, ja-jp, etc.
+    language: en-us
+    # Speech speed (0.5 to 2.0)
+    speed: 1.0
+    # Audio output format
+    # Options: mp3, wav, flac
+    response_format: mp3
+    output_dir: tmp/

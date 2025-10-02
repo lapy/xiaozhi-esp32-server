@@ -35,3 +35,4 @@ openai-whisper==20240930
 modelscope==1.9.5
 dashscope==1.14.1
 elevenlabs==2.16.0
+kokoro-tts==2.3.0
