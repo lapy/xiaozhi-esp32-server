@@ -1,6 +1,6 @@
-// 配置管理模块
+// Configuration management.
 
-// 生成随机MAC地址
+// Generate a random MAC address.
 function generateRandomMac() {
     const hexDigits = '0123456789ABCDEF';
     let mac = '';
@@ -13,14 +13,14 @@ function generateRandomMac() {
     return mac;
 }
 
-// 加载配置
+// Load persisted configuration into the form.
 export function loadConfig() {
     const deviceMacInput = document.getElementById('deviceMac');
     const deviceNameInput = document.getElementById('deviceName');
     const clientIdInput = document.getElementById('clientId');
     const otaUrlInput = document.getElementById('otaUrl');
 
-    // 从localStorage加载MAC地址，如果没有则生成新的
+    // Load the saved MAC address or create a new one.
     let savedMac = localStorage.getItem('xz_tester_deviceMac');
     if (!savedMac) {
         savedMac = generateRandomMac();
@@ -28,7 +28,7 @@ export function loadConfig() {
     }
     deviceMacInput.value = savedMac;
 
-    // 从localStorage加载其他配置
+    // Load the rest of the saved fields.
     const savedDeviceName = localStorage.getItem('xz_tester_deviceName');
     if (savedDeviceName) {
         deviceNameInput.value = savedDeviceName;
@@ -45,7 +45,7 @@ export function loadConfig() {
     }
 }
 
-// 保存配置
+// Save the editable configuration fields.
 export function saveConfig() {
     const deviceMacInput = document.getElementById('deviceMac');
     const deviceNameInput = document.getElementById('deviceName');
@@ -56,22 +56,22 @@ export function saveConfig() {
     localStorage.setItem('xz_tester_clientId', clientIdInput.value);
 }
 
-// 获取配置值
+// Read the current configuration from the DOM.
 export function getConfig() {
-    // 从DOM获取值
+    // Read the current values from the DOM.
     const deviceMac = document.getElementById('deviceMac')?.value.trim() || '';
     const deviceName = document.getElementById('deviceName')?.value.trim() || '';
     const clientId = document.getElementById('clientId')?.value.trim() || '';
 
     return {
-        deviceId: deviceMac,  // 使用MAC地址作为deviceId
+        deviceId: deviceMac,  // Use the MAC address as the deviceId.
         deviceName,
         deviceMac,
         clientId
     };
 }
 
-// 保存连接URL
+// Save the current connection URLs.
 export function saveConnectionUrls() {
     const otaUrl = document.getElementById('otaUrl').value.trim();
     const wsUrl = document.getElementById('serverUrl').value.trim();
