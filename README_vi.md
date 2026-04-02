@@ -17,7 +17,7 @@ Hỗ trợ giao thức MQTT+UDP, giao thức Websocket, điểm truy cập MCP, 
 </p>
 
 <p align="center">
-  <a href="./README.md"><img alt="简体中文版自述文件" src="https://img.shields.io/badge/简体中文-DFE0E5"></a>
+  <a href="./README.md"><img alt="README bằng tiếng Trung giản thể" src="https://img.shields.io/badge/Simplified_Chinese-DFE0E5"></a>
   <a href="./README_en.md"><img alt="README in English" src="https://img.shields.io/badge/English-DFE0E5"></a>
   <a href="./README_vi.md"><img alt="Tiếng Việt" src="https://img.shields.io/badge/Tiếng Việt-DBEDFA"></a>
   <a href="./README_de.md"><img alt="Deutsch" src="https://img.shields.io/badge/Deutsch-DFE0E5"></a>
@@ -38,7 +38,7 @@ Spearheaded by Professor Siyuan Liu's Team (South China University of Technology
 </br>
 Được dẫn dắt bởi nhóm Giáo sư Lưu Tư Nguyên (Đại học Bách khoa Nam Trung Quốc)
 </br>
-<img src="./docs/images/hnlg.jpg" alt="华南理工大学" width="50%">
+<img src="./docs/images/hnlg.jpg" alt="Đại học Công nghệ Hoa Nam" width="50%">
 </p>
 
 ---
@@ -54,35 +54,35 @@ Muốn xem hiệu quả sử dụng? Hãy xem video 🎥
     <td>
         <a href="https://www.bilibili.com/video/BV1FMFyejExX" target="_blank">
          <picture>
-           <img alt="响应速度感受" src="docs/images/demo9.png" />
+           <img alt="Trải nghiệm tốc độ phản hồi" src="docs/images/demo9.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV1vchQzaEse" target="_blank">
          <picture>
-           <img alt="速度优化秘诀" src="docs/images/demo6.png" />
+           <img alt="Mẹo tối ưu tốc độ" src="docs/images/demo6.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV1C1tCzUEZh" target="_blank">
          <picture>
-           <img alt="复杂医疗场景" src="docs/images/demo1.png" />
+           <img alt="Bối cảnh y tế phức tạp" src="docs/images/demo1.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV1zUW5zJEkq" target="_blank">
          <picture>
-           <img alt="MQTT指令下发" src="docs/images/demo4.png" />
+           <img alt="Gửi lệnh MQTT" src="docs/images/demo4.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV1Exu3zqEDe" target="_blank">
          <picture>
-           <img alt="声纹识别" src="docs/images/demo14.png" />
+           <img alt="Nhận dạng dấu giọng nói" src="docs/images/demo14.png" />
          </picture>
         </a>
     </td>
@@ -91,35 +91,35 @@ Muốn xem hiệu quả sử dụng? Hãy xem video 🎥
     <td>
         <a href="https://www.bilibili.com/video/BV1pNXWYGEx1" target="_blank">
          <picture>
-           <img alt="控制家电开关" src="docs/images/demo5.png" />
+           <img alt="Điều khiển công tắc thiết bị gia dụng" src="docs/images/demo5.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV1ZQKUzYExM" target="_blank">
          <picture>
-           <img alt="MCP接入点" src="docs/images/demo13.png" />
+           <img alt="Điểm truy cập MCP" src="docs/images/demo13.png" />
          </picture>
         </a>
     </td>
     <td>
       <a href="https://www.bilibili.com/video/BV1TJ7WzzEo6" target="_blank">
          <picture>
-           <img alt="多指令任务" src="docs/images/demo11.png" />
+           <img alt="Tác vụ nhiều lệnh" src="docs/images/demo11.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV1VC96Y5EMH" target="_blank">
          <picture>
-           <img alt="播放音乐" src="docs/images/demo7.png" />
+           <img alt="Phát nhạc" src="docs/images/demo7.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV1Z8XuYZEAS" target="_blank">
          <picture>
-           <img alt="天气插件" src="docs/images/demo8.png" />
+           <img alt="Plugin thời tiết" src="docs/images/demo8.png" />
          </picture>
         </a>
     </td>
@@ -128,35 +128,35 @@ Muốn xem hiệu quả sử dụng? Hãy xem video 🎥
     <td>
       <a href="https://www.bilibili.com/video/BV12J7WzBEaH" target="_blank">
          <picture>
-           <img alt="实时打断" src="docs/images/demo10.png" />
+           <img alt="Ngắt theo thời gian thực" src="docs/images/demo10.png" />
          </picture>
         </a>
     </td>
     <td>
       <a href="https://www.bilibili.com/video/BV1Co76z7EvK" target="_blank">
          <picture>
-           <img alt="拍照识物品" src="docs/images/demo12.png" />
+           <img alt="Chụp ảnh để nhận dạng vật thể" src="docs/images/demo12.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV1CDKWemEU6" target="_blank">
          <picture>
-           <img alt="自定义音色" src="docs/images/demo2.png" />
+           <img alt="Âm sắc tùy chỉnh" src="docs/images/demo2.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV12yA2egEaC" target="_blank">
          <picture>
-           <img alt="使用粤语交流" src="docs/images/demo3.png" />
+           <img alt="Giao tiếp bằng tiếng Quảng Đông" src="docs/images/demo3.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV17LXWYvENb" target="_blank">
          <picture>
-           <img alt="播报新闻" src="docs/images/demo0.png" />
+           <img alt="Phát bản tin" src="docs/images/demo0.png" />
          </picture>
         </a>
     </td>
@@ -233,7 +233,7 @@ Dự án này cung cấp các công cụ kiểm tra sau để giúp bạn xác m
 ---
 ## Danh sách tính năng ✨
 ### Đã thực hiện ✅
-![请参考-全模块安装架构图](docs/images/deploy2.png)
+![Sơ đồ kiến trúc triển khai đầy đủ module](docs/images/deploy2.png)
 | Module chức năng | Mô tả |
 |:---:|:---|
 | Kiến trúc cốt lõi | Dựa trên [cổng MQTT+UDP](https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/docs/mqtt-gateway-integration.md), WebSocket, máy chủ HTTP, cung cấp hệ thống quản lý bảng điều khiển và xác thực hoàn chỉnh |
