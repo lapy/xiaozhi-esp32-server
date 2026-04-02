@@ -8,23 +8,23 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 
-@Schema(description = "通用扩展功能 DTO")
+@Schema(description = "Common extension DTO")
 public class CommonDTO {
 
-    // ========== 1. 引用详情 (detail_share_embedded) ==========
+    // ========== 1. Reference details (detail_share_embedded) ==========
 
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "引用详情请求")
+    @Schema(description = "Reference-detail request")
     public static class ReferenceDetailReq implements Serializable {
-        @Schema(description = "切片 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotBlank(message = "切片 ID 不能为空")
+        @Schema(description = "Chunk ID", requiredMode = Schema.RequiredMode.REQUIRED)
+        @NotBlank(message = "Chunk ID cannot be empty")
         @JsonProperty("chunk_id")
         private String chunkId;
 
-        @Schema(description = "知识库 ID")
+        @Schema(description = "Knowledge-base ID")
         @JsonProperty("knowledge_id")
         private String knowledgeId;
     }
@@ -33,47 +33,47 @@ public class CommonDTO {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "引用详情响应")
+    @Schema(description = "Reference-detail response")
     public static class ReferenceDetailVO implements Serializable {
-        @Schema(description = "切片 ID")
+        @Schema(description = "Chunk ID")
         @JsonProperty("chunk_id")
         private String chunkId;
 
-        @Schema(description = "完整内容")
+        @Schema(description = "Full content")
         @JsonProperty("content_with_weight")
         private String contentWithWeight;
 
-        @Schema(description = "文档名称")
+        @Schema(description = "Document name")
         @JsonProperty("doc_name")
         private String docName;
 
-        @Schema(description = "图片 ID 列表")
+        @Schema(description = "Image ID list")
         @JsonProperty("img_id")
-        private String imageId; // 注意：RAGFlow 有时返回 String 有时返回 List，需根据实际情况确认，暂定 String 用于 ID
+        private String imageId; // RAGFlow sometimes returns a String and sometimes a List; kept as String for now.
 
-        @Schema(description = "文档 ID")
+        @Schema(description = "Document ID")
         @JsonProperty("doc_id")
         private String docId;
     }
 
-    // ========== 2. 通用问答 (ask_about) - 调试用 ==========
+    // ========== 2. Generic Q&A (ask_about) for debugging ==========
 
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "通用问答请求 (调试用)")
+    @Schema(description = "Generic Q&A request for debugging")
     public static class AskAboutReq implements Serializable {
-        @Schema(description = "用户问题", requiredMode = Schema.RequiredMode.REQUIRED, example = "What is this dataset about?")
-        @NotBlank(message = "问题不能为空")
+        @Schema(description = "User question", requiredMode = Schema.RequiredMode.REQUIRED, example = "What is this dataset about?")
+        @NotBlank(message = "Question cannot be empty")
         @JsonProperty("question")
         private String question;
 
-        @Schema(description = "数据集 ID 列表", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotEmpty(message = "数据集列表不能为空")
+        @Schema(description = "Dataset ID list", requiredMode = Schema.RequiredMode.REQUIRED)
+        @NotEmpty(message = "Dataset list cannot be empty")
         @JsonProperty("dataset_ids")
         private List<String> datasetIds;
     }
 
-    // 响应通常复用 String 或者简单的 Map 结构，视具体实现而定，暂不定义专用 VO
+    // Responses usually reuse String or a simple Map structure, so no dedicated VO is defined here yet.
 }

@@ -29,7 +29,7 @@ import xiaozhi.modules.agent.service.AgentChatHistoryService;
 import xiaozhi.modules.agent.vo.AgentChatHistoryUserVO;
 
 /**
- * 智能体聊天记录表处理service {@link AgentChatHistoryService} impl
+ * Chat-history service implementation for agents.
  *
  * @author Goody
  * @version 1.0, 2025/4/30
@@ -45,14 +45,14 @@ public class AgentChatHistoryServiceImpl extends ServiceImpl<AiAgentChatHistoryD
         int page = Integer.parseInt(params.get(Constant.PAGE).toString());
         int limit = Integer.parseInt(params.get(Constant.LIMIT).toString());
 
-        // 构建查询条件
+        // Build query conditions.
         QueryWrapper<AgentChatHistoryEntity> wrapper = new QueryWrapper<>();
         wrapper.select("session_id", "MAX(created_at) as created_at", "COUNT(*) as chat_count")
                 .eq("agent_id", agentId)
                 .groupBy("session_id")
                 .orderByDesc("created_at");
 
-        // 执行分页查询
+        // Run the paginated query.
         Page<Map<String, Object>> pageParam = new Page<>(page, limit);
         IPage<Map<String, Object>> result = this.baseMapper.selectMapsPage(pageParam, wrapper);
 
@@ -69,16 +69,16 @@ public class AgentChatHistoryServiceImpl extends ServiceImpl<AiAgentChatHistoryD
 
     @Override
     public List<AgentChatHistoryDTO> getChatHistoryBySessionId(String agentId, String sessionId) {
-        // 构建查询条件
+        // Build query conditions.
         QueryWrapper<AgentChatHistoryEntity> wrapper = new QueryWrapper<>();
         wrapper.eq("agent_id", agentId)
                 .eq("session_id", sessionId)
                 .orderByAsc("created_at");
 
-        // 查询聊天记录
+        // Query chat history.
         List<AgentChatHistoryEntity> historyList = list(wrapper);
 
-        // 转换为DTO
+        // Convert to DTOs.
         return ConvertUtils.sourceToTarget(historyList, AgentChatHistoryDTO.class);
     }
 
@@ -86,10 +86,10 @@ public class AgentChatHistoryServiceImpl extends ServiceImpl<AiAgentChatHistoryD
     @Transactional(rollbackFor = Exception.class)
     public void deleteByAgentId(String agentId, Boolean deleteAudio, Boolean deleteText) {
         if (deleteAudio) {
-            // 分批删除音频,避免超时
+            // Delete audio in batches to avoid timeouts.
             List<String> audioIds = baseMapper.getAudioIdsByAgentId(agentId);
             if (ToolUtil.isNotEmpty(audioIds)) {
-                // 每批删除1000条
+                // Delete 1000 rows per batch.
                 List<List<String>> batch = ListUtil.split(audioIds, 1000);
                 batch.forEach(dataList->{
                     baseMapper.deleteAudioByIds(dataList);
@@ -102,29 +102,35 @@ public class AgentChatHistoryServiceImpl extends ServiceImpl<AiAgentChatHistoryD
         if (deleteText) {
             baseMapper.deleteHistoryByAgentId(agentId);
         }
+    }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteBySessionId(String agentId, String sessionId) {
+        LambdaQueryWrapper<AgentChatHistoryEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AgentChatHistoryEntity::getAgentId, agentId)
+                .eq(AgentChatHistoryEntity::getSessionId, sessionId);
+        baseMapper.delete(wrapper);
     }
 
     @Override
     public List<AgentChatHistoryUserVO> getRecentlyFiftyByAgentId(String agentId) {
-        // 构建查询条件(不添加按照创建时间排序，数据本来就是主键越大创建时间越大
-        // 不添加这样可以减少排序全部数据在分页的全盘扫描消耗)
+        // Build query conditions without sorting by created_at.
+        // In practice a larger primary key means a later creation time, which is cheaper to paginate.
         LambdaQueryWrapper<AgentChatHistoryEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.select(AgentChatHistoryEntity::getContent, AgentChatHistoryEntity::getAudioId)
                 .eq(AgentChatHistoryEntity::getAgentId, agentId)
                 .eq(AgentChatHistoryEntity::getChatType, AgentChatHistoryType.USER.getValue())
                 .isNotNull(AgentChatHistoryEntity::getAudioId)
-                // 添加此行，确保查询结果按照创建时间降序排列
-                // 使用id的原因：数据形式，id越大的创建时间就越晚，所以使用id的结果和创建时间降序排列结果一样
-                // id作为降序排列的优势，性能高，有主键索引，不用在排序的时候重新进行排除扫描比较
+                // Use descending ID order because it aligns with creation time and is index-friendly.
                 .orderByDesc(AgentChatHistoryEntity::getId);
 
-        // 构建分页查询，查询前50页数据
+        // Query the most recent 50 records.
         Page<AgentChatHistoryEntity> pageParam = new Page<>(0, 50);
         IPage<AgentChatHistoryEntity> result = this.baseMapper.selectPage(pageParam, wrapper);
         return result.getRecords().stream().map(item -> {
             AgentChatHistoryUserVO vo = ConvertUtils.sourceToTarget(item, AgentChatHistoryUserVO.class);
-            // 处理 content 字段，确保只返回聊天内容
+            // Normalize content so only the chat text is returned.
             if (vo != null && vo.getContent() != null) {
                 vo.setContent(extractContentFromString(vo.getContent()));
             }
@@ -133,20 +139,19 @@ public class AgentChatHistoryServiceImpl extends ServiceImpl<AiAgentChatHistoryD
     }
 
     /**
-     * 从 content 字段中提取聊天内容
-     * 如果 content 是 JSON 格式（如 {"speaker": "未知说话人", "content": "现在几点了。"}），则提取 content
-     * 字段
-     * 如果 content 是普通字符串，则直接返回
-     * 
-     * @param content 原始内容
-     * @return 提取的聊天内容
+     * Extract chat text from the content field.
+     * If content is JSON such as {"speaker": "...", "content": "..."}, the inner content field is returned.
+     * Otherwise the original string is returned unchanged.
+     *
+     * @param content raw content
+     * @return extracted chat content
      */
     private String extractContentFromString(String content) {
         if (content == null || content.trim().isEmpty()) {
             return content;
         }
 
-        // 尝试解析为 JSON
+        // Try to parse the content as JSON.
         try {
             Map<String, Object> jsonMap = JsonUtils.parseObject(content, Map.class);
             if (jsonMap != null && jsonMap.containsKey("content")) {
@@ -154,10 +159,10 @@ public class AgentChatHistoryServiceImpl extends ServiceImpl<AiAgentChatHistoryD
                 return contentObj != null ? contentObj.toString() : content;
             }
         } catch (Exception e) {
-            // 如果不是有效的 JSON，直接返回原内容
+            // If parsing fails, fall back to the original content.
         }
 
-        // 如果不是 JSON 格式或没有 content 字段，直接返回原内容
+        // Return the original content if no nested content field is present.
         return content;
     }
 
@@ -172,7 +177,7 @@ public class AgentChatHistoryServiceImpl extends ServiceImpl<AiAgentChatHistoryD
 
     @Override
     public boolean isAudioOwnedByAgent(String audioId, String agentId) {
-        // 查询是否有指定音频id和智能体id的数据，如果有且只有一条说明此数据属性此智能体
+        // Check whether exactly one record exists for the given audio ID and agent ID.
         Long row = baseMapper.selectCount(new LambdaQueryWrapper<AgentChatHistoryEntity>()
                 .eq(AgentChatHistoryEntity::getAudioId, audioId)
                 .eq(AgentChatHistoryEntity::getAgentId, agentId));

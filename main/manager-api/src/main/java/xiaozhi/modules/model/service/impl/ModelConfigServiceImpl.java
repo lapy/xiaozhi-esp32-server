@@ -1,7 +1,6 @@
 package xiaozhi.modules.model.service.impl;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,13 +12,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.incrementer.DefaultIdentifierGenerator;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONObject;
 import lombok.AllArgsConstructor;
-import xiaozhi.common.constant.Constant;
 import xiaozhi.common.exception.ErrorCode;
 import xiaozhi.common.exception.RenException;
 import xiaozhi.common.page.PageData;
@@ -39,6 +34,7 @@ import xiaozhi.modules.model.dto.ModelProviderDTO;
 import xiaozhi.modules.model.entity.ModelConfigEntity;
 import xiaozhi.modules.model.service.ModelConfigService;
 import xiaozhi.modules.model.service.ModelProviderService;
+import xiaozhi.modules.model.support.ProviderPolicy;
 
 @Service
 @AllArgsConstructor
@@ -57,9 +53,12 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                         .eq("model_type", modelType)
                         .eq("is_enabled", 1)
                         .like(StringUtils.isNotBlank(modelName), "model_name", modelName)
-                        .select("id", "model_name")
+                        .select("id", "model_name", "model_code", "config_json")
                         .orderByAsc("sort"));
-        return ConvertUtils.sourceToTarget(entities, ModelBasicInfoDTO.class);
+        List<ModelConfigEntity> filtered = entities.stream()
+                .filter(ProviderPolicy::isAllowedModelConfig)
+                .collect(Collectors.toList());
+        return ConvertUtils.sourceToTarget(filtered, ModelBasicInfoDTO.class);
     }
 
     @Override
@@ -71,62 +70,74 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                         .like(StringUtils.isNotBlank(modelName), "model_name", modelName)
                         .select("id", "model_name", "config_json"));
 
-        return entities.stream().map(item -> {
-            LlmModelBasicInfoDTO dto = new LlmModelBasicInfoDTO();
-            dto.setId(item.getId());
-            dto.setModelName(item.getModelName());
-            String type = item.getConfigJson().getOrDefault("type", "").toString();
-            dto.setType(type);
-            return dto;
-        }).toList();
+        return entities.stream()
+                .filter(ProviderPolicy::isAllowedModelConfig)
+                .map(item -> {
+                    LlmModelBasicInfoDTO dto = new LlmModelBasicInfoDTO();
+                    dto.setId(item.getId());
+                    dto.setModelName(item.getModelName());
+                    String type = item.getConfigJson().getOrDefault("type", "").toString();
+                    dto.setType(type);
+                    return dto;
+                })
+                .toList();
     }
 
     @Override
     public PageData<ModelConfigDTO> getPageList(String modelType, String modelName, String page, String limit) {
-        Map<String, Object> params = new HashMap<>();
-        params.put(Constant.PAGE, page);
-        params.put(Constant.LIMIT, limit);
-
         long curPage = Long.parseLong(page);
         long pageSize = Long.parseLong(limit);
-        Page<ModelConfigEntity> pageInfo = new Page<>(curPage, pageSize);
 
-        // 添加排序规则：先按is_enabled降序，再按sort升序
-        pageInfo.addOrder(OrderItem.desc("is_enabled"), OrderItem.asc("sort"));
+        QueryWrapper<ModelConfigEntity> wrapper = new QueryWrapper<ModelConfigEntity>()
+                .eq("model_type", modelType)
+                .like(StringUtils.isNotBlank(modelName), "model_name", modelName)
+                .orderByDesc("is_enabled")
+                .orderByAsc("sort");
 
-        IPage<ModelConfigEntity> modelConfigEntityIPage = modelConfigDao.selectPage(
-                pageInfo,
-                new QueryWrapper<ModelConfigEntity>()
-                        .eq("model_type", modelType)
-                        .like(StringUtils.isNotBlank(modelName), "model_name", modelName));
+        List<ModelConfigEntity> allRecords = modelConfigDao.selectList(wrapper);
+        List<ModelConfigEntity> filteredRecords = allRecords.stream()
+                .filter(ProviderPolicy::isAllowedModelConfig)
+                .collect(Collectors.toList());
 
-        return getPageData(modelConfigEntityIPage, ModelConfigDTO.class);
+        int total = filteredRecords.size();
+        int fromIndex = (int) Math.min((curPage - 1) * pageSize, total);
+        int toIndex = (int) Math.min(fromIndex + pageSize, total);
+        List<ModelConfigEntity> pageRecords = filteredRecords.subList(fromIndex, toIndex);
+
+        for (ModelConfigEntity entity : pageRecords) {
+            if (entity.getConfigJson() != null) {
+                entity.setConfigJson(maskSensitiveFields(entity.getConfigJson()));
+            }
+        }
+
+        List<ModelConfigDTO> dtoList = ConvertUtils.sourceToTarget(pageRecords, ModelConfigDTO.class);
+        return new PageData<>(dtoList, total);
     }
 
     @Override
     public ModelConfigDTO edit(String modelType, String provideCode, String id, ModelConfigBodyDTO modelConfigBodyDTO) {
-        // 1. 参数验证
+        // 1. Validate parameters.
         validateEditParameters(modelType, provideCode, id, modelConfigBodyDTO);
 
-        // 2. 验证模型提供者
+        // 2. Validate the model provider.
         validateModelProvider(modelType, provideCode);
 
-        // 3. 获取原始配置（不经过敏感数据处理）
+        // 3. Load the original config without masking sensitive data.
         ModelConfigEntity originalEntity = getOriginalConfigFromDb(id);
 
-        // 4. 验证LLM配置
+        // 4. Validate LLM config constraints.
         validateLlmConfiguration(modelConfigBodyDTO);
 
-        // 5. 准备更新实体并处理敏感数据
+        // 5. Prepare the updated entity and preserve sensitive fields correctly.
         ModelConfigEntity modelConfigEntity = prepareUpdateEntity(modelConfigBodyDTO, originalEntity, modelType, id);
 
-        // 6. 执行数据库更新
+        // 6. Persist the database update.
         modelConfigDao.updateById(modelConfigEntity);
 
-        // 7. 清除缓存
+        // 7. Clear cache entries.
         clearModelCache(id);
 
-        // 8. 返回处理后的数据（包含敏感数据掩码）
+        // 8. Return the masked response DTO.
         return buildResponseDTO(modelConfigEntity);
     }
 
@@ -228,7 +239,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 验证编辑参数
+     * Validate edit parameters.
      */
     private void validateEditParameters(String modelType, String provideCode, String id,
             ModelConfigBodyDTO modelConfigBodyDTO) {
@@ -244,7 +255,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 验证添加参数
+     * Validate add parameters.
      */
     private void validateAddParameters(String modelType, String provideCode, ModelConfigBodyDTO modelConfigBodyDTO) {
         if (StringUtils.isBlank(modelType) || StringUtils.isBlank(provideCode)) {
@@ -254,19 +265,19 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
             throw new RenException(ErrorCode.PARAMS_GET_ERROR);
         }
         if (StringUtils.isBlank(modelConfigBodyDTO.getId())) {
-            // 参照 MP @TableId AutoUUID 策略使用
+            // Follow the MP @TableId AutoUUID strategy:
             // com.baomidou.mybatisplus.core.incrementer.DefaultIdentifierGenerator(UUID.replace("-",""))
-            // 进行分配默认模型ID
+            // Assign a default model ID.
             modelConfigBodyDTO.setId(DefaultIdentifierGenerator.getInstance().nextUUID(ModelConfigEntity.class));
         }
     }
 
     /**
-     * 设置默认模型
+     * Set the default model.
      */
     @Override
     public void setDefaultModel(String modelType, int isDefault) {
-        // 参数验证
+        // Validate input.
         if (StringUtils.isBlank(modelType)) {
             throw new RenException(ErrorCode.MODEL_TYPE_PROVIDE_CODE_NOT_NULL);
         }
@@ -276,12 +287,12 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
         modelConfigDao.update(entity, new QueryWrapper<ModelConfigEntity>()
                 .eq("model_type", modelType));
 
-        // 清除相关缓存
+        // Clear related caches.
         clearModelCacheByType(modelType);
     }
 
     /**
-     * 验证模型提供者
+     * Validate the model provider.
      */
     private void validateModelProvider(String modelType, String provideCode) {
         List<ModelProviderDTO> providerList = modelProviderService.getList(modelType, provideCode);
@@ -291,7 +302,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 从数据库获取原始配置（不经过敏感数据处理）
+     * Load the original configuration from the database without masking sensitive fields.
      */
     private ModelConfigEntity getOriginalConfigFromDb(String id) {
         ModelConfigEntity originalEntity = modelConfigDao.selectById(id);
@@ -302,7 +313,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 验证LLM配置
+     * Validate the LLM configuration.
      */
     private void validateLlmConfiguration(ModelConfigBodyDTO modelConfigBodyDTO) {
         if (modelConfigBodyDTO.getConfigJson() != null && modelConfigBodyDTO.getConfigJson().containsKey("llm")) {
@@ -319,7 +330,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                 throw new RenException(ErrorCode.LLM_NOT_EXIST);
             }
 
-            // 验证LLM类型
+            // Validate the LLM type.
             JSONObject configJson = modelConfigEntity.getConfigJson();
             if (configJson != null && configJson.containsKey("type")) {
                 String type = configJson.get("type").toString();
@@ -331,42 +342,42 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 准备更新实体，处理敏感数据
+     * Prepare an updated entity while preserving sensitive fields.
      */
     private ModelConfigEntity prepareUpdateEntity(ModelConfigBodyDTO modelConfigBodyDTO,
             ModelConfigEntity originalEntity,
             String modelType,
             String id) {
-        // 1. 复制原始实体，保留所有原始数据（包括敏感信息）
+        // 1. Copy the original entity and keep all existing data, including sensitive values.
         ModelConfigEntity modelConfigEntity = ConvertUtils.sourceToTarget(originalEntity, ModelConfigEntity.class);
         modelConfigEntity.setId(id);
         modelConfigEntity.setModelType(modelType);
 
-        // 2. 只更新非敏感字段
+        // 2. Update only non-sensitive fields directly.
         modelConfigEntity.setModelName(modelConfigBodyDTO.getModelName());
         modelConfigEntity.setSort(modelConfigBodyDTO.getSort());
         modelConfigEntity.setIsEnabled(modelConfigBodyDTO.getIsEnabled());
         modelConfigEntity.setRemark(modelConfigBodyDTO.getRemark());
-        // 3. 处理配置JSON，仅更新非敏感字段和明确修改的敏感字段
+        // 3. Update config JSON, changing non-sensitive fields and only explicitly modified sensitive fields.
         if (modelConfigBodyDTO.getConfigJson() != null && originalEntity.getConfigJson() != null) {
             JSONObject originalJson = originalEntity.getConfigJson();
-            JSONObject updatedJson = new JSONObject(originalJson); // 基于原始JSON进行修改
+            JSONObject updatedJson = new JSONObject(originalJson); // Start from the original JSON.
 
-            // 遍历更新的JSON，只更新非敏感字段或确实被修改的敏感字段
+            // Walk the incoming JSON and only update non-sensitive fields or truly changed sensitive fields.
             for (String key : modelConfigBodyDTO.getConfigJson().keySet()) {
                 Object value = modelConfigBodyDTO.getConfigJson().get(key);
 
-                // 如果是敏感字段，需要确认是否真的被修改（前端传入的可能是掩码后的值）
+                // Sensitive fields must be checked because the UI may send masked values.
                 if (SensitiveDataUtils.isSensitiveField(key)) {
 
                     if (value instanceof String && !SensitiveDataUtils.isMaskedValue((String) value)) {
                         updatedJson.put(key, value);
                     }
                 } else if (value instanceof JSONObject) {
-                    // 递归处理嵌套JSON
+                    // Merge nested JSON recursively.
                     mergeJson(updatedJson, key, (JSONObject) value);
                 } else {
-                    // 非敏感字段直接更新
+                    // Update non-sensitive fields directly.
                     updatedJson.put(key, value);
                 }
             }
@@ -377,15 +388,15 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
         return modelConfigEntity;
     }
 
-    // 辅助方法：判断值是否是掩码格式
+    // Helper: detect whether a value is masked.
     private boolean isMaskedValue(String value) {
         if (value == null)
             return false;
-        // 简单判断是否包含掩码的特征（***）
+        // Simple check for the masking pattern (***).
         return value.contains("***");
     }
 
-    // 辅助方法：递归合并JSON，保留原始敏感字段
+    // Helper: recursively merge JSON while preserving original sensitive fields.
     private void mergeJson(JSONObject original, String key, JSONObject updated) {
         if (!original.containsKey(key)) {
             original.put(key, new JSONObject());
@@ -406,7 +417,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 准备新增实体
+     * Prepare a new entity.
      */
     private ModelConfigEntity prepareAddEntity(ModelConfigBodyDTO modelConfigBodyDTO, String modelType) {
         ModelConfigEntity modelConfigEntity = ConvertUtils.sourceToTarget(modelConfigBodyDTO, ModelConfigEntity.class);
@@ -416,7 +427,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 构建返回的DTO，处理敏感数据
+     * Build the response DTO and mask sensitive fields.
      */
     private ModelConfigDTO buildResponseDTO(ModelConfigEntity entity) {
         ModelConfigDTO dto = ConvertUtils.sourceToTarget(entity, ModelConfigDTO.class);
@@ -427,14 +438,14 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 处理敏感字段
+     * Mask sensitive fields.
      */
     private JSONObject maskSensitiveFields(JSONObject configJson) {
         return SensitiveDataUtils.maskSensitiveFields(configJson);
     }
 
     /**
-     * 清除模型缓存
+     * Clear the cache for a model.
      */
     private void clearModelCache(String id) {
         redisUtils.delete(RedisKeys.getModelConfigById(id));
@@ -442,7 +453,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 按模型类型清除缓存
+     * Clear caches for a model type.
      */
     private void clearModelCacheByType(String modelType) {
         List<ModelConfigEntity> entities = modelConfigDao.selectList(
@@ -453,7 +464,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 检查智能体配置是否有引用
+     * Check whether any agent configuration references the model.
      */
     private void checkAgentReference(String modelId) {
         List<AgentEntity> agents = agentDao.selectList(
@@ -480,7 +491,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 检查意图识别配置是否有引用
+     * Check whether any intent configuration references the model.
      */
     private void checkIntentConfigReference(String modelId) {
         ModelConfigEntity modelConfig = modelConfigDao.selectById(modelId);
@@ -497,7 +508,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 获取符合条件的TTS平台列表
+     * Get the list of TTS platforms that match the current criteria.
      */
     @Override
     public List<Map<String, Object>> getTtsPlatformList() {
@@ -505,7 +516,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     }
 
     /**
-     * 根据模型类型获取所有启用的模型配置
+     * Get all enabled model configurations for the given model type.
      */
     @Override
     public List<ModelConfigEntity> getEnabledModelsByType(String modelType) {
@@ -519,6 +530,8 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                         .eq("is_enabled", 1)
                         .orderByAsc("sort"));
 
-        return entities;
+        return entities.stream()
+                .filter(ProviderPolicy::isAllowedModelConfig)
+                .collect(Collectors.toList());
     }
 }

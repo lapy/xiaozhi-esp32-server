@@ -3,7 +3,7 @@ package xiaozhi.modules.agent.service.biz;
 import xiaozhi.modules.agent.dto.AgentChatHistoryReportDTO;
 
 /**
- * 智能体聊天历史业务逻辑层
+ * Agent chat history business logic layer
  *
  * @author Goody
  * @version 1.0, 2025/4/30
@@ -12,11 +12,11 @@ import xiaozhi.modules.agent.dto.AgentChatHistoryReportDTO;
 public interface AgentChatHistoryBizService {
 
     /**
-     * 聊天上报方法
+     * Chat report method
      *
-     * @param agentChatHistoryReportDTO 包含聊天上报所需信息的输入对象
-     *                                  例如：设备MAC地址、文件类型、内容等
-     * @return 上传结果，true表示成功，false表示失败
+     * @param agentChatHistoryReportDTO Input object containing information required for chat report
+     *                                  For example: device MAC address, file type, content, etc.
+     * @return Upload result, true means success, false means failure
      */
     Boolean report(AgentChatHistoryReportDTO agentChatHistoryReportDTO);
 }
