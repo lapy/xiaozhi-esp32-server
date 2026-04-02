@@ -3,28 +3,24 @@
   "layout": "default",
   "style": {
     "navigationStyle": "custom",
-    "navigationBarTitleText": "注册"
+    "navigationBarTitleText": "Register"
   }
 }
 </route>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
-import { register, sendSmsCode } from '@/api/auth';
-import { useConfigStore } from '@/store';
-import { getEnvBaseUrl } from '@/utils';
-import { toast } from '@/utils/toast';
-// 导入国际化相关功能
-import { t, initI18n } from '@/i18n';
-// 导入SM2加密工具
-import { sm2Encrypt } from '@/utils';
+import { computed, onMounted, ref } from 'vue'
+import { register, sendSmsCode } from '@/api/auth'
+import { useConfigStore } from '@/store'
+import { getEnvBaseUrl } from '@/utils'
+import { toast } from '@/utils/toast'
 
-// 获取屏幕边界到安全区域距离
+// Get distance from screen boundary to safe area
 let safeAreaInsets
 let systemInfo
 
 // #ifdef MP-WEIXIN
-// 微信小程序使用新的API
+// WeChat Mini Program uses new API
 systemInfo = uni.getWindowInfo()
 safeAreaInsets = systemInfo.safeArea
   ? {
@@ -37,12 +33,12 @@ safeAreaInsets = systemInfo.safeArea
 // #endif
 
 // #ifndef MP-WEIXIN
-// 其他平台继续使用uni API
+// Other platforms continue to use uni API
 systemInfo = uni.getSystemInfoSync()
 safeAreaInsets = systemInfo.safeAreaInsets
 // #endif
 
-// 注册表单数据
+// Registration form data
 interface RegisterData {
   username: string
   password: string
@@ -60,58 +56,53 @@ const formData = ref<RegisterData>({
   confirmPassword: '',
   captcha: '',
   captchaId: '',
-  areaCode: '+86',
+  areaCode: '+1',
   mobile: '',
   mobileCaptcha: '',
 })
 
-// 验证码图片
+// Captcha image
 const captchaImage = ref('')
 const loading = ref(false)
 const smsLoading = ref(false)
 const smsCountdown = ref(0)
 
-// 注册方式：'username' | 'mobile'
+// Registration method: 'username' | 'mobile'
 const registerType = ref<'username' | 'mobile'>('username')
 
-// 获取配置store
+// Get config store
 const configStore = useConfigStore()
 
-// 区号选择相关
+// Area code selection related
 const showAreaCodeSheet = ref(false)
-const selectedAreaCode = ref('+86')
-const selectedAreaName = ref('中国大陆')
+const selectedAreaCode = ref('+1')
+const selectedAreaName = ref('United States')
 
-// 计算属性：是否启用手机号注册
+// Computed property: whether mobile registration is enabled
 const enableMobileRegister = computed(() => {
   return configStore.config.enableMobileRegister
 })
 
-// 计算属性：区号列表
+// Computed property: area code list
 const areaCodeList = computed(() => {
-  return configStore.config.mobileAreaList || [{ name: '中国大陆', key: '+86' }]
+  return configStore.config.mobileAreaList || [{ name: 'United States', key: '+1' }]
 })
 
-// SM2公钥
-const sm2PublicKey = computed(() => {
-  return configStore.config.sm2PublicKey
-})
-
-// 切换注册方式
+// Switch registration method
 function toggleRegisterType() {
   registerType.value = registerType.value === 'username' ? 'mobile' : 'username'
-  // 清空输入框
+  // Clear input fields
   formData.value.username = ''
   formData.value.mobile = ''
   formData.value.mobileCaptcha = ''
 }
 
-// 打开区号选择弹窗
+// Open area code selection dialog
 function openAreaCodeSheet() {
   showAreaCodeSheet.value = true
 }
 
-// 选择区号
+// Select area code
 function selectAreaCode(item: { name: string, key: string }) {
   selectedAreaCode.value = item.key
   selectedAreaName.value = item.name
@@ -119,12 +110,12 @@ function selectAreaCode(item: { name: string, key: string }) {
   showAreaCodeSheet.value = false
 }
 
-// 关闭区号选择弹窗
+// Close area code selection dialog
 function closeAreaCodeSheet() {
   showAreaCodeSheet.value = false
 }
 
-// 生成UUID
+// Generate UUID
 function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0
@@ -133,28 +124,28 @@ function generateUUID() {
   })
 }
 
-// 获取验证码
+// Get verification code
 async function refreshCaptcha() {
-  const uuid = generateUUID();
-  formData.value.captchaId = uuid;
-  captchaImage.value = `${getEnvBaseUrl()}/user/captcha?uuid=${uuid}&t=${Date.now()}`;
+  const uuid = generateUUID()
+  formData.value.captchaId = uuid
+  captchaImage.value = `${getEnvBaseUrl()}/user/captcha?uuid=${uuid}&t=${Date.now()}`
 }
 
-// 发送短信验证码
+// Send SMS verification code
 async function sendSmsVerification() {
   if (!formData.value.mobile) {
-    toast.warning(t('register.enterPhone'))
+    toast.warning('Please enter phone number')
     return
   }
   if (!formData.value.captcha) {
-    toast.warning(t('register.enterCode'))
+    toast.warning('Please enter captcha')
     return
   }
 
-  // 手机号格式验证
+  // Phone number format validation
   const phoneRegex = /^1[3-9]\d{9}$/
   if (!phoneRegex.test(formData.value.mobile)) {
-    toast.warning(t('register.enterPhone'))
+    toast.warning('Please enter correct phone number')
     return
   }
 
@@ -166,9 +157,9 @@ async function sendSmsVerification() {
       captchaId: formData.value.captchaId,
     })
 
-    toast.success(t('register.captchaSendSuccess'))
+    toast.success('Verification code sent successfully')
 
-    // 开始倒计时
+    // Start countdown
     smsCountdown.value = 60
     const timer = setInterval(() => {
       smsCountdown.value--
@@ -178,11 +169,7 @@ async function sendSmsVerification() {
     }, 1000)
   }
   catch (error: any) {
-    // 处理验证码错误 - 从error.message中解析错误码
-    if (error.message.includes('请求错误[10067]')) {
-      toast.warning(t('login.captchaError'))
-    }
-    // 发送失败重新获取图形验证码
+    // Send failed, re-obtain graphic verification code
     refreshCaptcha()
   }
   finally {
@@ -190,79 +177,61 @@ async function sendSmsVerification() {
   }
 }
 
-// 注册
+// Register
 async function handleRegister() {
-  // 表单验证
-  if (enableMobileRegister.value) {
-    // 手机号注册验证
-    if (!formData.value.mobile) {
-      toast.warning(t('register.enterPhone'))
-      return
-    }
-    // 手机号格式验证
-    const phoneRegex = /^1[3-9]\d{9}$/
-    if (!phoneRegex.test(formData.value.mobile)) {
-      toast.warning(t('register.enterPhone'))
-      return
-    }
-    if (!formData.value.mobileCaptcha) {
-      toast.warning(t('register.enterCode'))
+  // Form validation
+  if (registerType.value === 'username') {
+    if (!formData.value.username) {
+      toast.warning('Please enter username')
       return
     }
   }
   else {
-    // 用户名注册验证
-    if (!formData.value.username) {
-      toast.warning(t('register.enterUsername'))
+    if (!formData.value.mobile) {
+      toast.warning('Please enter phone number')
+      return
+    }
+    // Phone number format validation
+    const phoneRegex = /^1[3-9]\d{9}$/
+    if (!phoneRegex.test(formData.value.mobile)) {
+      toast.warning('Please enter correct phone number')
+      return
+    }
+    if (!formData.value.mobileCaptcha) {
+      toast.warning('Please enter SMS verification code')
       return
     }
   }
 
   if (!formData.value.password) {
-    toast.warning(t('register.enterPassword'))
+    toast.warning('Please enter password')
     return
   }
 
   if (!formData.value.confirmPassword) {
-    toast.warning(t('register.confirmPassword'))
+    toast.warning('Please confirm password')
     return
   }
 
   if (formData.value.password !== formData.value.confirmPassword) {
-    toast.warning(t('register.confirmPassword'))
+    toast.warning('The two passwords entered do not match')
     return
   }
 
   if (!formData.value.captcha) {
-    toast.warning(t('register.enterCode'))
-    return
-  }
-
-  // 检查SM2公钥是否配置
-  if (!sm2PublicKey.value) {
-    toast.warning(t('sm2.publicKeyNotConfigured'))
+    toast.warning('Please enter verification code')
     return
   }
 
   try {
     loading.value = true
 
-    // 加密密码
-    let encryptedPassword
-    try {
-      // 拼接验证码和密码
-      const captchaAndPassword = formData.value.captcha + formData.value.password
-      encryptedPassword = sm2Encrypt(sm2PublicKey.value, captchaAndPassword)
-    } catch (error) {
-      console.error('密码加密失败:', error)
-      toast.warning(t('sm2.encryptionFailed'))
-      return
-    }
-
-    // 构建注册数据
+    // Build registration data
     const registerData = {
-      username: enableMobileRegister.value ? `${selectedAreaCode.value}${formData.value.mobile}` : formData.value.username,
-      password: encryptedPassword,
+      username: registerType.value === 'mobile' ? `${selectedAreaCode.value}${formData.value.mobile}` : formData.value.username,
+      password: formData.value.password,
+      confirmPassword: formData.value.confirmPassword,
+      captcha: formData.value.captcha,
       captchaId: formData.value.captchaId,
       areaCode: formData.value.areaCode,
       mobile: formData.value.mobile,
@@ -270,25 +239,15 @@ async function handleRegister() {
     }
 
     await register(registerData)
-    toast.success(t('message.registerSuccess'))
+    toast.success('Registration successful')
 
-    // 跳转到登录页
+    // Jump to login page
     setTimeout(() => {
-      uni.redirectTo({
-        url: '/pages/login/index'
-      })
+      uni.navigateBack()
     }, 1000)
   }
   catch (error: any) {
-    // 处理验证码错误 - 从error.message中解析错误码
-    if (error.message.includes('请求错误[10067]')) {
-      toast.warning(t('login.captchaError'))
-    }
-    // 处理手机号码已注册错误
-    else if (error.message.includes('请求错误[10070]')) {
-      toast.warning(t('message.phoneRegistered'))
-    }
-    // 注册失败重新获取验证码
+    // Registration failed, re-obtain verification code
     refreshCaptcha()
   }
   finally {
@@ -296,33 +255,27 @@ async function handleRegister() {
   }
 }
 
-// 返回登录
+// Return to login
 function goBack() {
-  uni.redirectTo({
-    url: '/pages/login/index'
-  })
+  uni.navigateBack()
 }
 
-// 页面加载时获取验证码
+// Get verification code when page loads
 onLoad(() => {
   refreshCaptcha()
 })
 
-// 组件挂载时确保配置已加载
+// Ensure configuration is loaded when component is mounted
 onMounted(async () => {
   if (!configStore.config.name) {
     try {
       await configStore.fetchPublicConfig()
     }
     catch (error) {
-      console.error('获取配置失败:', error)
+      console.error('Failed to get configuration:', error)
     }
   }
-  // 初始化国际化
-  initI18n()
 })
-
-
 </script>
 
 <template>
@@ -334,18 +287,18 @@ onMounted(async () => {
       <view class="logo-section">
         <wd-img :width="80" :height="80" round src="/static/logo.png" class="logo" />
         <text class="welcome-text">
-          {{ t('register.pageTitle') }}
+          Welcome to Register
         </text>
         <text class="subtitle">
-          {{ t('register.createAccount') }}
+          Create Your New Account
         </text>
       </view>
     </view>
 
     <view class="form-container">
       <view class="form">
-        <!-- 手机号注册 -->
-        <template v-if="enableMobileRegister">
+        <!-- Mobile number registration -->
+        <template v-if="registerType === 'mobile'">
           <view class="input-group">
             <view class="input-wrapper mobile-wrapper">
               <view class="area-code-selector" @click="openAreaCodeSheet">
@@ -359,7 +312,7 @@ onMounted(async () => {
                   v-model="formData.mobile"
                   custom-class="styled-input"
                   no-border
-                  :placeholder="t('register.enterPhone')"
+                  placeholder="Please enter mobile number"
                   type="number"
                   :maxlength="11"
                 />
@@ -368,7 +321,7 @@ onMounted(async () => {
           </view>
         </template>
 
-        <!-- 用户名注册 -->
+        <!-- Username registration -->
         <template v-else>
           <view class="input-group">
             <view class="input-wrapper">
@@ -376,7 +329,7 @@ onMounted(async () => {
                 v-model="formData.username"
                 custom-class="styled-input"
                 no-border
-                :placeholder="t('register.enterUsername')"
+                placeholder="Please enter username"
               />
             </view>
           </view>
@@ -385,63 +338,63 @@ onMounted(async () => {
         <view class="input-group">
           <view class="input-wrapper">
             <wd-input
-                v-model="formData.password"
-                custom-class="styled-input"
-                no-border
-                :placeholder="t('register.enterPassword')"
-                show-password
-                :maxlength="20"
-              />
-            </view>
+              v-model="formData.password"
+              custom-class="styled-input"
+              no-border
+              placeholder="Please enter password"
+              show-password
+              :maxlength="20"
+            />
+          </view>
         </view>
 
         <view class="input-group">
           <view class="input-wrapper">
             <wd-input
-                v-model="formData.confirmPassword"
-                custom-class="styled-input"
-                no-border
-                :placeholder="t('register.confirmPassword')"
-                show-password
-                :maxlength="20"
-              />
-            </view>
+              v-model="formData.confirmPassword"
+              custom-class="styled-input"
+              no-border
+              placeholder="Please confirm password"
+              show-password
+              :maxlength="20"
+            />
+          </view>
         </view>
 
         <view class="input-group">
           <view class="input-wrapper captcha-wrapper">
             <wd-input
-                v-model="formData.captcha"
-                custom-class="styled-input"
-                no-border
-                :placeholder="t('register.enterCode')"
-                :maxlength="6"
-              />
-              <view class="captcha-image" @click="refreshCaptcha">
-                <image :src="captchaImage" class="captcha-img" />
-              </view>
+              v-model="formData.captcha"
+              custom-class="styled-input"
+              no-border
+              placeholder="Please enter verification code"
+              :maxlength="6"
+            />
+            <view class="captcha-image" @click="refreshCaptcha">
+              <image :src="captchaImage" class="captcha-img" />
+            </view>
           </view>
         </view>
 
-        <!-- 手机验证码输入框 -->
-        <view v-if="enableMobileRegister" class="input-group">
+        <!-- Mobile verification code input box -->
+        <view v-if="registerType === 'mobile'" class="input-group">
           <view class="input-wrapper sms-wrapper">
             <wd-input
-                v-model="formData.mobileCaptcha"
-                custom-class="styled-input"
-                no-border
-                :placeholder="t('register.enterCode')"
-                type="number"
-                :maxlength="6"
-              />
-              <wd-button
-                :loading="smsLoading"
-                :disabled="smsCountdown > 0"
-                custom-class="sms-btn"
-                @click="sendSmsVerification"
-              >
-                {{ smsCountdown > 0 ? `${smsCountdown}s` : t('register.getCode') }}
-              </wd-button>
+              v-model="formData.mobileCaptcha"
+              custom-class="styled-input"
+              no-border
+              placeholder="Please enter SMS verification code"
+              type="number"
+              :maxlength="6"
+            />
+            <wd-button
+              :loading="smsLoading"
+              :disabled="smsCountdown > 0"
+              custom-class="sms-btn"
+              @click="sendSmsVerification"
+            >
+              {{ smsCountdown > 0 ? `${smsCountdown}s` : 'Get Verification Code' }}
+            </wd-button>
           </view>
         </view>
 
@@ -451,25 +404,44 @@ onMounted(async () => {
           :loading="loading"
           @click="handleRegister"
         >
-          {{ loading ? t('register.registering') : t('register.registerButton') }}
+          {{ loading ? 'Registering...' : 'Register' }}
         </view>
 
         <view class="login-hint">
           <text class="hint-text">
-            {{ t('register.haveAccount') }}
+            Already have an account?
           </text>
           <text class="login-link" @click="goBack">
-            {{ t('register.loginNow') }}
+            Login Now
           </text>
         </view>
 
+        <!-- Registration method switch -->
+        <view v-if="enableMobileRegister" class="register-type-switch">
+          <view class="switch-tabs">
+            <view
+              class="switch-tab"
+              :class="{ active: registerType === 'username' }"
+              @click="toggleRegisterType"
+            >
+              <wd-icon name="user" />
+            </view>
+            <view
+              class="switch-tab"
+              :class="{ active: registerType === 'mobile' }"
+              @click="toggleRegisterType"
+            >
+              <wd-icon name="phone" />
+            </view>
+          </view>
+        </view>
       </view>
     </view>
 
-    <!-- 区号选择弹窗 -->
+    <!-- Area code selection popup -->
     <wd-action-sheet
       v-model="showAreaCodeSheet"
-      :title="t('register.selectCountry')"
+      title="Select Country/Region"
       :close-on-click-modal="true"
       @close="closeAreaCodeSheet"
     >
@@ -503,13 +475,11 @@ onMounted(async () => {
             custom-class="confirm-btn"
             @click="closeAreaCodeSheet"
           >
-            {{ t('register.confirm') }}
+            Confirm
           </wd-button>
         </view>
       </view>
     </wd-action-sheet>
-
-
   </view>
 </template>
 
@@ -642,7 +612,7 @@ onMounted(async () => {
         &.captcha-wrapper {
           .captcha-image {
             margin-left: 20rpx;
-            width: 150rpx;
+            width: 120rpx;
             height: 60rpx;
             border-radius: 8rpx;
             overflow: hidden;
@@ -833,7 +803,7 @@ onMounted(async () => {
   }
 }
 
-// 区号选择弹窗样式
+// Area code selection popup styles
 .area-code-sheet {
   background: #ffffff;
   border-radius: 24rpx 24rpx 0 0;

@@ -35,7 +35,7 @@
               <el-table-column :label="$t('device.bindTime')" prop="bindTime" align="center"></el-table-column>
               <el-table-column :label="$t('device.lastConversation')" prop="lastConversation"
                 align="center"></el-table-column>
-              <el-table-column v-if="mqttServiceAvailable" :label="$t('device.deviceStatus')" prop="deviceStatus" align="center">
+              <el-table-column :label="$t('device.deviceStatus')" prop="deviceStatus" align="center">
                 <template slot-scope="scope">
                   <el-tag v-if="scope.row.deviceStatus === 'online'" type="success">{{ $t('device.online') }}</el-tag>
                   <el-tag v-else type="danger">{{ $t('device.offline') }}</el-tag>
@@ -64,8 +64,8 @@
                   <el-button size="mini" type="text" @click="handleUnbind(scope.row.device_id)">
                     {{ $t('device.unbind') }}
                   </el-button>
-                  <el-button v-if="isGenerate(scope.row)" size="mini" type="text" @click="handleGenertor(scope.row)">
-                    {{ $t('device.deviceThemeGeneration') }}
+                  <el-button v-if="scope.row.deviceStatus === 'online'" size="mini" type="text" @click="handleMcpToolCall(scope.row.device_id)">
+                    {{ $t('device.toolCall') }}
                   </el-button>
                 </template>
               </el-table-column>
@@ -82,9 +82,9 @@
                 <el-button type="success" size="mini" class="add-device-btn" @click="handleManualAddDevice">
                   {{ $t('device.manualAdd') }}
                 </el-button>
-                <el-button size="mini" type="danger" icon="el-icon-delete" @click="deleteSelected">
-                  {{ $t('device.unbind') }}
-                </el-button>
+                <el-button size="mini" type="danger" icon="el-icon-delete" @click="deleteSelected">{{
+                  $t('device.unbind')
+                }}</el-button>
               </div>
               <div class="custom-pagination">
                 <el-select v-model="pageSize" @change="handlePageSizeChange" class="page-size-select">
@@ -92,22 +92,20 @@
                     :label="$t('dictManagement.itemsPerPage').replace('{items}', item)" :value="item">
                   </el-option>
                 </el-select>
-                <button class="pagination-btn" :disabled="currentPage === 1" @click="goFirst">
-                  {{ $t('dictManagement.firstPage') }}
-                </button>
-                <button class="pagination-btn" :disabled="currentPage === 1" @click="goPrev">
-                  {{ $t('dictManagement.prevPage') }}
-                </button>
+                <button class="pagination-btn" :disabled="currentPage === 1" @click="goFirst">{{
+                  $t('dictManagement.firstPage')
+                }}</button>
+                <button class="pagination-btn" :disabled="currentPage === 1" @click="goPrev">{{
+                  $t('dictManagement.prevPage')
+                }}</button>
                 <button v-for="page in visiblePages" :key="page" class="pagination-btn"
                   :class="{ active: page === currentPage }" @click="goToPage(page)">
                   {{ page }}
                 </button>
-                <button class="pagination-btn" :disabled="currentPage === pageCount" @click="goNext">
-                  {{ $t('dictManagement.nextPage') }}
-                </button>
-                <span class="total-text">
-                  {{ $t('dictManagement.totalRecords').replace('{total}', deviceList.length) }}
-                </span>
+                <button class="pagination-btn" :disabled="currentPage === pageCount" @click="goNext">{{
+                  $t('dictManagement.nextPage') }}</button>
+                <span class="total-text">{{ $t('dictManagement.totalRecords').replace('{total}', deviceList.length)
+                }}</span>
               </div>
             </div>
           </el-card>
@@ -119,9 +117,8 @@
       @refresh="fetchBindDevices(currentAgentId)" />
     <ManualAddDeviceDialog :visible.sync="manualAddDeviceDialogVisible" :agent-id="currentAgentId"
       @refresh="fetchBindDevices(currentAgentId)" />
-    <el-footer>
-      <version-footer />
-    </el-footer>
+    <McpToolCallDialog :visible.sync="mcpToolCallDialogVisible" :device-id="selectedDeviceId" />
+
   </div>
 </template>
 
@@ -130,19 +127,20 @@ import Api from '@/apis/api';
 import AddDeviceDialog from "@/components/AddDeviceDialog.vue";
 import HeaderBar from "@/components/HeaderBar.vue";
 import ManualAddDeviceDialog from "@/components/ManualAddDeviceDialog.vue";
-import VersionFooter from "@/components/VersionFooter.vue";
+import McpToolCallDialog from "@/components/McpToolCallDialog.vue";
 
 export default {
   components: {
     HeaderBar,
     AddDeviceDialog,
     ManualAddDeviceDialog,
-    VersionFooter
+    McpToolCallDialog
   },
   data() {
     return {
       addDeviceDialogVisible: false,
       manualAddDeviceDialogVisible: false,
+      mcpToolCallDialogVisible: false,
       selectedDeviceId: '',
       searchKeyword: "",
       activeSearchKeyword: "",
@@ -154,7 +152,6 @@ export default {
       loading: false,
       userApi: null,
       firmwareTypes: [],
-      mqttServiceAvailable: false, // MQTT服务是否可用
     };
   },
   computed: {
@@ -175,7 +172,7 @@ export default {
     pageCount() {
       return Math.ceil(this.filteredDeviceList.length / this.pageSize);
     },
-    // 计算当前页是否全选
+    // Calculate if current page is all selected
     isCurrentPageAllSelected() {
       return this.paginatedDeviceList.length > 0 &&
         this.paginatedDeviceList.every(device => device.selected);
@@ -283,6 +280,11 @@ export default {
     handleManualAddDevice() {
       this.manualAddDeviceDialogVisible = true;
     },
+
+    handleMcpToolCall(deviceId) {
+      this.selectedDeviceId = deviceId;
+      this.mcpToolCallDialogVisible = true;
+    },
     submitRemark(row) {
       if (row._submitting) return;
 
@@ -307,14 +309,14 @@ export default {
         row._submitting = false;
       });
     },
-    // 备注输入框：失焦时提交
+    // Remark input box: submit on blur
     onRemarkBlur(row) {
       row.isEdit = false;
       setTimeout(() => {
         this.submitRemark(row);
-      }, 100); // 延迟 100ms，避开 enter+blur 同时触发的窗口
+      }, 100); // Delay 100ms to avoid window triggered by enter+blur simultaneously
     },
-    // 备注输入框：按回车时提交
+    // Remark input box: submit on enter
     onRemarkEnter(row) {
       row.isEdit = false;
       this.submitRemark(row);
@@ -340,13 +342,6 @@ export default {
           }
         });
       });
-    },
-    handleGenertor(row) {
-      const pathname = window.location.pathname;
-      const basePath = pathname.split('/').slice(0, -1).join('/');
-      const url = `${window.location.origin}${basePath}/generator/?deviceId=${row.device_id}`;
-      sessionStorage.setItem('devicePath', window.location.href);
-      window.location.href = url;
     },
     goFirst() {
       this.currentPage = 1;
@@ -381,66 +376,54 @@ export default {
               otaSwitch: device.autoUpdate === 1,
               rawBindTime: new Date(device.createDate).getTime(),
               selected: false,
-              // 初始设置为离线状态
+              // Initially set to offline status
               deviceStatus: 'offline'
             };
           })
             .sort((a, b) => a.rawBindTime - b.rawBindTime);
           this.activeSearchKeyword = "";
           this.searchKeyword = "";
-
-          // 获取设备列表后，立即获取设备状态
+          
+          // Get device status immediately after getting device list
           this.fetchDeviceStatus(agentId);
         } else {
           this.$message.error(data.msg || this.$t('device.getListFailed'));
         }
       });
     },
-
-    // 获取设备状态
+    
+    // Get device status
     fetchDeviceStatus(agentId) {
-      // 开启表格等待状态，处理动态加载表头导致鼠标所在行的hover事件无法移除的问题
-      this.loading = true;
       Api.device.getDeviceStatus(agentId, ({ data }) => {
-        this.loading = false;
         if (data.code === 0) {
           try {
-            // 解析后端返回的设备状态JSON
+            // Parse device status JSON returned from backend
             const statusData = JSON.parse(data.data);
-
-            // 直接使用解析后的数据作为设备状态映射（不需要devices字段包装）
+            
+            // Directly use parsed data as device status mapping (no devices field wrapper needed)
             if (statusData && typeof statusData === 'object') {
-              // 成功获取到设备状态
-              this.mqttServiceAvailable = true;
-              // 更新设备状态
+              // Update device status
               this.updateDeviceStatusFromResponse(statusData);
-            } else {
-              // 数据格式不正确，MQTT服务不可用
-              this.mqttServiceAvailable = false;
             }
           } catch (error) {
-            // JSON解析失败，MQTT服务不可用
-            this.mqttServiceAvailable = false;
+            // JSON parsing failed, ignore status update
           }
-        } else {
-          // 接口调用失败，MQTT服务不可用
-          this.mqttServiceAvailable = false;
         }
       });
     },
-
-    // 根据API响应更新设备状态
+    
+    // Update device status based on API response
     updateDeviceStatusFromResponse(deviceStatusMap) {
       this.deviceList.forEach(device => {
-        // 构建设备的MQTT客户端ID
+        // Build device MQTT client ID
         const macAddress = device.macAddress ? device.macAddress.replace(/:/g, '_') : 'unknown';
         const groupId = device.model ? device.model.replace(/:/g, '_') : 'GID_default';
         const mqttClientId = `${groupId}@@@${macAddress}@@@${macAddress}`;
-
-        // 从状态映射中获取设备状态
+        
+        // Get device status from status mapping
         if (deviceStatusMap[mqttClientId]) {
           const statusInfo = deviceStatusMap[mqttClientId];
-
+          
           let isOnline = false;
           if (statusInfo.isAlive === true) {
             isOnline = true;
@@ -451,10 +434,10 @@ export default {
           } else {
             isOnline = false;
           }
-
+          
           device.deviceStatus = isOnline ? 'online' : 'offline';
         } else {
-          // 如果没有找到对应的状态信息，默认为离线
+          // If no corresponding status information found, default to offline
           device.deviceStatus = 'offline';
         }
       });
@@ -484,11 +467,6 @@ export default {
         this.$message.error(msg || this.$t('message.error'))
       })
     },
-    // 判断是否可以生成表情、主题、字体bin文件
-    isGenerate(row) {
-      const version = row.firmwareVersion.replace(/\./g, '');
-      return Number(version) >= 200;
-    },
   }
 };
 </script>
@@ -508,9 +486,11 @@ export default {
 }
 
 .main-wrapper {
-  height: calc(100vh - 63px - 35px - 72px);
-  margin: 0 22px;
+  margin: 5px 22px;
   border-radius: 15px;
+  min-height: calc(100vh - 24vh);
+  height: auto;
+  max-height: 80vh;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   position: relative;
   background: rgba(237, 242, 255, 0.5);
@@ -647,7 +627,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-top: 10px;
-  /* padding-bottom: 10px; */
+  padding-bottom: 10px;
 }
 
 
@@ -809,7 +789,7 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* max-height: calc(100vh - 40vh); */
+  max-height: calc(100vh - 40vh);
 }
 
 :deep(.el-table__body-wrapper) {

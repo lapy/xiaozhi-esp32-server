@@ -9,13 +9,13 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     token: '',
-    userInfo: {}, // 添加用户信息存储
-    pubConfig: { // 添加公共配置存储
+    userInfo: {}, // Add user info storage
+    isSuperAdmin: false, // Add superAdmin status
+    pubConfig: { // Add public config storage
       version: '',
       beianIcpNum: 'null',
       beianGaNum: 'null',
-      allowUserRegister: false,
-      sm2PublicKey: ''
+      allowUserRegister: false
     }
   },
   getters: {
@@ -28,6 +28,12 @@ export default new Vuex.Store({
     getUserInfo(state) {
       return state.userInfo
     },
+    getIsSuperAdmin(state) {
+      if (localStorage.getItem('isSuperAdmin') === null) {
+        return state.isSuperAdmin
+      }
+      return localStorage.getItem('isSuperAdmin') === 'true'
+    },
     getPubConfig(state) {
       return state.pubConfig
     }
@@ -39,28 +45,31 @@ export default new Vuex.Store({
     },
     setUserInfo(state, userInfo) {
       state.userInfo = userInfo
-      localStorage.setItem('userInfo', JSON.stringify(userInfo))
+      const isSuperAdmin = userInfo.superAdmin === 1
+      state.isSuperAdmin = isSuperAdmin
+      localStorage.setItem('isSuperAdmin', isSuperAdmin)
     },
     setPubConfig(state, config) {
       state.pubConfig = config
-      localStorage.setItem('pubConfig', JSON.stringify(config))
     },
     clearAuth(state) {
       state.token = ''
       state.userInfo = {}
+      state.isSuperAdmin = false
       localStorage.removeItem('token')
-      localStorage.removeItem('userInfo')
+      localStorage.removeItem('isSuperAdmin')
     }
   },
   actions: {
-    // 添加 logout action
+    // Add logout action
     logout({ commit }) {
       return new Promise((resolve) => {
         commit('clearAuth')
         goToPage(Constant.PAGE.LOGIN, true);
+        window.location.reload(); // Completely reset state
       })
     },
-    // 添加获取公共配置的 action
+    // Add action to get public configuration
     fetchPubConfig({ commit }) {
       return new Promise((resolve) => {
         Api.user.getPubConfig(({ data }) => {

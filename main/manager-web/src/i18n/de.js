@@ -308,6 +308,7 @@ export default {
   'register.registerButton': 'Registrieren',
   'register.agreeTo': 'Durch Registrierung stimmen Sie unseren',
   'register.userAgreement': 'Nutzungsbedingungen',
+  'register.and': 'und',
   'register.privacyPolicy': 'Datenschutzrichtlinie',
   'register.notAllowRegister': 'Benutzerregistrierung nicht erlaubt',
   'register.captchaLoadFailed': 'Captcha konnte nicht geladen werden',
@@ -657,12 +658,10 @@ export default {
   'common.loading': 'Lädt',
 
   // Language switch
-  'language.zhCN': '中文简体',
-  'language.zhTW': '中文繁體',
   'language.en': 'English',
   'language.de': 'Deutsch',
   'language.vi': 'Tiếng Việt',
-  'language.ptBR': 'Português (Brasil)',
+  'language.pt_BR': 'Português (Brasil)',
 
   // Home page text
   'home.addAgent': 'Agent hinzufügen',
@@ -1300,14 +1299,7 @@ export default {
   'knowledgeFileUpload.totalSlices': 'Insgesamt {total} Datensätze',
   'knowledgeFileUpload.slice': 'Segment',
   'knowledgeFileUpload.noSliceData': 'Keine Segmentdaten verfügbar',
-  'knowledgeFileUpload.firstPage': 'Erste',
-  'knowledgeFileUpload.prevPage': 'Vorherige',
-  'knowledgeFileUpload.nextPage': 'Nächste',
-  'knowledgeFileUpload.totalRecords': 'Insgesamt {total} Datensätze',
-  'knowledgeFileUpload.testQuestion': 'Testfrage',
-  'knowledgeFileUpload.testQuestionPlaceholder': 'Bitte geben Sie die zu testende Frage ein',
   'knowledgeFileUpload.runTest': 'Test ausführen',
-  'knowledgeFileUpload.testResult': 'Testergebnis:',
   'knowledgeFileUpload.noRelatedSlices': 'Keine verwandten Segmente gefunden',
   'knowledgeFileUpload.comprehensiveSimilarity': 'Umfassende Ähnlichkeit',
   'knowledgeFileUpload.content': 'Inhalt:',

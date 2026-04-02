@@ -5,12 +5,11 @@
         <div style="
             display: flex;
             align-items: center;
-            margin-top: 11px;
-            margin-left: 11px;
+            margin-top: 15px;
+            margin-left: 10px;
             gap: 10px;
           ">
-          <img loading="lazy" alt="" src="@/assets/xiaozhi-logo.png" style="width: 42px; height: 42px" />
-          <img loading="lazy" alt="" :src="xiaozhiAiIcon" style="height: 20px" />
+          <img loading="lazy" alt="" src="@/assets/xiaozhi-logo.png" style="width: 45px; height: 45px" />
         </div>
       </el-header>
       <div class="login-person">
@@ -32,7 +31,7 @@
               {{ $t("login.welcome") }}
             </div>
 
-            <!-- 语言切换下拉菜单 -->
+            <!-- Language switching dropdown menu -->
             <el-dropdown trigger="click" class="title-language-dropdown"
               @visible-change="handleLanguageDropdownVisibleChange">
               <span class="el-dropdown-link">
@@ -40,29 +39,15 @@
                 <i class="el-icon-arrow-down el-icon--right" :class="{ 'rotate-down': languageDropdownVisible }"></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item @click.native="changeLanguage('zh_CN')">
-                  {{ $t("language.zhCN") }}
-                </el-dropdown-item>
-                <el-dropdown-item @click.native="changeLanguage('zh_TW')">
-                  {{ $t("language.zhTW") }}
-                </el-dropdown-item>
-                <el-dropdown-item @click.native="changeLanguage('en')">
-                  {{ $t("language.en") }}
-                </el-dropdown-item>
-                <el-dropdown-item @click.native="changeLanguage('de')">
-                  {{ $t("language.de") }}
-                </el-dropdown-item>
-                <el-dropdown-item @click.native="changeLanguage('vi')">
-                  {{ $t("language.vi") }}
-                </el-dropdown-item>
-                <el-dropdown-item @click.native="changeLanguage('pt_BR')">
-                  {{ $t("language.ptBR") }}
+                <el-dropdown-item v-for="lang in languageOptions" :key="lang.code"
+                  @click.native="changeLanguage(lang.code)">
+                  {{ $t(lang.labelKey) }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </div>
           <div style="padding: 0 30px">
-            <!-- 用户名登录 -->
+            <!-- Username login -->
             <template v-if="!isMobileLogin">
               <div class="input-box">
                 <img loading="lazy" alt="" class="input-icon" src="@/assets/login/username.png" />
@@ -70,7 +55,7 @@
               </div>
             </template>
 
-            <!-- 手机号登录 -->
+            <!-- Mobile number login -->
             <template v-else>
               <div class="input-box">
                 <div style="display: flex; align-items: center; width: 100%">
@@ -99,7 +84,7 @@
                 <img loading="lazy" alt="" class="input-icon" src="@/assets/login/shield.png" />
                 <el-input v-model="form.captcha" :placeholder="$t('login.captchaPlaceholder')" style="flex: 1" />
               </div>
-              <img loading="lazy" v-if="captchaUrl" :src="captchaUrl" alt="验证码"
+              <img loading="lazy" v-if="captchaUrl" :src="captchaUrl" alt="Captcha"
                 style="width: 150px; height: 40px; cursor: pointer" @click="fetchCaptcha" />
             </div>
             <div style="
@@ -121,7 +106,7 @@
           </div>
           <div class="login-btn" @click="login">{{ $t("login.login") }}</div>
 
-          <!-- 登录方式切换按钮 -->
+          <!-- Login method switching button -->
           <div class="login-type-container" v-if="enableMobileRegister">
             <div style="display: flex; gap: 10px">
               <el-tooltip :content="$t('login.mobileLogin')" placement="bottom">
@@ -136,11 +121,11 @@
           </div>
           <div style="font-size: 14px; color: #979db1">
             {{ $t("login.agreeTo") }}
-            <div style="display: inline-block; color: #5778ff; cursor: pointer" @click="openPage('/user-agreement.html')">
+            <div style="display: inline-block; color: #5778ff; cursor: pointer">
               {{ $t("login.userAgreement") }}
             </div>
             {{ $t("login.and") }}
-            <div style="display: inline-block; color: #5778ff; cursor: pointer" @click="openPage('/privacy-policy.html')">
+            <div style="display: inline-block; color: #5778ff; cursor: pointer">
               {{ $t("login.privacyPolicy") }}
             </div>
           </div>
@@ -156,10 +141,9 @@
 <script>
 import Api from "@/apis/api";
 import VersionFooter from "@/components/VersionFooter.vue";
-import i18n, { changeLanguage } from "@/i18n";
-import { getUUID, goToPage, showDanger, showSuccess, sm2Encrypt, validateMobile } from "@/utils";
+import i18n, { changeLanguage, supportedLanguages, getLanguageLabelKey } from "@/i18n";
+import { getUUID, goToPage, showDanger, showSuccess, validateMobile } from "@/utils";
 import { mapState } from "vuex";
-import featureManager from "@/utils/featureManager";
 
 export default {
   name: "login",
@@ -171,49 +155,17 @@ export default {
       allowUserRegister: (state) => state.pubConfig.allowUserRegister,
       enableMobileRegister: (state) => state.pubConfig.enableMobileRegister,
       mobileAreaList: (state) => state.pubConfig.mobileAreaList,
-      sm2PublicKey: (state) => state.pubConfig.sm2PublicKey,
     }),
-    // 获取当前语言
+    // Get current language
     currentLanguage() {
-      return i18n.locale || "zh_CN";
+      return i18n.locale || "en";
     },
-    // 获取当前语言显示文本
+    // Get current language display text
     currentLanguageText() {
-      const currentLang = this.currentLanguage;
-      switch (currentLang) {
-        case "zh_CN":
-          return this.$t("language.zhCN");
-        case "zh_TW":
-          return this.$t("language.zhTW");
-        case "en":
-          return this.$t("language.en");
-        case "de":
-          return this.$t("language.de");
-        case "vi":
-          return this.$t("language.vi");
-        case "pt_BR":
-          return this.$t("language.ptBR");
-        default:
-          return this.$t("language.zhCN");
-      }
+      return this.$t(getLanguageLabelKey(this.currentLanguage));
     },
-    // 根据当前语言获取对应的xiaozhi-ai图标
-    xiaozhiAiIcon() {
-      const currentLang = this.currentLanguage;
-      switch (currentLang) {
-        case "zh_CN":
-          return require("@/assets/xiaozhi-ai.png");
-        case "zh_TW":
-          return require("@/assets/xiaozhi-ai_zh_TW.png");
-        case "en":
-          return require("@/assets/xiaozhi-ai_en.png");
-        case "de":
-          return require("@/assets/xiaozhi-ai_de.png");
-        case "vi":
-          return require("@/assets/xiaozhi-ai_vi.png");
-        default:
-          return require("@/assets/xiaozhi-ai.png");
-      }
+    languageOptions() {
+      return supportedLanguages;
     },
   },
   data() {
@@ -224,7 +176,7 @@ export default {
         password: "",
         captcha: "",
         captchaId: "",
-        areaCode: "+86",
+        areaCode: "+1",
         mobile: "",
       },
       captchaUuid: "",
@@ -236,22 +188,13 @@ export default {
   mounted() {
     this.fetchCaptcha();
     this.$store.dispatch("fetchPubConfig").then(() => {
-      // 根据配置决定默认登录方式
+      // Determine default login method based on configuration
       this.isMobileLogin = this.enableMobileRegister;
     });
   },
   methods: {
-    openPage(url) {
-      const lang = this.$i18n ? this.$i18n.locale : 'zh_CN';
-      if (!lang.startsWith('zh')) {
-        url = url.replace('.html', '-en.html');
-      }
-      window.open(url, '_blank');
-    },
     fetchCaptcha() {
-      // 处理手动清空localstorage导致无法获取验证码的问题
-      const token = localStorage.getItem('token')
-      if (token) {
+      if (this.$store.getters.getToken) {
         if (this.$route.path !== "/home") {
           this.$router.push("/home");
         }
@@ -260,21 +203,21 @@ export default {
 
         Api.user.getCaptcha(this.captchaUuid, (res) => {
           if (res.status === 200) {
-            const blob = new Blob([res.data], { type: res.data.type });
+            const blob = new Blob([res.data], { type: 'image/gif' });
             this.captchaUrl = URL.createObjectURL(blob);
           } else {
-            showDanger("验证码加载失败，点击刷新");
+            showDanger("Captcha loading failed, click to refresh");
           }
         });
       }
     },
 
-    // 切换语言下拉菜单的可见状态变化
+    // Handle language dropdown menu visibility change
     handleLanguageDropdownVisibleChange(visible) {
       this.languageDropdownVisible = visible;
     },
 
-    // 切换语言
+    // Switch language
     changeLanguage(lang) {
       changeLanguage(lang);
       this.languageDropdownVisible = false;
@@ -284,10 +227,10 @@ export default {
       });
     },
 
-    // 切换登录方式
+    // Switch login method
     switchLoginType(type) {
       this.isMobileLogin = type === "mobile";
-      // 清空表单
+      // Clear form
       this.form.username = "";
       this.form.mobile = "";
       this.form.password = "";
@@ -295,7 +238,7 @@ export default {
       this.fetchCaptcha();
     },
 
-    // 封装输入验证逻辑
+    // Encapsulate input validation logic
     validateInput(input, messageKey) {
       if (!input.trim()) {
         showDanger(this.$t(messageKey));
@@ -303,81 +246,56 @@ export default {
       }
       return true;
     },
-    
-    getUserInfo() {
-      Api.user.getUserInfo(({ data }) => {
-        if (data.code === 0) {
-          this.$store.commit("setUserInfo", data.data);
-          goToPage("/home");
-        } else {
-          showDanger("用户信息获取失败");
-        }
-      });
-    },
 
     async login() {
       if (this.isMobileLogin) {
-        // 手机号登录验证
+        // Mobile number login validation
         if (!validateMobile(this.form.mobile, this.form.areaCode)) {
           showDanger(this.$t('login.requiredMobile'));
           return;
         }
-        // 拼接手机号作为用户名
+        // Concatenate mobile number as username
         this.form.username = this.form.areaCode + this.form.mobile;
       } else {
-        // 用户名登录验证
+        // Username login validation
         if (!this.validateInput(this.form.username, 'login.requiredUsername')) {
           return;
         }
       }
 
-      // 验证密码
+      // Validate password
       if (!this.validateInput(this.form.password, 'login.requiredPassword')) {
         return;
       }
-      // 验证验证码
+      // Validate captcha
       if (!this.validateInput(this.form.captcha, 'login.requiredCaptcha')) {
         return;
       }
-      // 加密密码
-      let encryptedPassword;
-      try {
-        // 拼接验证码和密码
-        const captchaAndPassword = this.form.captcha + this.form.password;
-        encryptedPassword = sm2Encrypt(this.sm2PublicKey, captchaAndPassword);
-      } catch (error) {
-        console.error("密码加密失败:", error);
-        showDanger(this.$t('sm2.encryptionFailed'));
-        return;
-      }
-
-      const plainUsername = this.form.username;
 
       this.form.captchaId = this.captchaUuid;
-
-      // 加密
-      const loginData = {
-        username: plainUsername,
-        password: encryptedPassword,
-        captchaId: this.form.captchaId
-      };
-
       Api.user.login(
-        loginData,
+        this.form,
         ({ data }) => {
           showSuccess(this.$t('login.loginSuccess'));
           this.$store.commit("setToken", JSON.stringify(data.data));
-          this.getUserInfo();
+          goToPage("/home");
         },
         (err) => {
-          // 直接使用后端返回的国际化消息
-          let errorMessage = err.data.msg || "登录失败";
-
+          // Use backend returned internationalization message directly
+          let errorMessage = err.data.msg || "Login failed";
+          
           showDanger(errorMessage);
+          if (
+            err.data != null &&
+            err.data.msg != null &&
+            err.data.msg.indexOf("Captcha") > -1 || err.data.msg.indexOf("Captcha") > -1
+          ) {
+            this.fetchCaptcha();
+          }
         }
       );
 
-      // 重新获取验证码
+      // Re-fetch captcha
       setTimeout(() => {
         this.fetchCaptcha();
       }, 1000);
@@ -388,7 +306,7 @@ export default {
     },
     goToForgetPassword() {
       goToPage("/retrieve-password");
-    }
+    },
   },
 };
 </script>
@@ -398,7 +316,8 @@ export default {
 .login-type-container {
   margin: 10px 20px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .title-language-dropdown {

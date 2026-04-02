@@ -2,13 +2,12 @@
 import type { ChatSession } from '@/api/chat-history/types'
 import { computed, onMounted, ref } from 'vue'
 import { getChatSessions } from '@/api/chat-history/chat-history'
-import { t } from '@/i18n'
 
 defineOptions({
   name: 'ChatHistory',
 })
 
-// 接收props
+// Receive props
 interface Props {
   agentId?: string
 }
@@ -17,7 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
   agentId: 'default'
 })
 
-// 获取屏幕边界到安全区域距离
+// Get distance from screen boundary to safe area
 let safeAreaInsets: any
 let systemInfo: any
 
@@ -38,7 +37,7 @@ systemInfo = uni.getSystemInfoSync()
 safeAreaInsets = systemInfo.safeAreaInsets
 // #endif
 
-// 聊天会话数据
+// Chat session data
 const sessionList = ref<ChatSession[]>([])
 const loading = ref(false)
 const loadingMore = ref(false)
@@ -46,19 +45,19 @@ const hasMore = ref(true)
 const currentPage = ref(1)
 const pageSize = 10
 
-// 使用传入的智能体ID
+// Use passed agent ID
 const currentAgentId = computed(() => {
   return props.agentId
 })
 
-// 加载聊天会话列表
+// Load chat session list
 async function loadChatSessions(page = 1, isRefresh = false) {
   try {
-    console.log(t('chatHistory.getChatSessions'), { page, isRefresh })
+    console.log('Get chat session list', { page, isRefresh })
 
-    // 检查是否有当前选中的智能体
+    // Check if there is currently selected agent
     if (!currentAgentId.value) {
-      console.warn(t('chatHistory.noSelectedAgent'))
+      console.warn('No selected agent')
       sessionList.value = []
       return
     }
@@ -82,12 +81,12 @@ async function loadChatSessions(page = 1, isRefresh = false) {
       sessionList.value.push(...(response.list || []))
     }
 
-    // 更新分页信息
+    // Update pagination info
     hasMore.value = (response.list?.length || 0) === pageSize
     currentPage.value = page
   }
   catch (error) {
-    console.error(t('chatHistory.getChatSessionsFailed'), error)
+    console.error('Failed to get chat session list:', error)
     if (page === 1) {
       sessionList.value = []
     }
@@ -98,14 +97,14 @@ async function loadChatSessions(page = 1, isRefresh = false) {
   }
 }
 
-// 暴露给父组件的刷新方法
+// Refresh method exposed to parent component
 async function refresh() {
   currentPage.value = 1
   hasMore.value = true
   await loadChatSessions(1, true)
 }
 
-// 暴露给父组件的加载更多方法
+// Load more method exposed to parent component
 async function loadMore() {
   if (!hasMore.value || loadingMore.value) {
     return
@@ -113,55 +112,55 @@ async function loadMore() {
   await loadChatSessions(currentPage.value + 1)
 }
 
-// 格式化时间
+// Format time
 function formatTime(timeStr: string) {
   if (!timeStr)
-    return t('chatHistory.unknownTime')
-
-  // 处理时间字符串，确保格式正确
-  const date = new Date(timeStr.replace(' ', 'T')) // 转换为ISO格式
+    return 'Unknown time'
+    
+  // Process time string to ensure correct format
+  const date = new Date(timeStr.replace(' ', 'T')) // Convert to ISO format
   const now = new Date()
-
-  // 检查日期是否有效
+  
+  // Check if date is valid
   if (Number.isNaN(date.getTime())) {
-    return timeStr // 如果解析失败，直接返回原字符串
+    return timeStr // If parsing fails, return original string directly
   }
-
+  
   const diff = now.getTime() - date.getTime()
-
-  // 小于1分钟
+  
+  // Less than 1 minute
   if (diff < 60000)
-    return t('chatHistory.justNow')
-
-  // 小于1小时
+    return 'Just now'
+    
+  // Less than 1 hour
   if (diff < 3600000)
-    return t('chatHistory.minutesAgo', { minutes: Math.floor(diff / 60000) })
-
-  // 小于1天（24小时）
+    return `${Math.floor(diff / 60000)} minutes ago`
+    
+  // Less than 1 day (24 hours)
   if (diff < 86400000)
-    return t('chatHistory.hoursAgo', { hours: Math.floor(diff / 3600000) })
-
-  // 小于7天
+    return `${Math.floor(diff / 3600000)} hours ago`
+    
+  // Less than 7 days
   if (diff < 604800000) {
     const days = Math.floor(diff / 86400000)
-    return t('chatHistory.daysAgo', { days })
+    return `${days} days ago`
   }
-
-  // 超过7天，显示具体日期
+  
+  // More than 7 days, show specific date
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   const currentYear = now.getFullYear()
-
-  // 如果是当前年份，不显示年份
+  
+  // If current year, don't show year
   if (year === currentYear) {
     return `${month}-${day}`
   }
-
+  
   return `${year}-${month}-${day}`
 }
 
-// 进入聊天详情
+// Enter chat details
 function goToChatDetail(session: ChatSession) {
   uni.navigateTo({
     url: `/pages/chat-history/detail?sessionId=${session.sessionId}&agentId=${currentAgentId.value}`,
@@ -169,12 +168,12 @@ function goToChatDetail(session: ChatSession) {
 }
 
 onMounted(async () => {
-  // 智能体已简化为默认
+  // Agent has been simplified to default
 
   loadChatSessions(1)
 })
 
-// 暴露方法给父组件
+// Expose methods to parent component
 defineExpose({
   refresh,
   loadMore,
@@ -183,17 +182,17 @@ defineExpose({
 
 <template>
   <view class="chat-history-container" style="background: #f5f7fb; min-height: 100%;">
-    <!-- 加载状态 -->
+    <!-- Loading state -->
     <view v-if="loading && sessionList.length === 0" class="loading-container">
       <wd-loading color="#336cff" />
       <text class="loading-text">
-          {{ t('chatHistory.loading') }}
-        </text>
+        Loading...
+      </text>
     </view>
 
-    <!-- 会话列表 -->
+    <!-- Session list -->
     <view v-else-if="sessionList.length > 0" class="session-container">
-      <!-- 聊天会话列表 -->
+      <!-- Chat session list -->
       <view class="session-list">
         <view
           v-for="session in sessionList"
@@ -205,7 +204,7 @@ defineExpose({
             <view class="session-info">
               <view class="session-header">
                 <text class="session-title">
-                  {{ t('chatHistory.conversationRecord') }} {{ session.sessionId.substring(0, 8) }}...
+                  Chat Record {{ session.sessionId.substring(0, 8) }}...
                 </text>
                 <text class="session-time">
                   {{ formatTime(session.createdAt) }}
@@ -213,7 +212,7 @@ defineExpose({
               </view>
               <view class="session-meta">
                 <text class="chat-count">
-                  {{ t('chatHistory.totalChats', { count: session.chatCount }) }}
+                  {{ session.chatCount }} messages
                 </text>
               </view>
             </view>
@@ -222,31 +221,31 @@ defineExpose({
         </view>
       </view>
 
-      <!-- 加载更多状态 -->
+      <!-- Load more state -->
       <view v-if="loadingMore" class="loading-more">
         <wd-loading color="#336cff" size="24" />
         <text class="loading-more-text">
-          {{ t('chatHistory.loading') }}
+          Loading...
         </text>
       </view>
 
-      <!-- 没有更多数据 -->
+      <!-- No more data -->
       <view v-else-if="!hasMore && sessionList.length > 0" class="no-more">
         <text class="no-more-text">
-          {{ t('chatHistory.noMoreData') }}
+          No more data
         </text>
       </view>
     </view>
 
-    <!-- 空状态 -->
+    <!-- Empty state -->
     <view v-else-if="!loading" class="empty-state">
       <wd-icon name="chat" custom-class="empty-icon" />
       <text class="empty-text">
-          {{ t('chatHistory.noChatRecords') }}
-        </text>
-        <text class="empty-desc">
-          {{ t('chatHistory.chatRecordsDescription') }}
-        </text>
+        No chat records
+      </text>
+      <text class="empty-desc">
+        Chat records with the agent will be displayed here
+      </text>
     </view>
   </view>
 </template>

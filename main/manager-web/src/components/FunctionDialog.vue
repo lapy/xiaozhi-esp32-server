@@ -1,6 +1,6 @@
 <template>
   <el-drawer :visible.sync="dialogVisible" direction="rtl" size="80%" :wrapperClosable="false" :withHeader="false">
-    <!-- 自定义标题区域 -->
+    <!-- Custom title area -->
     <div class="custom-header">
       <div class="header-left">
         <h3 class="bold-title">{{ $t('functionDialog.title') }}</h3>
@@ -9,13 +9,11 @@
     </div>
 
     <div class="function-manager">
-      <!-- 左侧：未选功能 -->
+      <!-- Left: unselected functions -->
       <div class="function-column">
         <div class="column-header">
           <h4 class="column-title">{{ $t('functionDialog.unselectedFunctions') }}</h4>
-          <el-button type="text" @click="selectAll" class="select-all-btn">
-            {{ $t('functionDialog.selectAll') }}
-          </el-button>
+          <el-button type="text" @click="selectAll" class="select-all-btn">{{ $t('functionDialog.selectAll') }}</el-button>
         </div>
         <div class="function-list">
           <div v-if="unselected.length">
@@ -23,7 +21,7 @@
               <el-checkbox :label="func.name" v-model="selectedNames" @change="(val) => handleCheckboxChange(func, val)"
                 @click.native.stop></el-checkbox>
               <div class="func-tag" @click="handleFunctionClick(func)">
-                <div class="color-dot"></div>
+                <div class="color-dot" :style="{ backgroundColor: getFunctionColor(func.name) }"></div>
                 <span>{{ func.name }}</span>
               </div>
             </div>
@@ -34,13 +32,11 @@
         </div>
       </div>
 
-      <!-- 中间：已选功能 -->
+      <!-- Center: selected functions -->
       <div class="function-column">
         <div class="column-header">
           <h4 class="column-title">{{ $t('functionDialog.selectedFunctions') }}</h4>
-          <el-button type="text" @click="deselectAll" class="select-all-btn">
-            {{ $t('functionDialog.selectAll') }}
-          </el-button>
+          <el-button type="text" @click="deselectAll" class="select-all-btn">{{ $t('functionDialog.selectAll') }}</el-button>
         </div>
         <div class="function-list">
           <div v-if="selectedList.length > 0">
@@ -48,7 +44,7 @@
               <el-checkbox :label="func.name" v-model="selectedNames" @change="(val) => handleCheckboxChange(func, val)"
                 @click.native.stop></el-checkbox>
               <div class="func-tag" @click="handleFunctionClick(func)">
-                <div class="color-dot"></div>
+                <div class="color-dot" :style="{ backgroundColor: getFunctionColor(func.name) }"></div>
                 <span>{{ func.name }}</span>
               </div>
             </div>
@@ -59,14 +55,12 @@
         </div>
       </div>
 
-      <!-- 右侧：参数配置 -->
+      <!-- Right: parameter configuration -->
       <div class="params-column">
-        <h4 v-if="currentFunction" class="column-title">
-          {{ $t('functionDialog.paramConfig') }} - {{ currentFunction.name }}
-        </h4>
+        <h4 v-if="currentFunction" class="column-title">{{ $t('functionDialog.paramConfig') }} - {{ currentFunction.name }}</h4>
         <div v-if="currentFunction" class="params-container">
           <el-form :model="currentFunction" class="param-form">
-            <!-- 遍历 fieldsMeta，而不是 params 的 keys -->
+            <!-- Iterate through fieldsMeta instead of params keys -->
             <div v-if="currentFunction.fieldsMeta.length == 0">
               <el-empty :description="currentFunction.name + $t('functionDialog.noNeedToConfig')" />
             </div>
@@ -83,7 +77,7 @@
                 @change="val => handleParamChange(currentFunction, field.key, val)" />
 
               <!-- JSON -->
-              <el-input v-else-if="field.type === 'json'" type="textarea" :rows="6" placeholder="请输入合法的 JSON"
+              <el-input v-else-if="field.type === 'json'" type="textarea" :rows="6" placeholder="Please enter valid JSON"
                 v-model="textCache[field.key]" @blur="flushJson(field)" />
 
               <!-- number -->
@@ -105,10 +99,10 @@
       </div>
     </div>
 
-    <!-- MCP区域 -->
-    <div class="mcp-access-point" v-if="featureStatus.mcpAccessPoint">
+    <!-- MCP area -->
+    <div class="mcp-access-point">
       <div class="mcp-container">
-        <!-- 左侧区域 -->
+        <!-- Left area -->
         <div class="mcp-left">
           <div class="mcp-header">
             <h3 class="bold-title">{{ $t('functionDialog.mcpAccessPoint') }}</h3>
@@ -116,22 +110,22 @@
           <div class="url-header">
             <div class="address-desc">
               <span>{{ $t('functionDialog.mcpAddressDesc') }}</span>
-              <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/docs/mcp-endpoint-enable.md"
+              <a href="https://github.com/lapy/xiaozhi-esp32-server/blob/main/docs/mcp-endpoint-enable.md"
                 target="_blank" class="doc-link">{{ $t('functionDialog.howToDeployMcp') }}</a> &nbsp;&nbsp;|&nbsp;&nbsp;
-              <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/docs/mcp-endpoint-integration.md"
+              <a href="https://github.com/lapy/xiaozhi-esp32-server/blob/main/docs/mcp-endpoint-integration.md"
                 target="_blank" class="doc-link">{{ $t('functionDialog.howToIntegrateMcp') }}</a> &nbsp;
             </div>
           </div>
           <el-input v-model="mcpUrl" readonly class="url-input">
             <template #suffix>
               <el-button @click="copyUrl" class="inner-copy-btn" icon="el-icon-document-copy">
-                {{ $t('functionDialog.copy') }}
-              </el-button>
+                  {{ $t('functionDialog.copy') }}
+                </el-button>
             </template>
           </el-input>
         </div>
 
-        <!-- 右侧区域 -->
+        <!-- Right area -->
         <div class="mcp-right">
           <div class="mcp-header">
             <h3 class="bold-title">{{ $t('functionDialog.accessPointStatus') }}</h3>
@@ -171,7 +165,6 @@
 <script>
 import Api from '@/apis/api';
 import i18n from '@/i18n';
-import featureManager from '@/utils/featureManager';
 
 export default {
   i18n,
@@ -198,19 +191,18 @@ export default {
       selectedNames: [],
       currentFunction: null,
       modifiedFunctions: {},
+      functionColorMap: [
+        '#FF6B6B', '#4ECDC4', '#45B7D1',
+        '#96CEB4', '#FFEEAD', '#D4A5A5', '#A2836E'
+      ],
       tempFunctions: {},
-      // 添加一个标志位来跟踪是否已经保存
+      // Add a flag to track if already saved
       hasSaved: false,
       loading: false,
 
       mcpUrl: "",
       mcpStatus: "disconnected",
       mcpTools: [],
-      
-      // 功能状态
-      featureStatus: {
-        mcpAccessPoint: false
-      }
     }
   },
   computed: {
@@ -224,7 +216,7 @@ export default {
   watch: {
     currentFunction(newFn) {
       if (!newFn) return;
-      // 对每个字段，如果是 array 或 json，就在 textCache 里生成初始字符串
+      // For each field, if it is array or json, generate initial string in textCache
       newFn.fieldsMeta.forEach(f => {
         const v = newFn.params[f.key];
         if (f.type === 'array') {
@@ -242,23 +234,20 @@ export default {
     value(v) {
       this.dialogVisible = v;
       if (v) {
-        // 对话框打开时，初始化选中态
+        // When dialog opens, initialize selected state
         this.selectedNames = this.functions.map(f => f.name);
-        // 把后端传来的 this.functions（带 params）merge 到 allFunctions 上
+        // Merge this.functions (with params) from backend into allFunctions
         this.functions.forEach(saved => {
           const idx = this.allFunctions.findIndex(f => f.name === saved.name);
           if (idx >= 0) {
-            // 保留用户之前在 saved.params 上的改动
+            // Preserve user's previous changes to saved.params
             this.allFunctions[idx].params = { ...saved.params };
           }
         });
-        // 右侧默认指向第一个
+        // Right side defaults to first one
         this.currentFunction = this.selectedList[0] || null;
 
-        // 加载功能状态
-        this.loadFeatureStatus();
-        
-        // 加载MCP数据
+        // Load MCP data
         this.loadMcpAddress();
         this.loadMcpTools();
       }
@@ -268,23 +257,10 @@ export default {
     }
   },
   methods: {
-    /**
-     * 加载功能状态
-     */
-    async loadFeatureStatus() {
-      // 确保featureManager已初始化完成
-      await featureManager.waitForInitialization();
-      
-      const config = featureManager.getConfig();
-      this.featureStatus = {
-        mcpAccessPoint: config.mcpAccessPoint || false
-      };
-    },
-    
     copyUrl() {
       const textarea = document.createElement('textarea');
       textarea.value = this.mcpUrl;
-      textarea.style.position = 'fixed';  // 防止页面滚动
+      textarea.style.position = 'fixed';  // Prevent page scrolling
       document.body.appendChild(textarea);
       textarea.select();
 
@@ -296,8 +272,8 @@ export default {
           this.$message.error(this.$t('functionDialog.copyFailed'));
         }
       } catch (err) {
-        this.$message.error('复制失败，请手动复制');
-        console.error('复制失败:', err);
+        this.$message.error('Copy failed, please copy manually');
+        console.error('Copy failed:', err);
       } finally {
         document.body.removeChild(textarea);
       }
@@ -308,29 +284,29 @@ export default {
       this.loadMcpTools();
     },
 
-    // 加载MCP接入点地址
+    // Load MCP endpoint address
     loadMcpAddress() {
       Api.agent.getAgentMcpAccessAddress(this.agentId, (res) => {
         if (res.data.code === 0) {
           this.mcpUrl = res.data.data || "";
         } else {
-          this.mcpUrl = res.data.msg;
-          console.error('获取MCP地址失败:', res.data.msg);
+          this.mcpUrl = "";
+          console.error('Failed to get MCP address:', res.data.msg);
         }
       });
     },
 
-    // 加载MCP工具列表
+    // Load MCP tools list
     loadMcpTools() {
       Api.agent.getAgentMcpToolsList(this.agentId, (res) => {
         if (res.data.code === 0) {
           this.mcpTools = res.data.data || [];
-          // 根据工具列表更新状态
+          // Update status based on tools list
           this.mcpStatus = this.mcpTools.length > 0 ? "connected" : "disconnected";
         } else {
           this.mcpTools = [];
           this.mcpStatus = "disconnected";
-          console.error('获取MCP工具列表失败:', res.data.msg);
+          console.error('Failed to get MCP tools list:', res.data.msg);
         }
       });
     },
@@ -426,8 +402,12 @@ export default {
 
       this.$emit('update-functions', selected);
       this.dialogVisible = false;
-      // 通知父组件对话框已关闭且已保存
+      // Notify parent component dialog is closed and saved
       this.$emit('dialog-closed', true);
+    },
+    getFunctionColor(name) {
+      const hash = [...name].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      return this.functionColorMap[hash % this.functionColorMap.length];
     },
     fieldRemark(field) {
       let description = (field && field.label) ? field.label : '';
@@ -478,18 +458,11 @@ export default {
 .function-column {
   position: relative;
   width: auto;
-  height:700px; 
   padding: 10px;
   overflow-y: auto;
   border-right: 1px solid #EBEEF5;
   scrollbar-width: none;
   overflow-x: hidden;
-}
-
-.mcp-access-point {
-  position: relative;
-  z-index: 1;
-  background: white;
 }
 
 .function-column::-webkit-scrollbar {
@@ -554,7 +527,6 @@ export default {
   flex-shrink: 0;
   width: 8px;
   height: 8px;
-  background-color: #5778ff;
   margin-right: 8px;
   border-radius: 50%;
 }
@@ -774,17 +746,17 @@ export default {
 
     &.disconnected {
       background-color: #909399;
-      /* 灰色 - 未连接 */
+      /* Gray - disconnected */
     }
 
     &.connected {
       background-color: #67C23A;
-      /* 绿色 - 已连接 */
+      /* Green - connected */
     }
 
     &.loading {
       background-color: #E6A23C;
-      /* 橙色 - 加载中 */
+      /* Orange - loading */
       animation: pulse 1.5s infinite;
     }
   }

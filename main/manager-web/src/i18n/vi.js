@@ -308,6 +308,7 @@ export default {
   'register.registerButton': 'Đăng ký',
   'register.agreeTo': 'Bằng cách đăng ký, bạn đồng ý với',
   'register.userAgreement': 'Thỏa thuận người dùng',
+  'register.and': 'và',
   'register.privacyPolicy': 'Chính sách bảo mật',
   'register.notAllowRegister': 'Không cho phép đăng ký người dùng',
   'register.captchaLoadFailed': 'Không thể tải mã xác minh',
@@ -657,12 +658,10 @@ export default {
   'common.loading': 'Đang tải',
 
   // Language switch
-  'language.zhCN': '中文简体',
-  'language.zhTW': '中文繁體',
   'language.en': 'English',
   'language.de': 'Deutsch',
   'language.vi': 'Tiếng Việt',
-  'language.ptBR': 'Português (Brasil)',
+  'language.pt_BR': 'Português (Brasil)',
 
   // Home page text
   'home.addAgent': 'Thêm tác nhân',
@@ -1300,14 +1299,7 @@ export default {
   'knowledgeFileUpload.totalSlices': 'Tổng cộng {total} bản ghi',
   'knowledgeFileUpload.slice': 'Phần',
   'knowledgeFileUpload.noSliceData': 'Không có dữ liệu phần nào',
-  'knowledgeFileUpload.firstPage': 'Đầu tiên',
-  'knowledgeFileUpload.prevPage': 'Trước',
-  'knowledgeFileUpload.nextPage': 'Tiếp theo',
-  'knowledgeFileUpload.totalRecords': 'Tổng cộng {total} bản ghi',
-  'knowledgeFileUpload.testQuestion': 'Câu hỏi kiểm tra',
-  'knowledgeFileUpload.testQuestionPlaceholder': 'Vui lòng nhập câu hỏi để kiểm tra',
   'knowledgeFileUpload.runTest': 'Chạy kiểm tra',
-  'knowledgeFileUpload.testResult': 'Kết quả kiểm tra:',
   'knowledgeFileUpload.noRelatedSlices': 'Không tìm thấy phần liên quan',
   'knowledgeFileUpload.comprehensiveSimilarity': 'Độ tương đồng toàn diện',
   'knowledgeFileUpload.content': 'Nội dung:',

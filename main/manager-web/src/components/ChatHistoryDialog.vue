@@ -1,15 +1,36 @@
 <template>
-    <el-dialog
-        :title="$t('chatHistory.with') + agentName + $t('chatHistory.dialogTitle') + (currentMacAddress ? '[' + currentMacAddress + ']' : '')"
+    <el-dialog :title="$t('chatHistory.with') + agentName + (currentMacAddress ? '[' + currentMacAddress + ']' : '')"
         :visible.sync="dialogVisible" width="80%" :before-close="handleClose" custom-class="chat-history-dialog">
         <div class="chat-container">
             <div class="session-list" @scroll="handleScroll">
+                <div class="session-list-header">
+                    <span class="session-count">{{ $t('chatHistory.sessionCount', { count: sessions.length }) }}</span>
+                    <el-button 
+                        v-if="sessions.length > 0"
+                        type="text" 
+                        size="mini" 
+                        class="delete-all-btn"
+                        @click="deleteAllSessions"
+                        :title="$t('chatHistory.deleteAllSessions')">
+                        {{ $t('chatHistory.deleteAll') }}
+                    </el-button>
+                </div>
                 <div v-for="session in sessions" :key="session.sessionId" class="session-item"
                     :class="{ active: currentSessionId === session.sessionId }" @click="selectSession(session)">
                     <img :src="getUserAvatar(session.sessionId)" class="avatar" />
                     <div class="session-info">
                         <div class="session-time">{{ formatTime(session.createdAt) }}</div>
                         <div class="message-count">{{ session.chatCount > 99 ? '99' : session.chatCount }}</div>
+                    </div>
+                    <div class="session-actions">
+                        <el-button 
+                            type="text" 
+                            icon="el-icon-delete" 
+                            size="mini" 
+                            class="delete-btn"
+                            @click.stop="deleteSession(session)"
+                            :title="$t('chatHistory.deleteSession')">
+                        </el-button>
                     </div>
                 </div>
                 <div v-if="loading" class="loading">{{ $t('chatHistory.loading') }}</div>
@@ -21,35 +42,11 @@
                         <div v-if="message.type === 'time'" class="time-divider">
                             {{ message.content }}
                         </div>
-                        <div v-else class="message-item" :class="{ 'user-message': message.chatType === 1, 'tool-message': message.chatType === 3 }">
+                        <div v-else class="message-item" :class="{ 'user-message': message.chatType === 1 }">
                             <img :src="message.chatType === 1 ? getUserAvatar(currentSessionId) : require('@/assets/xiaozhi-logo.png')"
                                 class="avatar" />
                             <div class="message-content">
-                                <template v-if="Array.isArray(extractContentFromString(message.content))">
-                                    <div class="content-wrapper">
-                                        <div v-for="(item, idx) in extractContentFromString(message.content)" :key="idx">
-                                            <div v-if="item.type === 'text'" class="text-content">{{ item.text }}</div>
-                                            <div v-else-if="item.type === 'tool'" class="tool-call-text">{{ item.text }}</div>
-                                            <div v-else-if="item.type === 'tool_result'" class="tool-call-text">
-                                                <div v-if="item.text && item.text.length > 80" class="tool-result-wrapper">
-                                                    <div v-if="isToolResultCollapsed(index, idx)" class="tool-result-collapsed">
-                                                        {{ getFirstLineText(item.text) }}
-                                                    </div>
-                                                    <div v-else class="tool-result-expanded">
-                                                        {{ item.text }}
-                                                    </div>
-                                                    <span class="tool-toggle-btn" @click="toggleToolResult(index, idx)">
-                                                        <i :class="isToolResultCollapsed(index, idx) ? 'el-icon-arrow-down' : 'el-icon-arrow-up'"></i>
-                                                    </span>
-                                                </div>
-                                                <div v-else>{{ item.text }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </template>
-                                <template v-else>
-                                    {{ extractContentFromString(message.content) }}
-                                </template>
+                                {{ extractContentFromString(message.content) }}
                                 <i v-if="message.audioId" :class="getAudioIconClass(message)"
                                     @click="playAudio(message)" class="audio-icon"></i>
                             </div>
@@ -61,19 +58,10 @@
                 </div>
             </div>
         </div>
-        <div v-if="currentSessionId" class="download-buttons">
-            <el-button type="primary" plain size="small" @click="downloadCurrentSessionWithPrevious">
-                {{ $t('chatHistory.downloadCurrentWithPreviousSessions') }}
-            </el-button>
-            <el-button type="primary" plain size="small" @click="downloadCurrentSession">
-                {{ $t('chatHistory.downloadCurrentSession') }}
-            </el-button>
-        </div>
     </el-dialog>
 </template>
 
 <script>
-import { debounce } from '@/utils'
 import Api from '@/apis/api';
 
 export default {
@@ -106,8 +94,7 @@ export default {
             scrollTimer: null,
             isFirstLoad: true,
             playingAudioId: null,
-            audioElement: null,
-            expandedToolResults: {} // 跟踪工具结果的展开状态
+            audioElement: null
         };
     },
     watch: {
@@ -116,10 +103,6 @@ export default {
             if (val) {
                 this.resetData();
                 this.loadSessions();
-            } else {
-                this.audioElement?.pause();
-                this.audioElement = null;
-                this.playingAudioId = null;
             }
         },
         dialogVisible(val) {
@@ -133,9 +116,9 @@ export default {
             if (!this.messages || this.messages.length === 0) return [];
 
             const result = [];
-            const TIME_INTERVAL = 60 * 1000; // 1分钟的时间间隔（毫秒）
+            const TIME_INTERVAL = 60 * 1000; // 1 minute time interval (milliseconds)
 
-            // 添加第一条消息的时间标记
+            // Add time marker for first message
             if (this.messages[0]) {
                 result.push({
                     type: 'time',
@@ -144,12 +127,12 @@ export default {
                 });
             }
 
-            // 处理消息列表
+            // Process message list
             for (let i = 0; i < this.messages.length; i++) {
                 const currentMessage = this.messages[i];
                 result.push(currentMessage);
 
-                // 检查是否需要添加时间标记
+                // Check if time marker needs to be added
                 if (i < this.messages.length - 1) {
                     const currentTime = new Date(currentMessage.createdAt).getTime();
                     const nextTime = new Date(this.messages[i + 1].createdAt).getTime();
@@ -169,54 +152,30 @@ export default {
     },
     methods: {
         /**
-         * 从 content 字段中提取聊天内容
-         * 如果 content 是 JSON 格式（如 {"speaker": "未知说话人", "content": "现在几点了。"}），则提取 content 字段
-         * 如果 content 是普通字符串，则直接返回
+         * Extract chat content from content field
+         * If content is JSON format (like {"speaker": "Unknown Speaker", "content": "What time is it?"}), extract content field
+         * If content is plain string, return directly
          * 
-         * @param {string} content 原始内容
-         * @returns {string} 提取的聊天内容
+         * @param {string} content Original content
+         * @returns {string} Extracted chat content
          */
         extractContentFromString(content) {
             if (!content || content.trim() === '') {
                 return content;
             }
 
-            // 尝试解析为 JSON
+            // Try to parse as JSON
             try {
                 const jsonObj = JSON.parse(content);
-
-                // 如果是数组格式（包含 text 和 tool）
-                if (Array.isArray(jsonObj)) {
-                    return jsonObj;
-                }
-
-                // 如果是对象且有 content 字段
                 if (jsonObj && typeof jsonObj === 'object' && jsonObj.content) {
                     return jsonObj.content;
                 }
             } catch (e) {
-                // 如果不是有效的 JSON，直接返回原内容
+                // If not valid JSON, return original content directly
             }
 
-            // 如果不是 JSON 格式或没有 content 字段，直接返回原内容
+            // If not JSON format or no content field, return original content directly
             return content;
-        },
-        // 切换工具结果的展开/折叠状态
-        toggleToolResult(messageIndex, itemIndex) {
-            const key = `${messageIndex}-${itemIndex}`;
-            this.$set(this.expandedToolResults, key, !this.expandedToolResults[key]);
-        },
-        // 判断工具结果是否处于折叠状态
-        isToolResultCollapsed(messageIndex, itemIndex) {
-            const key = `${messageIndex}-${itemIndex}`;
-            // 默认折叠（true表示折叠）
-            return !this.expandedToolResults[key];
-        },
-        // 获取截断的文本（只显示第一行）
-        getFirstLineText(text) {
-            if (!text) return '';
-            const firstLine = text.split('\n')[0];
-            return firstLine.length < text.length ? firstLine + '...' : text;
         },
         resetData() {
             this.sessions = [];
@@ -227,7 +186,6 @@ export default {
             this.loading = false;
             this.hasMore = true;
             this.isFirstLoad = true;
-            this.expandedToolResults = {};
         },
         handleClose() {
             this.dialogVisible = false;
@@ -277,7 +235,7 @@ export default {
 
             this.scrollTimer = setTimeout(() => {
                 const { scrollTop, scrollHeight, clientHeight } = e.target;
-                // 当滚动到底部时加载更多
+                // Load more when scrolling to bottom
                 if (scrollHeight - scrollTop <= clientHeight + 50) {
                     this.loadSessions();
                 }
@@ -310,9 +268,9 @@ export default {
             }
             return 'el-icon-video-play';
         },
-        playAudio: debounce(function(message) {
+        playAudio(message) {
             if (this.playingAudioId === message.audioId) {
-                // 如果正在播放当前音频，则停止播放
+                // If currently playing this audio, stop playback
                 if (this.audioElement) {
                     this.audioElement.pause();
                     this.audioElement = null;
@@ -321,22 +279,19 @@ export default {
                 return;
             }
 
-            // 停止当前正在播放的音频
+            // Stop currently playing audio
             if (this.audioElement) {
                 this.audioElement.pause();
                 this.audioElement = null;
             }
 
-            // 先获取音频下载ID
+            // First get audio download ID
             this.playingAudioId = message.audioId;
             Api.agent.getAudioId(message.audioId, (res) => {
                 if (res.data && res.data.data) {
-                    if (!this.audioElement) {
-                        this.audioElement = new Audio();
-                    }
-                    
-                    // 使用获取到的下载ID播放音频
-                    this.audioElement.src = Api.getServiceUrl() + `/agent/play/${res.data.data}`;
+                    // Use the obtained download ID to play audio
+                    this.audioElement = new Audio(Api.getServiceUrl() + `/agent/play/${res.data.data}`);
+
                     this.audioElement.onended = () => {
                         this.playingAudioId = null;
                         this.audioElement = null;
@@ -345,43 +300,77 @@ export default {
                     this.audioElement.play();
                 }
             });
-        }, 300),
+        },
         getUserAvatar(sessionId) {
-            // 从 sessionId 中提取所有数字
+            // Extract all numbers from sessionId
             const numbers = sessionId.match(/\d+/g);
             if (!numbers) return require('@/assets/user-avatar1.png');
 
-            // 将所有数字相加
+            // Sum all numbers
             const sum = numbers.reduce((acc, num) => acc + parseInt(num), 0);
 
-            // 计算模5并加1，得到1-5之间的数字
+            // Calculate modulo 5 and add 1 to get number between 1-5
             const avatarIndex = (sum % 5) + 1;
 
-            // 返回对应的头像图片
+            // Return corresponding avatar image
             return require(`@/assets/user-avatar${avatarIndex}.png`);
         },
-
-        // 下载本会话聊天记录
-        downloadCurrentSession() {
-            Api.agent.getDownloadUrl(this.agentId, this.currentSessionId, (res) => {
-                if (res && res.data && res.data.code === 0 && res.data.data) {
-                    const uuid = res.data.data;
-                    window.open(`${Api.getServiceUrl()}/agent/chat-history/download/${uuid}/current`, '_blank');
-                } else {
-                    this.$message.error(this.$t('chatHistory.downloadLinkFailed'));
-                }
+        deleteSession(session) {
+            this.$confirm(this.$t('chatHistory.deleteConfirm'), this.$t('common.warning'), {
+                confirmButtonText: this.$t('common.confirm'),
+                cancelButtonText: this.$t('common.cancel'),
+                type: 'warning'
+            }).then(() => {
+                Api.agent.deleteAgentChatSession(this.agentId, session.sessionId, (res) => {
+                    if (res.data && res.data.code === 0) {
+                        this.$message.success(this.$t('chatHistory.deleteSuccess'));
+                        
+                        // Remove session from list
+                        const index = this.sessions.findIndex(s => s.sessionId === session.sessionId);
+                        if (index > -1) {
+                            this.sessions.splice(index, 1);
+                        }
+                        
+                        // If deleted session was currently selected, clear selection
+                        if (this.currentSessionId === session.sessionId) {
+                            this.currentSessionId = '';
+                            this.messages = [];
+                            this.currentMacAddress = '';
+                        }
+                        
+                        // If no sessions left, reload the list
+                        if (this.sessions.length === 0) {
+                            this.resetData();
+                            this.loadSessions();
+                        }
+                    } else {
+                        this.$message.error(this.$t('chatHistory.deleteFailed'));
+                    }
+                });
+            }).catch(() => {
+                // User cancelled deletion
             });
         },
-
-        // 下载本会话及前20条会话聊天记录
-        downloadCurrentSessionWithPrevious() {
-            Api.agent.getDownloadUrl(this.agentId, this.currentSessionId, (res) => {
-                if (res && res.data && res.data.code === 0 && res.data.data) {
-                    const uuid = res.data.data;
-                    window.open(`${Api.getServiceUrl()}/agent/chat-history/download/${uuid}/previous`, '_blank');
-                } else {
-                    this.$message.error(this.$t('chatHistory.downloadLinkFailed'));
-                }
+        deleteAllSessions() {
+            this.$confirm(this.$t('chatHistory.deleteAllConfirm'), this.$t('common.warning'), {
+                confirmButtonText: this.$t('common.confirm'),
+                cancelButtonText: this.$t('common.cancel'),
+                type: 'warning'
+            }).then(() => {
+                // Delete all sessions by calling the existing deleteByAgentId method
+                Api.agent.deleteAllAgentChatSessions(this.agentId, (res) => {
+                    if (res.data && res.data.code === 0) {
+                        this.$message.success(this.$t('chatHistory.deleteAllSuccess'));
+                        
+                        // Clear all data
+                        this.resetData();
+                        this.loadSessions();
+                    } else {
+                        this.$message.error(this.$t('chatHistory.deleteAllFailed'));
+                    }
+                });
+            }).catch(() => {
+                // User cancelled deletion
             });
         }
     }
@@ -401,6 +390,32 @@ export default {
     padding: 10px;
 }
 
+.session-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+}
+
+.session-count {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+.delete-all-btn {
+    color: #f56c6c;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+.delete-all-btn:hover {
+    color: #f56c6c;
+    background-color: #fef0f0;
+}
+
 .session-item {
     display: flex;
     align-items: center;
@@ -408,6 +423,7 @@ export default {
     cursor: pointer;
     border-radius: 8px;
     margin-bottom: 10px;
+    position: relative;
 }
 
 .session-item:hover {
@@ -429,6 +445,26 @@ export default {
     flex: 1;
 }
 
+.session-actions {
+    opacity: 0;
+    transition: opacity 0.2s;
+    margin-left: 10px;
+}
+
+.session-item:hover .session-actions {
+    opacity: 1;
+}
+
+.delete-btn {
+    color: #f56c6c;
+    padding: 4px;
+}
+
+.delete-btn:hover {
+    color: #f56c6c;
+    background-color: #fef0f0;
+}
+
 .session-time {
     font-size: 14px;
     color: #272727;
@@ -436,7 +472,7 @@ export default {
     height: 30px;
     line-height: 30px;
     width: calc(100% - 30px);
-    /* 为消息数量留出空间 */
+    /* Leave space for message count */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -500,56 +536,6 @@ export default {
     color: white;
 }
 
-.content-wrapper {
-    width: 100%;
-}
-
-.text-content {
-    display: block;
-    margin-bottom: 4px;
-}
-
-.tool-call-text {
-    color: #1890ff;
-    font-family: 'Courier New', monospace;
-    font-weight: 500;
-    font-size: 12px;
-    display: block;
-    margin-top: 4px;
-}
-
-.user-message .tool-call-text {
-    color: #e6f7ff;
-}
-
-.tool-message .message-content {
-    background-color: #f0f0f0;
-}
-
-.tool-result-wrapper {
-    position: relative;
-    padding-right: 20px;
-}
-
-.tool-result-collapsed {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.tool-toggle-btn {
-    position: absolute;
-    right: 0;
-    top: 0;
-    cursor: pointer;
-    color: #1890ff;
-    font-size: 12px;
-}
-
-.tool-toggle-btn:hover {
-    color: #40a9ff;
-}
-
 .loading,
 .no-more {
     text-align: center;
@@ -582,22 +568,6 @@ export default {
     vertical-align: middle;
     margin: 0 10px;
 }
-
-.download-buttons {
-    padding: 20px;
-    display: flex;
-    gap: 10px;
-    border-top: 1px solid #eee;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: white;
-}
-
-.download-buttons .el-button {
-    flex: 1;
-}
 </style>
 
 <style>
@@ -610,7 +580,7 @@ export default {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    height: 98vh;
+    height: 90vh;
     max-width: 85vw;
     border-radius: 12px;
     overflow: hidden;
@@ -625,6 +595,6 @@ export default {
     padding: 0;
     overflow: hidden;
     height: calc(90vh - 54px);
-    /* 减去标题栏的高度 */
+    /* Subtract the height of the title bar */
 }
 </style>

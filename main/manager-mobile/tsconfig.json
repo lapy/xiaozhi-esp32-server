@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
+    "target": "ES2015",
     "lib": ["esnext", "dom"],
     "baseUrl": ".",
     "module": "ESNext",

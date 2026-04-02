@@ -1,10 +1,10 @@
 <template>
   <div class="welcome">
-    <!-- 公共头部 -->
+    <!-- Common header -->
     <HeaderBar :devices="devices" @search="handleSearch" @search-reset="handleSearchReset" />
     <el-main style="padding: 20px;display: flex;flex-direction: column;">
       <div>
-        <!-- 首页内容 -->
+        <!-- Home page content -->
         <div class="add-device">
           <div class="add-device-bg">
             <div class="hellow-text" style="margin-top: 30px;">
@@ -39,9 +39,8 @@
           </template>
 
           <template v-else>
-            <DeviceItem v-for="(item, index) in devices" :key="index" :device="item" :feature-status="featureStatus" 
-              @configure="goToRoleConfig" @deviceManage="handleDeviceManage" @delete="handleDeleteAgent" 
-              @chat-history="handleShowChatHistory" />
+            <DeviceItem v-for="(item, index) in devices" :key="index" :device="item" @configure="goToRoleConfig"
+              @deviceManage="handleDeviceManage" @delete="handleDeleteAgent" @chat-history="handleShowChatHistory" />
           </template>
         </div>
       </div>
@@ -62,7 +61,6 @@ import ChatHistoryDialog from '@/components/ChatHistoryDialog.vue';
 import DeviceItem from '@/components/DeviceItem.vue';
 import HeaderBar from '@/components/HeaderBar.vue';
 import VersionFooter from '@/components/VersionFooter.vue';
-import featureManager from '@/utils/featureManager';
 
 export default {
   name: 'HomePage',
@@ -78,38 +76,20 @@ export default {
       skeletonCount: localStorage.getItem('skeletonCount') || 8,
       showChatHistory: false,
       currentAgentId: '',
-      currentAgentName: '',
-      // 功能状态
-      featureStatus: {
-        voiceprintRecognition: false,
-        voiceClone: false,
-        knowledgeBase: false
-      }
+      currentAgentName: ''
     }
   },
 
-  async mounted() {
+  mounted() {
     this.fetchAgentList();
-    await this.loadFeatureStatus();
   },
 
   methods: {
-    // 加载功能状态
-    async loadFeatureStatus() {
-      await featureManager.waitForInitialization();
-      const config = featureManager.getConfig();
-      this.featureStatus = {
-        voiceprintRecognition: config.voiceprintRecognition,
-        voiceClone: config.voiceClone,
-        knowledgeBase: config.knowledgeBase
-      };
-    },
-    
     showAddDialog() {
       this.addDeviceDialogVisible = true
     },
     goToRoleConfig() {
-      // 点击配置角色后跳转到角色配置页
+      // Navigate to role configuration page after clicking configure role
       this.$router.push('/role-config')
     },
     handleWisdomBodyAdded(res) {
@@ -119,37 +99,31 @@ export default {
     handleDeviceManage() {
       this.$router.push('/device-management');
     },
-    handleSearch(keyword) {
+    handleSearch(regex) {
       this.isSearching = true;
-      this.isLoading = true;
-      // 检测MAC地址格式：包含4个冒号
-      const isMac = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/.test(keyword)
-      const searchType = isMac ? 'mac' : 'name';
-      Api.agent.searchAgent(keyword, searchType, ({ data }) => {
-        if (data?.data) {
-          this.devices = data.data.map(item => ({
-            ...item,
-            agentId: item.id
-          }));
-        }
-        this.isLoading = false;
-      }, (error) => {
-        console.error('搜索智能体失败:', error);
-        this.isLoading = false;
-        this.$message.error(this.$t('message.searchFailed'));
-      });
+      this.searchRegex = regex;
+      this.applySearchFilter();
     },
     handleSearchReset() {
       this.isSearching = false;
-      // 直接将原始设备列表赋值给显示设备列表，避免重新加载数据
+      this.searchRegex = null;
       this.devices = [...this.originalDevices];
     },
+    applySearchFilter() {
+      if (!this.isSearching || !this.searchRegex) {
+        this.devices = [...this.originalDevices];
+        return;
+      }
 
-    // 搜索更新智能体列表
-    handleSearchResult(filteredList) {
-      this.devices = filteredList; // 更新设备列表
+      this.devices = this.originalDevices.filter(device => {
+        return this.searchRegex.test(device.agentName);
+      });
     },
-    // 获取智能体列表
+    // Search and update agent list
+    handleSearchResult(filteredList) {
+      this.devices = filteredList; // Update device list
+    },
+    // Get agent list
     fetchAgentList() {
       this.isLoading = true;
       Api.agent.getAgentList(({ data }) => {
@@ -159,10 +133,10 @@ export default {
             agentId: item.id
           }));
 
-          // 动态设置骨架屏数量（可选）
+          // Dynamically set skeleton screen count (optional)
           this.skeletonCount = Math.min(
-            Math.max(this.originalDevices.length, 3), // 最少3个
-            10 // 最多10个
+            Math.max(this.originalDevices.length, 3), // Minimum 3
+            10 // Maximum 10
           );
 
           this.handleSearchReset();
@@ -173,9 +147,9 @@ export default {
         this.isLoading = false;
       });
     },
-    // 删除智能体
+    // Delete agent
     handleDeleteAgent(agentId) {
-      this.$confirm(this.$t('home.confirmDeleteAgent'), '提示', {
+      this.$confirm(this.$t('home.confirmDeleteAgent'), 'Prompt', {
         confirmButtonText: this.$t('button.ok'),
         cancelButtonText: this.$t('button.cancel'),
         type: 'warning'
@@ -186,7 +160,7 @@ export default {
               message: this.$t('home.deleteSuccess'),
               showClose: true
             });
-            this.fetchAgentList(); // 刷新列表
+            this.fetchAgentList(); // Refresh list
           } else {
             this.$message.error({
               message: res.data.msg || this.$t('home.deleteFailed'),
@@ -214,13 +188,13 @@ export default {
   flex-direction: column;
   background: linear-gradient(145deg, #e6eeff, #eff0ff);
   background-size: cover;
-  /* 确保背景图像覆盖整个元素 */
+  /* Ensure background image covers the entire element */
   background-position: center;
-  /* 从顶部中心对齐 */
+  /* Align from top center */
   -webkit-background-size: cover;
-  /* 兼容老版本WebKit浏览器 */
+  /* Compatible with older WebKit browsers */
   -o-background-size: cover;
-  /* 兼容老版本Opera浏览器 */
+  /* Compatible with older Opera browsers */
 }
 
 .add-device {
@@ -241,15 +215,15 @@ export default {
   background-image: url("@/assets/home/main-top-bg.png");
   overflow: hidden;
   background-size: cover;
-  /* 确保背景图像覆盖整个元素 */
+  /* Ensure background image covers the entire element */
   background-position: center;
-  /* 从顶部中心对齐 */
+  /* Align from top center */
   -webkit-background-size: cover;
-  /* 兼容老版本WebKit浏览器 */
+  /* Compatible with older WebKit browsers */
   -o-background-size: cover;
   box-sizing: border-box;
 
-  /* 兼容老版本Opera浏览器 */
+  /* Compatible with older Opera browsers */
   .hellow-text {
     margin-left: 75px;
     color: #3d4566;
@@ -276,7 +250,7 @@ export default {
   cursor: pointer;
 
   .left-add {
-    padding: 0 14px;
+    width: 105px;
     height: 34px;
     border-radius: 17px;
     background: #5778ff;
@@ -306,10 +280,10 @@ export default {
   padding: 30px 0;
 }
 
-/* 在 DeviceItem.vue 的样式中 */
+/* In DeviceItem.vue styles */
 .device-item {
   margin: 0 !important;
-  /* 避免冲突 */
+  /* Avoid conflicts */
   width: auto !important;
 }
 
@@ -320,10 +294,10 @@ export default {
   padding-top: 30px;
   color: #979db1;
   text-align: center;
-  /* 居中显示 */
+  /* Center display */
 }
 
-/* 骨架屏动画 */
+/* Skeleton screen animation */
 @keyframes shimmer {
   100% {
     transform: translateX(100%);

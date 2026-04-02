@@ -3,7 +3,7 @@
   "layout": "default",
   "style": {
     "navigationStyle": "custom",
-    "navigationBarTitleText": "聊天详情"
+    "navigationBarTitleText": "Chat Details"
   }
 }
 </route>
@@ -13,15 +13,14 @@ import type { ChatMessage, UserMessageContent } from '@/api/chat-history/types'
 import { onLoad, onUnload } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
 import { getAudioId, getChatHistory } from '@/api/chat-history/chat-history'
-import { t } from '@/i18n'
-import { debounce, getEnvBaseUrl } from '@/utils'
+import { getEnvBaseUrl } from '@/utils'
 import { toast } from '@/utils/toast'
 
 defineOptions({
   name: 'ChatDetail',
 })
 
-// 获取屏幕边界到安全区域距离
+// Get distance from screen boundary to safe area
 let safeAreaInsets: any
 let systemInfo: any
 
@@ -42,35 +41,35 @@ systemInfo = uni.getSystemInfoSync()
 safeAreaInsets = systemInfo.safeAreaInsets
 // #endif
 
-// 页面参数
+// Page parameters
 const sessionId = ref('')
 const agentId = ref('')
 
-// 智能体信息（简化）
+// Agent information (simplified)
 const currentAgent = computed(() => {
   return {
     id: agentId.value,
-    agentName: t('chatHistory.assistantName'),
+    agentName: 'AI Assistant',
   }
 })
 
-// 聊天数据
+// Chat data
 const messageList = ref<ChatMessage[]>([])
 const loading = ref(false)
 
-// 音频播放相关
+// Audio playback related
 const audioContext = ref<UniApp.InnerAudioContext | null>(null)
 const playingAudioId = ref<string | null>(null)
 
-// 返回上一页
+// Return to previous page
 function goBack() {
   uni.navigateBack()
 }
 
-// 加载聊天记录
+// Load chat records
 async function loadChatHistory() {
   if (!sessionId.value || !agentId.value) {
-    console.error('缺少必要参数')
+    console.error('Missing required parameters')
     return
   }
 
@@ -80,15 +79,15 @@ async function loadChatHistory() {
     messageList.value = response
   }
   catch (error) {
-    console.error('获取聊天记录失败:', error)
-    toast.error(t('chatHistory.loadFailed'))
+    console.error('Failed to get chat history:', error)
+    toast.error('Failed to get chat history')
   }
   finally {
     loading.value = false
   }
 }
 
-// 解析用户消息内容
+// Parse user message content
 function parseUserMessage(content: string): UserMessageContent | null {
   try {
     return JSON.parse(content)
@@ -98,71 +97,66 @@ function parseUserMessage(content: string): UserMessageContent | null {
   }
 }
 
-// 获取消息显示内容
+// Get message display content
 function getMessageContent(message: ChatMessage): string {
   if (message.chatType === 1) {
-    // 用户消息，需要解析JSON
+    // User message, need to parse JSON
     const parsed = parseUserMessage(message.content)
     return parsed ? parsed.content : message.content
   }
   else {
-    // AI消息，直接显示
+    // AI message, display directly
     return message.content
   }
 }
 
-// 获取说话人名称
+// Get speaker name
 function getSpeakerName(message: ChatMessage): string {
   if (message.chatType === 1) {
     const parsed = parseUserMessage(message.content)
-    return parsed ? parsed.speaker : t('chatHistory.userName')
+    return parsed ? parsed.speaker : 'User'
   }
   else {
-    return currentAgent.value?.agentName || t('chatHistory.aiAssistantName')
+    return currentAgent.value?.agentName || 'AI Assistant'
   }
 }
 
-// 格式化时间
+// Format time
 function formatTime(timeStr: string) {
   const date = new Date(timeStr)
   return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
 }
 
-// 播放音频
-const playAudio = debounce(async (audioId: string) => {
+// Play audio
+async function playAudio(audioId: string) {
   if (!audioId) {
-    toast.error(t('chatHistory.invalidAudioId'))
+    toast.error('Invalid audio ID')
     return
   }
 
   try {
-    // 如果正在播放其他音频，先停止
+    // If playing other audio, stop first
     if (audioContext.value) {
       audioContext.value.stop()
-    }
-    // 如果当前音频ID与请求ID相同暂停播放
-    if (playingAudioId.value === audioId) {
-      playingAudioId.value = null
-      return
+      audioContext.value.destroy()
+      audioContext.value = null
     }
 
-    // 获取音频下载ID
+    // Get audio download ID
     const downloadId = await getAudioId(audioId)
 
-    // 构造音频播放地址
+    // Construct audio playback URL
     const baseUrl = getEnvBaseUrl()
     const audioUrl = `${baseUrl}/agent/play/${downloadId}`
 
-    // 创建音频上下文
-    if (!audioContext.value) {
-      audioContext.value = uni.createInnerAudioContext()
-    }
+    // Create audio context
+    audioContext.value = uni.createInnerAudioContext()
     audioContext.value.src = audioUrl
 
-    // 设置播放状态
+    // Set playback status
     playingAudioId.value = audioId
 
-    // 监听播放完成
+    // Listen for playback completion
     audioContext.value.onEnded(() => {
       playingAudioId.value = null
       if (audioContext.value) {
@@ -171,10 +165,10 @@ const playAudio = debounce(async (audioId: string) => {
       }
     })
 
-    // 监听播放错误
+    // Listen for playback errors
     audioContext.value.onError((error) => {
-      console.error('音频播放失败:', error)
-      toast.error(t('chatHistory.audioPlayFailed'))
+      console.error('Audio playback failed:', error)
+      toast.error('Audio playback failed')
       playingAudioId.value = null
       if (audioContext.value) {
         audioContext.value.destroy()
@@ -182,15 +176,15 @@ const playAudio = debounce(async (audioId: string) => {
       }
     })
 
-    // 开始播放
+    // Start playback
     audioContext.value.play()
   }
   catch (error) {
-    console.error('播放音频失败:', error)
-    toast.error(t('chatHistory.playAudioFailed'))
+    console.error('Audio playback failed:', error)
+    toast.error('Audio playback failed')
     playingAudioId.value = null
   }
-}, 400)
+}
 
 onLoad((options) => {
   if (options?.sessionId && options?.agentId) {
@@ -199,12 +193,12 @@ onLoad((options) => {
     loadChatHistory()
   }
   else {
-    console.error('缺少必要参数')
-    toast.error(t('chatHistory.parameterError'))
+    console.error('Missing required parameters')
+    toast.error('Page parameter error')
   }
 })
 
-// 页面销毁时清理音频资源
+// Clean up audio resources when page is destroyed
 onUnload(() => {
   if (audioContext.value) {
     audioContext.value.stop()
@@ -216,17 +210,17 @@ onUnload(() => {
 
 <template>
   <view class="h-screen flex flex-col bg-[#f5f7fb]">
-    <!-- 状态栏背景 -->
+    <!-- Status bar background -->
     <view class="w-full bg-white" :style="{ height: `${safeAreaInsets?.top}px` }" />
 
-    <!-- 导航栏 -->
-    <wd-navbar :title="t('chatHistory.pageTitle')">
+    <!-- Navigation bar -->
+    <wd-navbar title="Chat Details">
       <template #left>
         <wd-icon name="arrow-left" size="18" @click="goBack" />
       </template>
     </wd-navbar>
 
-    <!-- 聊天消息列表 -->
+    <!-- Chat message list -->
     <scroll-view
       scroll-y
       :style="{ height: `calc(100vh - ${safeAreaInsets?.top || 0}px - 120rpx)` }"
@@ -236,7 +230,7 @@ onUnload(() => {
       <view v-if="loading" class="flex flex-col items-center justify-center gap-[20rpx] p-[100rpx_0]">
         <wd-loading />
         <text class="text-[28rpx] text-[#65686f]">
-          {{ t('chatHistory.loading') }}
+          Loading...
         </text>
       </view>
 
@@ -258,7 +252,7 @@ onUnload(() => {
               'items-start': message.chatType === 2,
             }"
           >
-            <!-- 消息气泡 -->
+            <!-- Message bubble -->
             <view
               class="shadow-message break-words rounded-[20rpx] p-[24rpx] leading-[1.4]"
               :class="{
@@ -266,9 +260,9 @@ onUnload(() => {
                 'bg-white text-[#232338] border border-[#eeeeee]': message.chatType === 2,
               }"
             >
-              <!-- 内容区域 - 使用flex布局让图标和文本对齐 -->
+              <!-- Content area - use flex layout to align icon and text -->
               <view class="flex items-center gap-[12rpx]">
-                <!-- 音频播放图标 -->
+                <!-- Audio playback icon -->
                 <view
                   v-if="message.audioId"
                   class="flex-shrink-0 cursor-pointer transition-transform duration-200 active:scale-90"
@@ -288,9 +282,9 @@ onUnload(() => {
                   />
                 </view>
 
-                <!-- 消息内容容器 -->
+                <!-- Message content container -->
                 <view class="min-w-0 flex-1">
-                  <!-- 消息内容 -->
+                  <!-- Message content -->
                   <text class="block text-[28rpx]">
                     {{ getMessageContent(message) }}
                   </text>
@@ -298,7 +292,7 @@ onUnload(() => {
               </view>
             </view>
 
-            <!-- 说话人信息 -->
+            <!-- Speaker information -->
             <text
               class="mx-[12rpx] text-[22rpx] text-[#9d9ea3]"
               :class="{
@@ -316,7 +310,7 @@ onUnload(() => {
 </template>
 
 <style>
-/* 自定义阴影和动画效果，无法用UnoCSS表示的样式 */
+/* Custom shadow and animation effects, styles that cannot be represented by UnoCSS */
 .shadow-message {
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
 }

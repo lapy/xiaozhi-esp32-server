@@ -139,12 +139,12 @@ export default {
       if (actionItem === undefined || rowItem.address === undefined) {
         return;
       }
-      // 弹开询问框
+      // Show confirmation dialog
       this.$confirm(actionItem.message, actionItem.title, {
-        confirmButtonText: actionItem.confirmText, // 确认按钮文本
-        cancelButtonText: this.$t('common.cancel') // 取消按钮文本
+        confirmButtonText: actionItem.confirmText, // Confirm button text
+        cancelButtonText: this.$t('common.cancel') // Cancel button text
       }).then(() => {
-        // 用户点击了确认按钮
+        // User clicked confirm button
         Api.admin.sendWsServerAction({
           targetWs: rowItem.address,
           action: actionItem.value
@@ -189,10 +189,11 @@ export default {
 }
 
 .main-wrapper {
-  // 顶部 63px 底部 35px 查询58px
-  height: calc(100vh - 63px - 35px - 58px);
-  margin: 0 22px;
+  margin: 5px 22px;
   border-radius: 15px;
+  min-height: calc(100vh - 24vh);
+  height: auto;
+  max-height: 80vh;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   position: relative;
   background: rgba(237, 242, 255, 0.5);
