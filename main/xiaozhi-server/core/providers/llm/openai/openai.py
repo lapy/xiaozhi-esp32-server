@@ -39,7 +39,7 @@ class LLMProvider(LLMProviderBase):
                 setattr(self, param, None)
 
         logger.debug(
-            f"意图识别参数初始化: {self.temperature}, {self.max_tokens}, {self.top_p}, {self.frequency_penalty}"
+            f"Initialized LLM parameters: {self.temperature}, {self.max_tokens}, {self.top_p}, {self.frequency_penalty}"
         )
 
         model_key_msg = check_model_key("LLM", self.api_key)
@@ -49,7 +49,7 @@ class LLMProvider(LLMProviderBase):
 
     @staticmethod
     def normalize_dialogue(dialogue):
-        """自动修复 dialogue 中缺失 content 的消息"""
+        """Ensure every dialogue message has a `content` field."""
         for msg in dialogue:
             if "role" in msg and "content" not in msg:
                 msg["content"] = ""
@@ -64,7 +64,7 @@ class LLMProvider(LLMProviderBase):
             "stream": True,
         }
 
-        # 添加可选参数,只有当参数不为None时才添加
+        # Add optional parameters only when they are present.
         optional_params = {
             "max_tokens": kwargs.get("max_tokens", self.max_tokens),
             "temperature": kwargs.get("temperature", self.temperature),
@@ -127,7 +127,7 @@ class LLMProvider(LLMProviderBase):
             elif isinstance(getattr(chunk, "usage", None), CompletionUsage):
                 usage_info = getattr(chunk, "usage", None)
                 logger.bind(tag=TAG).info(
-                    f"Token 消耗：输入 {getattr(usage_info, 'prompt_tokens', '未知')}，"
-                    f"输出 {getattr(usage_info, 'completion_tokens', '未知')}，"
-                    f"共计 {getattr(usage_info, 'total_tokens', '未知')}"
+                    f"Token usage: input {getattr(usage_info, 'prompt_tokens', 'unknown')}, "
+                    f"output {getattr(usage_info, 'completion_tokens', 'unknown')}, "
+                    f"total {getattr(usage_info, 'total_tokens', 'unknown')}"
                 )

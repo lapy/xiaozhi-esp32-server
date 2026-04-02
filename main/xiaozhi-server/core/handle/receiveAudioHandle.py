@@ -15,54 +15,56 @@ TAG = __name__
 
 
 async def handleAudioMessage(conn: "ConnectionHandler", audio):
-    # 当前片段是否有人说话
+    # Detect whether this chunk contains speech.
     have_voice = conn.vad.is_vad(conn, audio)
-    # 如果设备刚刚被唤醒，短暂忽略VAD检测
+    # Briefly ignore VAD immediately after wake-up.
     if hasattr(conn, "just_woken_up") and conn.just_woken_up:
         have_voice = False
-        # 设置一个短暂延迟后恢复VAD检测
+        # Resume VAD after a short delay.
         if not hasattr(conn, "vad_resume_task") or conn.vad_resume_task.done():
             conn.vad_resume_task = asyncio.create_task(resume_vad_detection(conn))
         return
-    # manual 模式下不打断正在播放的内容
+    # In manual mode, do not interrupt currently playing audio.
     if have_voice:
         if conn.client_is_speaking and conn.client_listen_mode != "manual":
             await handleAbortMessage(conn)
-    # 设备长时间空闲检测，用于say goodbye
+    # Track long idle periods to trigger a goodbye flow.
     await no_voice_close_connect(conn, have_voice)
-    # 接收音频
+    # Forward the audio to ASR.
     await conn.asr.receive_audio(conn, audio, have_voice)
 
 
 async def resume_vad_detection(conn: "ConnectionHandler"):
-    # 等待2秒后恢复VAD检测
+    # Re-enable VAD after 2 seconds.
     await asyncio.sleep(2)
     conn.just_woken_up = False
 
 
 async def startToChat(conn: "ConnectionHandler", text):
-    # 检查输入是否是JSON格式（包含说话人信息）
+    # Check whether the input is JSON with speaker metadata.
     speaker_name = None
     language_tag = None
     actual_text = text
 
     try:
-        # 尝试解析JSON格式的输入
+        # Try to parse JSON-wrapped text input.
         if text.strip().startswith("{") and text.strip().endswith("}"):
             data = json.loads(text)
             if "speaker" in data and "content" in data:
                 speaker_name = data["speaker"]
                 language_tag = data["language"]
                 actual_text = data["content"]
-                conn.logger.bind(tag=TAG).info(f"解析到说话人信息: {speaker_name}")
+                conn.logger.bind(tag=TAG).info(
+                    f"Parsed speaker information: {speaker_name}"
+                )
 
-                # 直接使用JSON格式的文本，不解析
+                # Keep the original JSON payload for downstream use.
                 actual_text = text
     except (json.JSONDecodeError, KeyError):
-        # 如果解析失败，继续使用原始文本
+        # Fall back to the original text if parsing fails.
         pass
 
-    # 保存说话人信息到连接对象
+    # Persist speaker information on the connection.
     if speaker_name:
         conn.current_speaker = speaker_name
     else:
@@ -72,25 +74,25 @@ async def startToChat(conn: "ConnectionHandler", text):
         await check_bind_device(conn)
         return
 
-    # 如果当日的输出字数大于限定的字数
+    # Enforce per-device output limits when configured.
     if conn.max_output_size > 0:
         if check_device_output_limit(
             conn.headers.get("device-id"), conn.max_output_size
         ):
             await max_out_size(conn)
             return
-    # manual 模式下不打断正在播放的内容
+    # In manual mode, do not interrupt currently playing audio.
     if conn.client_is_speaking and conn.client_listen_mode != "manual":
         await handleAbortMessage(conn)
 
-    # 首先进行意图分析，使用实际文本内容
+    # Run intent handling first using the effective text content.
     intent_handled = await handle_user_intent(conn, actual_text)
 
     if intent_handled:
-        # 如果意图已被处理，不再进行聊天
+        # Stop here if intent handling already produced the response.
         return
 
-    # 意图未被处理，继续常规聊天流程，使用实际文本内容
+    # Otherwise continue with the normal chat flow.
     await send_stt_message(conn, actual_text)
     conn.executor.submit(conn.chat, actual_text)
 
@@ -99,7 +101,7 @@ async def no_voice_close_connect(conn: "ConnectionHandler", have_voice):
     if have_voice:
         conn.last_activity_time = time.time() * 1000
         return
-    # 只有在已经初始化过时间戳的情况下才进行超时检查
+    # Only check idle timeout after the activity timestamp has been initialized.
     if conn.last_activity_time > 0.0:
         no_voice_time = time.time() * 1000 - conn.last_activity_time
         close_connection_no_voice_time = int(
@@ -113,19 +115,27 @@ async def no_voice_close_connect(conn: "ConnectionHandler", have_voice):
             conn.client_abort = False
             end_prompt = conn.config.get("end_prompt", {})
             if end_prompt and end_prompt.get("enable", True) is False:
-                conn.logger.bind(tag=TAG).info("结束对话，无需发送结束提示语")
+                conn.logger.bind(tag=TAG).info(
+                    "Ending conversation without sending a closing prompt"
+                )
                 await conn.close()
                 return
             prompt = end_prompt.get("prompt")
             if not prompt:
-                prompt = "请你以```时间过得真快```未来头，用富有感情、依依不舍的话来结束这场对话吧。！"
+                prompt = (
+                    "Please begin with ```Time really flew by``` and end this conversation "
+                    "with warm, heartfelt, and slightly reluctant farewell language."
+                )
             await startToChat(conn, prompt)
 
 
 async def max_out_size(conn: "ConnectionHandler"):
-    # 播放超出最大输出字数的提示
+    # Play the over-limit prompt when the daily output cap is exceeded.
     conn.client_abort = False
-    text = "不好意思，我现在有点事情要忙，明天这个时候我们再聊，约好了哦！明天不见不散，拜拜！"
+    text = (
+        "Sorry, I need to wrap up for now. Let's talk again around this time tomorrow. "
+        "It's a promise. See you tomorrow, bye for now."
+    )
     await send_stt_message(conn, text)
     file_path = "config/assets/max_output_size.wav"
     opus_packets = await audio_to_data(file_path)
@@ -135,36 +145,43 @@ async def max_out_size(conn: "ConnectionHandler"):
 
 async def check_bind_device(conn: "ConnectionHandler"):
     if conn.bind_code:
-        # 确保bind_code是6位数字
+        # Make sure the bind code is exactly 6 digits long.
         if len(conn.bind_code) != 6:
-            conn.logger.bind(tag=TAG).error(f"无效的绑定码格式: {conn.bind_code}")
-            text = "绑定码格式错误，请检查配置。"
+            conn.logger.bind(tag=TAG).error(
+                f"Invalid bind code format: {conn.bind_code}"
+            )
+            text = "The bind code format is invalid. Please check the configuration."
             await send_stt_message(conn, text)
             return
 
-        text = f"请登录控制面板，输入{conn.bind_code}，绑定设备。"
+        text = f"Please sign in to the control panel and enter {conn.bind_code} to bind the device."
         await send_stt_message(conn, text)
 
-        # 播放提示音
+        # Play the bind prompt audio.
         music_path = "config/assets/bind_code.wav"
         opus_packets = await audio_to_data(music_path)
         conn.tts.tts_audio_queue.put((SentenceType.FIRST, opus_packets, text))
 
-        # 逐个播放数字
-        for i in range(6):  # 确保只播放6位数字
+        # Speak the digits one by one.
+        for i in range(6):  # Always play exactly 6 digits.
             try:
                 digit = conn.bind_code[i]
                 num_path = f"config/assets/bind_code/{digit}.wav"
                 num_packets = await audio_to_data(num_path)
                 conn.tts.tts_audio_queue.put((SentenceType.MIDDLE, num_packets, None))
             except Exception as e:
-                conn.logger.bind(tag=TAG).error(f"播放数字音频失败: {e}")
+                conn.logger.bind(tag=TAG).error(
+                    f"Failed to play bind-code digit audio: {e}"
+                )
                 continue
         conn.tts.tts_audio_queue.put((SentenceType.LAST, [], None))
     else:
-        # 播放未绑定提示
+        # Play the unbound-device prompt.
         conn.client_abort = False
-        text = f"没有找到该设备的版本信息，请正确配置 OTA地址，然后重新编译固件。"
+        text = (
+            "No version information was found for this device. Please configure the "
+            "OTA address correctly and rebuild the firmware."
+        )
         await send_stt_message(conn, text)
         music_path = "config/assets/bind_not_found.wav"
         opus_packets = await audio_to_data(music_path)
