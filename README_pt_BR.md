@@ -17,7 +17,7 @@ Suporte ao protocolo MQTT+UDP, protocolo WebSocket, ponto de acesso MCP, reconhe
 </p>
 
 <p align="center">
-  <a href="./README.md"><img alt="简体中文版自述文件" src="https://img.shields.io/badge/简体中文-DFE0E5"></a>
+  <a href="./README.md"><img alt="README em chinês simplificado" src="https://img.shields.io/badge/Simplified_Chinese-DFE0E5"></a>
   <a href="./README_en.md"><img alt="README in English" src="https://img.shields.io/badge/English-DFE0E5"></a>
   <a href="./README_vi.md"><img alt="Tiếng Việt" src="https://img.shields.io/badge/Tiếng Việt-DFE0E5"></a>
   <a href="./README_de.md"><img alt="Deutsch" src="https://img.shields.io/badge/Deutsch-DFE0E5"></a>
@@ -36,9 +36,7 @@ Suporte ao protocolo MQTT+UDP, protocolo WebSocket, ponto de acesso MCP, reconhe
 <p align="center">
 Liderado pela Equipe do Professor Siyuan Liu (Universidade de Tecnologia do Sul da China)
 </br>
-刘思源教授团队主导研发（华南理工大学）
-</br>
-<img src="./docs/images/hnlg.jpg" alt="Universidade de Tecnologia do Sul da China (华南理工大学)" width="50%">
+<img src="./docs/images/hnlg.jpg" alt="Universidade de Tecnologia do Sul da China" width="50%">
 </p>
 
 ---
@@ -232,7 +230,7 @@ Este projeto fornece as seguintes ferramentas de teste para ajudá-lo a verifica
 ---
 ## Lista de Funcionalidades ✨
 ### Implementado ✅
-![请参考-全模块安装架构图](docs/images/deploy2.png)
+![Arquitetura de implantação com todos os módulos](docs/images/deploy2.png)
 | Módulo de Funcionalidade | Descrição |
 |:---:|:---|
 | Arquitetura Principal | Baseado em [gateway MQTT+UDP](https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/docs/mqtt-gateway-integration.md), servidores WebSocket e HTTP, fornece sistema completo de gerenciamento de console e autenticação |
@@ -359,10 +357,10 @@ Na verdade, qualquer VLLM que suporte chamadas via interface OpenAI pode ser int
 |:---:|:---:|:---|
 | <img src="./docs/images/logo_bailing.png" width="160"> | [Robô de Diálogo por Voz Bailing](https://github.com/wwbin2017/bailing) | Este projeto foi inspirado pelo [Robô de Diálogo por Voz Bailing](https://github.com/wwbin2017/bailing) e implementado com base nele |
 | <img src="./docs/images/logo_tenclass.png" width="160"> | [Tenclass](https://www.tenclass.com/) | Agradecimentos à [Tenclass](https://www.tenclass.com/) por formular protocolos de comunicação padrão, soluções de compatibilidade multidispositivo e demonstrações práticas de cenários de alta concorrência para o ecossistema Xiaozhi; fornecendo suporte completo de documentação técnica para este projeto |
-| <img src="./docs/images/logo_xuanfeng.png" width="160"> | [Xuanfeng Technology (玄凤科技)](https://github.com/Eric0308) | Agradecimentos à [Xuanfeng Technology](https://github.com/Eric0308) por contribuir com o framework de chamada de função, protocolo de comunicação MCP e implementação do mecanismo de chamada baseado em plugins. Através de um sistema padronizado de agendamento de instruções e capacidades de expansão dinâmica, melhora significativamente a eficiência de interação e extensibilidade funcional dos dispositivos de frontend (IoT) |
+| <img src="./docs/images/logo_xuanfeng.png" width="160"> | [Xuanfeng Technology](https://github.com/Eric0308) | Agradecimentos à [Xuanfeng Technology](https://github.com/Eric0308) por contribuir com o framework de chamada de função, o protocolo de comunicação MCP e a implementação do mecanismo de chamadas baseado em plugins. Com um sistema padronizado de agendamento de instruções e capacidade de expansão dinâmica, isso melhora significativamente a eficiência de interação e a extensibilidade funcional dos dispositivos de frontend (IoT). |
 | <img src="./docs/images/logo_junsen.png" width="160"> | [huangjunsen](https://github.com/huangjunsen0406) | Agradecimentos a [huangjunsen](https://github.com/huangjunsen0406) por contribuir com o módulo `Console de Controle Inteligente Mobile`, que permite controle eficiente e interação em tempo real em dispositivos móveis, melhorando significativamente a conveniência operacional e a eficiência de gerenciamento do sistema em cenários móveis. |
-| <img src="./docs/images/logo_huiyuan.png" width="160"> | [Huiyuan Design (汇远设计)](http://ui.kwd988.net/) | Agradecimentos à [Huiyuan Design](http://ui.kwd988.net/) por fornecer soluções visuais profissionais para este projeto, utilizando sua experiência prática de design atendendo mais de mil empresas para potencializar a experiência do usuário deste produto |
-| <img src="./docs/images/logo_qinren.png" width="160"> | [Xi'an Qinren Information Technology (西安勤人信息科技)](https://www.029app.com/) | Agradecimentos à [Xi'an Qinren Information Technology](https://www.029app.com/) por aprofundar o sistema visual deste projeto, garantindo consistência e extensibilidade do estilo de design geral em aplicações de múltiplos cenários |
+| <img src="./docs/images/logo_huiyuan.png" width="160"> | [Huiyuan Design](http://ui.kwd988.net/) | Agradecimentos à [Huiyuan Design](http://ui.kwd988.net/) por fornecer soluções visuais profissionais para este projeto, usando sua experiência prática com mais de mil empresas para fortalecer a experiência do usuário deste produto. |
+| <img src="./docs/images/logo_qinren.png" width="160"> | [Xi'an Qinren Information Technology](https://www.029app.com/) | Agradecimentos à [Xi'an Qinren Information Technology](https://www.029app.com/) por aprofundar o sistema visual deste projeto, garantindo consistência e extensibilidade do estilo geral em aplicações com múltiplos cenários. |
 | <img src="./docs/images/logo_contributors.png" width="160"> | [Contribuidores de Código](https://github.com/xinnan-tech/xiaozhi-esp32-server/graphs/contributors) | Agradecimentos a [todos os contribuidores de código](https://github.com/xinnan-tech/xiaozhi-esp32-server/graphs/contributors), seus esforços tornaram o projeto mais robusto e poderoso. |
 
 
