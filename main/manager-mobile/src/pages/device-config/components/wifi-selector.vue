@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useToast } from 'wot-design-uni'
-import { t } from '@/i18n'
 
-// 类型定义
+// Type definitions
 interface WiFiNetwork {
   ssid: string
   rssi: number
@@ -13,7 +12,7 @@ interface WiFiNetwork {
 
 // Props
 interface Props {
-  autoConnect?: boolean // 是否自动检测ESP32连接
+  autoConnect?: boolean // Whether to automatically detect ESP32 connection
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -26,10 +25,10 @@ const emit = defineEmits<{
   'connection-status': [connected: boolean]
 }>()
 
-// Toast 实例
+// Toast instance
 const toast = useToast()
 
-// 响应式数据
+// Reactive data
 const isConnectedToESP32 = ref(false)
 const checkingConnection = ref(false)
 const scanning = ref(false)
@@ -38,14 +37,14 @@ const selectedNetwork = ref<WiFiNetwork | null>(null)
 const password = ref('')
 const selectorExpanded = ref(false)
 
-// 计算属性
+// Computed properties
 const networkDisplayText = computed(() => {
   if (!selectedNetwork.value)
-    return t('deviceConfig.selectWifiNetwork')
+    return 'Please select WiFi network'
   return selectedNetwork.value.ssid
 })
 
-// 检查xiaozhi连接状态
+// Check xiaozhi connection status
 async function checkESP32Connection() {
   checkingConnection.value = true
   try {
@@ -56,19 +55,19 @@ async function checkESP32Connection() {
     })
     isConnectedToESP32.value = response.statusCode === 200
     emit('connection-status', isConnectedToESP32.value)
-    console.log(`${t('deviceConfig.xiaozhi')}连接状态:`, isConnectedToESP32.value)
+    console.log('xiaozhi connection status:', isConnectedToESP32.value)
   }
   catch (error) {
     isConnectedToESP32.value = false
     emit('connection-status', false)
-    console.log('xiaozhi连接检查失败:', error)
+    console.log('xiaozhi connection check failed:', error)
   }
   finally {
     checkingConnection.value = false
   }
 }
 
-// 扫描WiFi网络
+// Scan WiFi networks
 async function scanWifi() {
   if (!isConnectedToESP32.value) {
     toast.error(t('deviceConfig.connectXiaozhiHotspot'))
@@ -76,7 +75,7 @@ async function scanWifi() {
   }
 
   scanning.value = true
-  console.log('开始扫描WiFi网络')
+  console.log('Start scanning WiFi networks')
 
   try {
     const response = await uni.request({
@@ -91,7 +90,7 @@ async function scanWifi() {
       const data = response.data as any
       if (data.success && Array.isArray(data.networks)) {
         wifiNetworks.value = data.networks
-        console.log(`${t('deviceConfig.scanSuccess')}，发现 ${data.networks.length} ${t('deviceConfig.networks')}`)
+        console.log(`Scan successful, found ${data.networks.length} networks`)
       }
       else if (data.aps && Array.isArray(data.aps)) {
         // 兼容 { data: { support_5g, aps } } 格式
@@ -104,7 +103,7 @@ async function scanWifi() {
         console.log(`${t('deviceConfig.scanSuccess')}，发现 ${data.aps.length} ${t('deviceConfig.networks')}`)
       }
       else if (Array.isArray(response.data)) {
-        // 兼容旧格式
+        // Compatible with old format
         wifiNetworks.value = response.data.map((item: any) => ({
           ssid: item.ssid,
           rssi: item.rssi,
@@ -113,7 +112,7 @@ async function scanWifi() {
         }))
       }
       else {
-        throw new TypeError('扫描接口返回格式异常')
+        throw new TypeError('Scan interface returned abnormal format')
       }
     }
     else {
@@ -129,9 +128,9 @@ async function scanWifi() {
   }
 }
 
-// 显示网络选择器
+// Show network selector
 async function showNetworkSelector() {
-  // 实时检测xiaozhi连接状态
+  // Real-time detection of xiaozhi connection status
   await checkESP32Connection()
 
   if (!isConnectedToESP32.value) {
@@ -141,29 +140,29 @@ async function showNetworkSelector() {
 
   selectorExpanded.value = true
 
-  // 如果还没有网络列表，自动扫描
+  // If no network list yet, auto scan
   if (wifiNetworks.value.length === 0) {
     scanWifi()
   }
 }
 
-// 选择网络
+// Select network
 function selectNetwork(network: WiFiNetwork) {
   selectedNetwork.value = network
   password.value = ''
   selectorExpanded.value = false
-  console.log('选择网络:', network.ssid)
+  console.log('Selected network:', network.ssid)
 
-  // 通知父组件
+  // Notify parent component
   emit('network-selected', network, '')
 }
 
-// 密码变化时通知父组件
+// Notify parent component when password changes
 function onPasswordChange() {
   emit('network-selected', selectedNetwork.value, password.value)
 }
 
-// 获取当前选择的网络和密码
+// Get currently selected network and password
 function getSelectedNetworkInfo() {
   return {
     network: selectedNetwork.value,
@@ -171,7 +170,7 @@ function getSelectedNetworkInfo() {
   }
 }
 
-// 重置选择
+// Reset selection
 function reset() {
   selectedNetwork.value = null
   password.value = ''
@@ -180,18 +179,18 @@ function reset() {
   emit('network-selected', null, '')
 }
 
-// 获取信号强度描述
+// Get signal strength description
 function getSignalStrength(rssi: number): string {
   if (rssi >= -50)
-    return t('deviceConfig.signalStrong')
+    return 'Strong signal'
   if (rssi >= -60)
-    return t('deviceConfig.signalGood')
+    return 'Good signal'
   if (rssi >= -70)
-    return t('deviceConfig.signalFair')
-  return t('deviceConfig.signalWeak')
+    return 'Fair signal'
+  return 'Weak signal'
 }
 
-// 获取信号强度颜色
+// Get signal strength color
 function getSignalColor(rssi: number): string {
   if (rssi >= -50)
     return '#52c41a'
@@ -202,7 +201,7 @@ function getSignalColor(rssi: number): string {
   return '#ff4d4f'
 }
 
-// 暴露方法给父组件
+// Expose methods to parent component
 defineExpose({
   checkESP32Connection,
   scanWifi,
@@ -210,7 +209,7 @@ defineExpose({
   reset,
 })
 
-// 生命周期
+// Lifecycle
 onMounted(() => {
   if (props.autoConnect) {
     checkESP32Connection()
@@ -220,7 +219,7 @@ onMounted(() => {
 
 <template>
   <view class="wifi-selector">
-    <!-- Xiaozhi连接状态 -->
+    <!-- Xiaozhi connection status -->
     <view v-if="props.autoConnect" class="connection-status">
       <view v-if="!isConnectedToESP32" class="status-warning">
         <view class="status-content">
@@ -266,7 +265,20 @@ onMounted(() => {
       </view>
     </view>
 
-    <!-- 展开的网络列表 -->
+    <!-- WiFi network selector -->
+    <view class="network-selector">
+      <view class="selector-item" @click="showNetworkSelector">
+        <text class="selector-label">
+          WiFi Network
+        </text>
+        <text class="selector-value">
+          {{ networkDisplayText }}
+        </text>
+        <wd-icon name="arrow-right" custom-class="arrow-icon" />
+      </view>
+    </view>
+
+    <!-- Expanded network list -->
     <view v-if="selectorExpanded" class="network-list-overlay">
       <view class="network-list-container">
         <view class="list-header">
@@ -294,10 +306,10 @@ onMounted(() => {
         <view class="network-list">
           <view v-if="wifiNetworks.length === 0 && !scanning" class="empty-state">
             <text class="empty-text">
-              {{ t('deviceConfig.noWifiNetworks') }}
+              No WiFi networks available
             </text>
             <text class="empty-tip">
-              {{ t('deviceConfig.clickRefreshScan') }}
+              Please click refresh scan
             </text>
           </view>
 
@@ -314,10 +326,10 @@ onMounted(() => {
                 </view>
                 <view class="wifi-details">
                   <text class="wifi-signal">
-                    {{ t('deviceConfig.signal') }}: {{ network.rssi }}dBm
+                    Signal: {{ network.rssi }}dBm
                   </text>
                   <text class="wifi-channel">
-                    {{ t('deviceConfig.channel') }}: {{ network.channel }}
+                    Channel: {{ network.channel }}
                   </text>
                 </view>
               </view>
@@ -332,7 +344,7 @@ onMounted(() => {
       </view>
     </view>
 
-    <!-- 密码输入 -->
+    <!-- Password input -->
     <view v-if="selectedNetwork && selectedNetwork.authmode > 0" class="password-section">
       <view class="password-item">
         <text class="password-label">

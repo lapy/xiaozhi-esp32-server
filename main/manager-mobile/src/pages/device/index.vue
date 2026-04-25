@@ -2,29 +2,23 @@
 import type { Device, FirmwareType } from '@/api/device'
 import { computed, onMounted, ref } from 'vue'
 import { useMessage } from 'wot-design-uni'
-import { bindDevice, bindDeviceManual, getBindDevices, getFirmwareTypes, unbindDevice, updateDeviceAutoUpdate } from '@/api/device'
-import { t } from '@/i18n'
+import { bindDevice, getBindDevices, getFirmwareTypes, unbindDevice, updateDeviceAutoUpdate } from '@/api/device'
 import { toast } from '@/utils/toast'
 
 defineOptions({
   name: 'DeviceManage',
 })
 
-const props = withDefaults(defineProps<Props>(), {
-  agentId: 'default',
-})
-
-const actions = [
-  { key: 'code', name: t('manualAddDeviceDialog.bindWithCode') },
-  { key: 'manual', name: t('manualAddDeviceDialog.title') },
-]
-
-// 接收props
+// Receive props
 interface Props {
   agentId?: string
 }
 
-// 获取屏幕边界到安全区域距离
+const props = withDefaults(defineProps<Props>(), {
+  agentId: 'default'
+})
+
+// Get screen boundary to safe area distance
 let safeAreaInsets: any
 let systemInfo: any
 
@@ -45,63 +39,27 @@ systemInfo = uni.getSystemInfoSync()
 safeAreaInsets = systemInfo.safeAreaInsets
 // #endif
 
-// 设备数据
+// Device data
 const deviceList = ref<Device[]>([])
 const firmwareTypes = ref<FirmwareType[]>([])
 const loading = ref(false)
-const isBindDevice = ref(false)
 
-// 手动绑定弹窗
-const isManualBindDialog = ref(false)
-const manualBindForm = ref({
-  board: '',
-  appVersion: '',
-  macAddress: '',
-})
-
-// 表单校验错误提示
-const formErrors = ref({
-  board: '',
-  appVersion: '',
-  macAddress: '',
-})
-
-// MAC地址正则校验
-const macRegex = /^(?:[0-9A-F]{2}[:-]){5}[0-9A-F]{2}$/i
-
-function selectBindMode(row) {
-  if (row.item.key === 'code') {
-    openBindDialog()
-  }
-  else if (row.item.key === 'manual') {
-    // 打开弹窗前重置表单和错误提示
-    manualBindForm.value = {
-      board: '',
-      appVersion: '',
-      macAddress: '',
-    }
-    formErrors.value = {
-      board: '',
-      appVersion: '',
-      macAddress: '',
-    }
-    isManualBindDialog.value = true
-  }
-}
-
-// 消息组件
+// Message component
 const message = useMessage()
 
-// 使用传入的智能体ID
+// Use passed agent ID
 const currentAgentId = computed(() => {
   return props.agentId
 })
 
-// 获取设备列表
+// Get device list
 async function loadDeviceList() {
   try {
-    // 检查是否有当前选中的智能体
+    console.log('Get device list')
+
+    // Check if there is currently selected agent
     if (!currentAgentId.value) {
+      console.warn('No selected agent')
       deviceList.value = []
       return
     }
@@ -111,7 +69,7 @@ async function loadDeviceList() {
     deviceList.value = response || []
   }
   catch (error) {
-    console.error('获取设备列表失败:', error)
+    console.error('Failed to get device list:', error)
     deviceList.value = []
   }
   finally {
@@ -119,107 +77,107 @@ async function loadDeviceList() {
   }
 }
 
-// 暴露给父组件的刷新方法
+// Refresh method exposed to parent component
 async function refresh() {
   await loadDeviceList()
 }
 
-// 获取设备类型名称
+// Get device type name
 function getDeviceTypeName(boardKey: string): string {
   const firmwareType = firmwareTypes.value.find(type => type.key === boardKey)
   return firmwareType?.name || boardKey
 }
 
-// 格式化时间
+// Format time
 function formatTime(timeStr: string) {
   if (!timeStr)
-    return t('device.neverConnected')
+    return 'Never connected'
   const date = new Date(timeStr)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
 
   if (diff < 60000)
-    return t('device.justNow')
+    return 'Just now'
   if (diff < 3600000)
-    return t('device.minutesAgo', { minutes: Math.floor(diff / 60000) })
+    return `${Math.floor(diff / 60000)} minutes ago`
   if (diff < 86400000)
-    return t('device.hoursAgo', { hours: Math.floor(diff / 3600000) })
+    return `${Math.floor(diff / 3600000)} hours ago`
   if (diff < 604800000)
-    return t('device.daysAgo', { days: Math.floor(diff / 86400000) })
+    return `${Math.floor(diff / 86400000)} days ago`
 
   return date.toLocaleDateString()
 }
 
-// 切换OTA自动更新
+// Toggle OTA auto update
 async function toggleAutoUpdate(device: Device) {
   try {
     const newStatus = device.autoUpdate === 1 ? 0 : 1
     await updateDeviceAutoUpdate(device.id, newStatus)
     device.autoUpdate = newStatus
-    toast.success(newStatus === 1 ? t('device.otaAutoUpdateEnabled') : t('device.otaAutoUpdateDisabled'))
+    toast.success(newStatus === 1 ? 'OTA auto upgrade enabled' : 'OTA auto upgrade disabled')
   }
   catch (error: any) {
-    console.error('更新设备OTA状态失败:', error)
-    toast.error(t('device.operationFailed'))
+    console.error('Failed to update device OTA status:', error)
+    toast.error('Operation failed, please try again')
   }
 }
 
-// 解绑设备
+// Unbind device
 async function handleUnbindDevice(device: Device) {
   try {
     await unbindDevice(device.id)
     await loadDeviceList()
-    toast.success(t('device.deviceUnbound'))
+    toast.success('Device unbound')
   }
   catch (error: any) {
-    console.error('解绑设备失败:', error)
-    toast.error(t('device.unbindFailed'))
+    console.error('Failed to unbind device:', error)
+    toast.error('Unbind failed, please try again')
   }
 }
 
-// 确认解绑设备
+// Confirm unbind device
 function confirmUnbindDevice(device: Device) {
   message.confirm({
-    title: t('device.unbindDevice'),
-    msg: t('device.confirmUnbindDevice', { macAddress: device.macAddress }),
-    confirmButtonText: t('device.confirmUnbind'),
-    cancelButtonText: t('device.cancel'),
+    title: 'Unbind Device',
+    msg: `Are you sure you want to unbind device "${device.macAddress}"?`,
+    confirmButtonText: 'Confirm Unbind',
+    cancelButtonText: 'Cancel',
   }).then(() => {
     handleUnbindDevice(device)
   }).catch(() => {
-    // 用户取消
+    // User cancelled
   })
 }
 
-// 绑定新设备
+// Bind new device
 async function handleBindDevice(code: string) {
   try {
     if (!currentAgentId.value) {
-      toast.error(t('device.pleaseSelectAgent'))
+      toast.error('Please select an agent first')
       return
     }
 
     await bindDevice(currentAgentId.value, code.trim())
     await loadDeviceList()
-    toast.success(t('device.deviceBindSuccess'))
+    toast.success('Device bound successfully!')
   }
   catch (error: any) {
-    console.error('绑定设备失败:', error)
-    const errorMessage = error?.message || t('device.bindFailed')
+    console.error('Failed to bind device:', error)
+    const errorMessage = error?.message || 'Binding failed, please check if the verification code is correct'
     toast.error(errorMessage)
   }
 }
 
-// 打开绑定设备对话框
+// Open bind device dialog
 function openBindDialog() {
   message
     .prompt({
-      title: t('device.bindDevice'),
-      inputPlaceholder: t('device.enterDeviceCode'),
+      title: 'Bind Device',
+      inputPlaceholder: 'Please enter device verification code',
       inputValue: '',
       inputPattern: /^\d{6}$/,
-      confirmButtonText: t('device.bindNow'),
-      cancelButtonText: t('device.cancel'),
+      confirmButtonText: 'Bind Now',
+      cancelButtonText: 'Cancel',
     })
     .then(async (result: any) => {
       if (result.value && String(result.value).trim()) {
@@ -227,151 +185,29 @@ function openBindDialog() {
       }
     })
     .catch(() => {
-      // 用户取消操作
+      // User cancelled operation
     })
 }
 
-// 手动绑定设备
-async function handleManualBind() {
-  try {
-    // 先校验整个表单
-    const isValid = validateForm()
-    if (!isValid) {
-      return
-    }
-
-    if (!currentAgentId.value) {
-      toast.error(t('device.pleaseSelectAgent'))
-      return
-    }
-
-    await bindDeviceManual({
-      agentId: currentAgentId.value,
-      board: manualBindForm.value.board,
-      appVersion: manualBindForm.value.appVersion,
-      macAddress: manualBindForm.value.macAddress,
-    })
-    await loadDeviceList()
-    toast.success(t('manualAddDeviceDialog.addSuccess'))
-    isManualBindDialog.value = false
-    // 重置表单和错误提示
-    manualBindForm.value = {
-      board: '',
-      appVersion: '',
-      macAddress: '',
-    }
-    formErrors.value = {
-      board: '',
-      appVersion: '',
-      macAddress: '',
-    }
-  }
-  catch (error: any) {
-    const errorMessage = error?.message || t('manualAddDeviceDialog.addFailed')
-    toast.error(errorMessage)
-  }
-}
-
-// 校验单个字段
-function validateField(field: string) {
-  switch (field) {
-    case 'board':
-      if (!manualBindForm.value.board) {
-        formErrors.value.board = t('manualAddDeviceDialog.deviceTypePlaceholder')
-      }
-      else {
-        formErrors.value.board = ''
-      }
-      break
-    case 'appVersion':
-      if (!manualBindForm.value.appVersion) {
-        formErrors.value.appVersion = t('manualAddDeviceDialog.firmwareVersionPlaceholder')
-      }
-      else {
-        formErrors.value.appVersion = ''
-      }
-      break
-    case 'macAddress':
-      if (!manualBindForm.value.macAddress) {
-        formErrors.value.macAddress = t('manualAddDeviceDialog.macAddressPlaceholder')
-      }
-      else if (!macRegex.test(manualBindForm.value.macAddress)) {
-        formErrors.value.macAddress = t('manualAddDeviceDialog.invalidMacAddress')
-      }
-      else {
-        formErrors.value.macAddress = ''
-      }
-      break
-  }
-}
-
-// 清除字段错误提示
-function clearFieldError(field: string) {
-  formErrors.value[field] = ''
-}
-
-// 处理选择器变化
-function handlePickerChange() {
-  clearFieldError('board')
-}
-
-// 校验整个表单
-function validateForm(): boolean {
-  let isValid = true
-
-  // 校验设备类型
-  if (!manualBindForm.value.board) {
-    formErrors.value.board = t('manualAddDeviceDialog.deviceTypePlaceholder')
-    isValid = false
-  }
-  else {
-    formErrors.value.board = ''
-  }
-
-  // 校验固件版本
-  if (!manualBindForm.value.appVersion) {
-    formErrors.value.appVersion = t('manualAddDeviceDialog.firmwareVersionPlaceholder')
-    isValid = false
-  }
-  else {
-    formErrors.value.appVersion = ''
-  }
-
-  // 校验MAC地址
-  if (!manualBindForm.value.macAddress) {
-    formErrors.value.macAddress = t('manualAddDeviceDialog.macAddressPlaceholder')
-    isValid = false
-  }
-  else if (!macRegex.test(manualBindForm.value.macAddress)) {
-    formErrors.value.macAddress = t('manualAddDeviceDialog.invalidMacAddress')
-    isValid = false
-  }
-  else {
-    formErrors.value.macAddress = ''
-  }
-
-  return isValid
-}
-
-// 获取设备类型列表
+// Get device type list
 async function loadFirmwareTypes() {
   try {
     const response = await getFirmwareTypes()
     firmwareTypes.value = response
   }
   catch (error) {
-    console.error('获取设备类型失败:', error)
+    console.error('Failed to get device types:', error)
   }
 }
 
 onMounted(async () => {
-  // 智能体已简化为默认
+  // Agent simplified to default
 
   loadFirmwareTypes()
   loadDeviceList()
 })
 
-// 暴露方法给父组件
+// Expose methods to parent component
 defineExpose({
   refresh,
 })
@@ -379,17 +215,17 @@ defineExpose({
 
 <template>
   <view class="device-container" style="background: #f5f7fb; min-height: 100%;">
-    <!-- 加载状态 -->
+    <!-- Loading state -->
     <view v-if="loading && deviceList.length === 0" class="loading-container">
       <wd-loading color="#336cff" />
       <text class="loading-text">
-        {{ t('device.loading') }}
+        Loading...
       </text>
     </view>
 
-    <!-- 设备列表 -->
+    <!-- Device list -->
     <view v-else-if="deviceList.length > 0" class="device-list">
-      <!-- 设备卡片列表 -->
+      <!-- Device card list -->
       <view class="box-border flex flex-col gap-[24rpx] p-[20rpx]">
         <view v-for="device in deviceList" :key="device.id">
           <wd-swipe-action>
@@ -404,19 +240,19 @@ defineExpose({
 
                   <view class="mb-[20rpx]">
                     <text class="mb-[12rpx] block text-[28rpx] text-[#65686f] leading-[1.4]">
-                      {{ t('device.macAddress') }}：{{ device.macAddress }}
+                      MAC Address: {{ device.macAddress }}
                     </text>
                     <text class="mb-[12rpx] block text-[28rpx] text-[#65686f] leading-[1.4]">
-                      {{ t('device.firmwareVersion') }}：{{ device.appVersion }}
+                      Firmware Version: {{ device.appVersion }}
                     </text>
                     <text class="block text-[28rpx] text-[#65686f] leading-[1.4]">
-                      {{ t('device.lastConnection') }}：{{ formatTime(device.lastConnectedAt) }}
+                      Last Conversation: {{ formatTime(device.lastConnectedAt) }}
                     </text>
                   </view>
 
                   <view class="flex items-center justify-between border-[1rpx] border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[16rpx_20rpx]">
                     <text class="text-[28rpx] text-[#232338] font-medium">
-                      {{ t('device.otaUpdate') }}
+                      OTA Update
                     </text>
                     <wd-switch
                       :model-value="device.autoUpdate === 1"
@@ -435,7 +271,7 @@ defineExpose({
                   @click.stop="confirmUnbindDevice(device)"
                 >
                   <wd-icon name="delete" />
-                  <text>{{ t('device.unbind') }}</text>
+                  <text>Unbind</text>
                 </view>
               </view>
             </template>
@@ -444,102 +280,24 @@ defineExpose({
       </view>
     </view>
 
-    <!-- 空状态 -->
+    <!-- Empty state -->
     <view v-else-if="!loading" class="empty-container">
       <view class="flex flex-col items-center justify-center p-[100rpx_40rpx] text-center">
         <wd-icon name="phone" custom-class="text-[120rpx] text-[#d9d9d9] mb-[32rpx]" />
         <text class="mb-[16rpx] text-[32rpx] text-[#666666] font-medium">
-          {{ t('device.noDevice') }}
+          No devices yet
         </text>
         <text class="text-[26rpx] text-[#999999] leading-[1.5]">
-          {{ t('device.clickToBindFirstDevice') }}
+          Click the + button in the bottom right to bind your first device
         </text>
       </view>
     </view>
 
-    <!-- FAB 绑定设备按钮 -->
-    <wd-fab type="primary" size="small" icon="add" :draggable="true" :expandable="false" @click="isBindDevice = true" />
+    <!-- FAB bind device button -->
+    <wd-fab type="primary" size="small" icon="add" :draggable="true" :expandable="false" @click="openBindDialog" />
 
-    <!-- MessageBox 组件 -->
+    <!-- MessageBox component -->
     <wd-message-box />
-    <wd-action-sheet v-model="isBindDevice" :actions="actions" @close="isBindDevice = false" @select="selectBindMode" />
-
-    <!-- 手动绑定设备弹窗 -->
-    <wd-popup v-model="isManualBindDialog" position="bottom" :close-on-click-modal="false" custom-style="border-radius: 24rpx 24rpx 0 0;">
-      <view class="manual-bind-dialog">
-        <view class="dialog-header">
-          <text class="dialog-title">
-            {{ t('manualAddDeviceDialog.title') }}
-          </text>
-          <wd-icon name="close" size="20" @click="isManualBindDialog = false" />
-        </view>
-
-        <view class="dialog-content">
-          <view class="form-item">
-            <text class="form-label">
-              {{ t('manualAddDeviceDialog.deviceType') }}
-              <text class="required">
-                *
-              </text>
-            </text>
-            <wd-picker
-              v-model="manualBindForm.board"
-              class="custom-wd-picker"
-              :columns="firmwareTypes.map(item => ({ value: item.key, label: item.name }))"
-              :placeholder="t('manualAddDeviceDialog.deviceTypePlaceholder')"
-              :cancel-button-text="t('common.cancel')"
-              :confirm-button-text="t('common.confirm')"
-              @confirm="handlePickerChange"
-            />
-            <text v-if="formErrors.board" class="error-text">
-              {{ formErrors.board }}
-            </text>
-          </view>
-
-          <view class="form-item">
-            <text class="form-label">
-              {{ t('manualAddDeviceDialog.firmwareVersion') }}
-              <text class="required">
-                *
-              </text>
-            </text>
-            <wd-input
-              v-model="manualBindForm.appVersion"
-              :placeholder="t('manualAddDeviceDialog.firmwareVersionPlaceholder')"
-              @input="clearFieldError('appVersion')"
-              @blur="validateField('appVersion')"
-            />
-            <text v-if="formErrors.appVersion" class="error-text">
-              {{ formErrors.appVersion }}
-            </text>
-          </view>
-
-          <view class="form-item">
-            <text class="form-label">
-              {{ t('manualAddDeviceDialog.macAddress') }}
-              <text class="required">
-                *
-              </text>
-            </text>
-            <wd-input
-              v-model="manualBindForm.macAddress"
-              :placeholder="t('manualAddDeviceDialog.macAddressPlaceholder')"
-              @input="validateField('macAddress')"
-              @blur="validateField('macAddress')"
-            />
-            <text v-if="formErrors.macAddress" class="error-text">
-              {{ formErrors.macAddress }}
-            </text>
-          </view>
-        </view>
-
-        <view class="dialog-footer">
-          <wd-button block type="primary" @click="handleManualBind">
-            {{ t('manualAddDeviceDialog.confirm') }}
-          </wd-button>
-        </view>
-      </view>
-    </wd-popup>
   </view>
 </template>
 
@@ -568,64 +326,8 @@ defineExpose({
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
   border: 1rpx solid #eeeeee;
 }
-::v-deep .wd-action-sheet__popup,
-::v-deep .wd-popup {
-  z-index: 100 !important;
-}
-.custom-wd-picker ::v-deep .wd-picker__cell {
-  padding-left: 0 !important;
-}
 
 :deep(.wd-icon) {
   font-size: 32rpx;
-}
-
-.manual-bind-dialog {
-  padding: 32rpx;
-  background: #ffffff;
-}
-
-.dialog-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 32rpx;
-}
-
-.dialog-title {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #232338;
-}
-
-.dialog-content {
-  margin-bottom: 32rpx;
-}
-
-.form-item {
-  margin-bottom: 24rpx;
-}
-
-.form-label {
-  display: block;
-  font-size: 28rpx;
-  color: #65686f;
-  margin-bottom: 12rpx;
-}
-
-.required {
-  color: #ff4d4f;
-  margin-left: 4rpx;
-}
-
-.error-text {
-  display: block;
-  font-size: 24rpx;
-  color: #ff4d4f;
-  margin-top: 8rpx;
-}
-
-.dialog-footer {
-  padding-top: 16rpx;
 }
 </style>
