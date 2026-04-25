@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <!-- 新增/编辑参数对话框 -->
+        <!-- Add/Edit parameter dialog -->
         <voice-print-dialog :title="dialogTitle" :visible.sync="dialogVisible" :agentId="agentId" :form="paramForm"
             @submit="handleSubmit" @cancel="dialogVisible = false" />
         <el-footer>
@@ -112,7 +112,7 @@ export default {
 
         handleSubmit({ form, done }) {
             if (form.id) {
-                // 编辑
+                // Edit
                 Api.agent.updateAgentVoicePrint(form, ({ data }) => {
                     if (data.code === 0) {
                         this.$message.success({
@@ -125,7 +125,7 @@ export default {
                     done && done();
                 });
             } else {
-                // 新增
+                // Add
                 Api.agent.addAgentVoicePrint({
                     agentId: this.agentId,
                     audioId: form.audioId,
@@ -144,7 +144,7 @@ export default {
                 });
             }
         },
-        // 删除按钮
+        // Delete button
         deleteVoicePrint(id) {
             this.$confirm(this.$t('voicePrint.confirmDelete'), this.$t('voicePrint.warning'), {
                 confirmButtonText: this.$t('voicePrint.confirm'),
@@ -202,9 +202,11 @@ export default {
 }
 
 .main-wrapper {
-    height: calc(100vh - 63px - 35px - 60px);
-    margin: 0 22px;
+    margin: 5px 22px;
     border-radius: 15px;
+    min-height: calc(100vh - 24vh);
+    height: auto;
+    max-height: 80vh;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     position: relative;
     background: rgba(237, 242, 255, 0.5);
@@ -283,7 +285,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     margin-top: 10px;
-    // padding-bottom: 10px;
+    padding-bottom: 10px;
 }
 
 .ctrl_btn {
@@ -531,7 +533,7 @@ export default {
 }
 
 .el-table {
-    // --table-max-height: calc(100vh - 40vh);
+    --table-max-height: calc(100vh - 40vh);
     max-height: var(--table-max-height);
 
     .el-table__body-wrapper {

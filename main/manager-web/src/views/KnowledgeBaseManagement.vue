@@ -108,7 +108,7 @@
       </div>
     </div>
 
-    <!-- 新增/编辑知识库对话框 -->
+    <!-- Add/Edit knowledge base dialog -->
     <knowledge-base-dialog ref="knowledgeBaseDialog" :title="dialogTitle" :visible.sync="dialogVisible" :form="knowledgeBaseForm"
       @submit="handleSubmit" @cancel="dialogVisible = false" />
 
@@ -187,15 +187,15 @@ export default {
         },
         (res) => {
           this.loading = false;
-          console.log('getKnowledgeBaseList response:', res); // 添加调试日志
-          
-          // 修复：从 res.data 获取分页数据，而不是 res.data.data
-          // 因为 knowledgeBase.js 直接传递了整个响应对象
+          console.log('getKnowledgeBaseList response:', res); // Debug log
+
+          // Read the paged payload from res.data, not res.data.data
+          // knowledgeBase.js passes through the full response object
           if (res.data && res.data.code === 0) {
             const pageData = res.data.data || {};
             this.knowledgeBaseList = pageData.list || [];
             this.total = pageData.total || 0;
-            console.log('Updated knowledgeBaseList:', this.knowledgeBaseList); // 添加调试日志
+            console.log('Updated knowledgeBaseList:', this.knowledgeBaseList); // Debug log
           } else {
             this.$message.error({
               message: res.data?.msg || this.$t('knowledgeBaseManagement.getKnowledgeBaseListFailed'),
@@ -218,11 +218,11 @@ export default {
     },
     toggleSelectAll: function() {
       if (this.isAllSelected) {
-        // 取消全选
+        // Deselect all
         this.$refs.paramsTable.clearSelection();
         this.isAllSelected = false;
       } else {
-        // 全选
+        // Select all
         this.knowledgeBaseList.forEach(row => {
           this.$refs.paramsTable.toggleRowSelection(row, true);
         });
@@ -249,7 +249,7 @@ export default {
       console.log('dialogVisible set to:', this.dialogVisible);
     },
     showViewDialog: function(row) {
-      // 跳转到上传文件页面，传递知识库ID和名称
+      // Navigate to the file upload page with the knowledge base ID and name
       this.$router.push({
         path: '/knowledge-file-upload',
         query: {
@@ -285,16 +285,16 @@ export default {
           }
         }, (err) => {
           console.log('Error callback received:', err);
-          // 错误回调处理后端返回的错误信息
+          // Handle backend error messages in the error callback
           if (err && err.data) {
-            console.log('后端返回错误消息:', err.data.msg || err.msg);
+            console.log('Backend returned error message:', err.data.msg || err.msg);
             this.$message.error(err.data.msg || err.msg || this.$t('knowledgeBaseManagement.updateFailed'));
           } else {
             this.$message.error(this.$t('knowledgeBaseManagement.updateFailed'));
           }
         });
       } else {
-        // 新增 - 只传递必要的字段，不传递id
+        // Create a new record by sending only the necessary fields
         const createData = {
           name: form.name,
           description: form.description,
@@ -313,9 +313,9 @@ export default {
           }
         }, (err) => {
           console.log('Error callback received:', err);
-          // 错误回调处理后端返回的错误信息
+          // Handle backend error messages in the error callback
           if (err && err.data) {
-            console.log('后端返回错误消息:', err.data.msg || err.msg);
+            console.log('Backend returned error message:', err.data.msg || err.msg);
             this.$message.error(err.data.msg || err.msg || this.$t('knowledgeBaseManagement.addFailed'));
           } else {
             this.$message.error(this.$t('knowledgeBaseManagement.addFailed'));
@@ -347,9 +347,9 @@ export default {
           }
         }, (err) => {
           console.log('Error callback received:', err);
-          // 错误回调处理后端返回的错误信息
+          // Handle backend error messages in the error callback
           if (err && err.data) {
-            console.log('后端返回错误消息:', err.data.msg || err.msg);
+            console.log('Backend returned error message:', err.data.msg || err.msg);
             this.$message.error(err.data.msg || err.msg || this.$t('knowledgeBaseManagement.deleteFailed'));
           } else {
             this.$message.error(this.$t('knowledgeBaseManagement.deleteFailed'));
@@ -381,9 +381,9 @@ export default {
           }
         }, (err) => {
           console.log('Error callback received:', err);
-          // 错误回调处理后端返回的错误信息
+          // Handle backend error messages in the error callback
           if (err && err.data) {
-            console.log('后端返回错误消息:', err.data.msg || err.msg);
+            console.log('Backend returned error message:', err.data.msg || err.msg);
             this.$message.error(err.data.msg || err.msg || this.$t('knowledgeBaseManagement.deleteFailed'));
           } else {
             this.$message.error(this.$t('knowledgeBaseManagement.deleteFailed'));
@@ -398,27 +398,27 @@ export default {
       });
     },
     handleStatusChange: function(row) {
-      // 只传递需要更新的字段，确保包含id字段
+      // Send only the fields that need to be updated and keep the id
       const updateForm = {
-        id: row.id, // 添加id字段，后端需要此字段来定位记录
+        id: row.id, // Include the id so the backend can locate the record
         datasetId: row.datasetId,
         name: row.name,
         description: row.description,
         status: row.status
       };
-      console.log('Updating knowledge base status:', updateForm); // 添加调试日志
+      console.log('Updating knowledge base status:', updateForm); // Debug log
       Api.knowledgeBase.updateKnowledgeBase(row.datasetId, updateForm, (res) => {
-        console.log('Status update response:', res); // 添加调试日志
+        console.log('Status update response:', res); // Debug log
         if (res.data && res.data.code !== 0) {
-          // 恢复原来的状态
+          // Restore the previous state
           this.fetchKnowledgeBaseList();
           this.$message.error(res.data?.msg || this.$t('knowledgeBaseManagement.updateFailed'));
         } else {
-          // 更新成功，显示成功消息
+          // Update succeeded, show a success message
           this.$message.success(this.$t('knowledgeBaseManagement.updateSuccess'));
         }
       }, () => {
-        // 恢复原来的状态
+        // Restore the previous state
         this.fetchKnowledgeBaseList();
         this.$message.error(this.$t('knowledgeBaseManagement.updateFailed'));
       });
@@ -472,7 +472,7 @@ export default {
 }
 
 .main-wrapper {
-    // 顶部 63px 底部 35px 查询72px
+    // Top 63px, bottom 35px, search 72px
     height: calc(100vh - 63px - 35px - 72px);
     margin: 0 22px;
     border-radius: 15px;

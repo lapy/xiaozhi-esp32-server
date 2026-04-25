@@ -18,7 +18,7 @@ const routes = [
       return import('../views/roleConfig.vue')
     }
   },
-  {
+   {
     path: '/voice-print',
     name: 'VoicePrint',
     component: function () {
@@ -53,7 +53,7 @@ const routes = [
       return import('../views/retrievePassword.vue')
     }
   },
-  // 设备管理页面路由
+  // Device management page route
   {
     path: '/device-management',
     name: 'DeviceManagement',
@@ -61,7 +61,7 @@ const routes = [
       return import('../views/DeviceManagement.vue')
     }
   },
-  // 添加用户管理路由
+  // Add user management route
   {
     path: '/user-management',
     name: 'UserManagement',
@@ -84,29 +84,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '参数管理'
-    }
-  },
-  {
-    path: '/knowledge-base-management',
-    name: 'KnowledgeBaseManagement',
-    component: function () {
-      return import('../views/KnowledgeBaseManagement.vue')
-    },
-    meta: {
-      requiresAuth: true,
-      title: '知识库管理'
-    }
-  },
-  {
-    path: '/knowledge-file-upload',
-    name: 'KnowledgeFileUpload',
-    component: function () {
-      return import('../views/KnowledgeFileUpload.vue')
-    },
-    meta: {
-      requiresAuth: true,
-      title: '文档上传管理'
+      title: 'Parameter Management'
     }
   },
 
@@ -118,7 +96,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '服务端管理'
+      title: 'Server Management'
     }
   },
   {
@@ -129,29 +107,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: 'OTA管理'
-    }
-  },
-  {
-    path: '/voice-resource-management',
-    name: 'VoiceResourceManagement',
-    component: function () {
-      return import('../views/VoiceResourceManagement.vue')
-    },
-    meta: {
-      requiresAuth: true,
-      title: '音色资源开通'
-    }
-  },
-  {
-    path: '/voice-clone-management',
-    name: 'VoiceCloneManagement',
-    component: function () {
-      return import('../views/VoiceCloneManagement.vue')
-    },
-    meta: {
-      requiresAuth: true,
-      title: '音色克隆管理'
+      title: 'OTA Management'
     }
   },
   {
@@ -168,7 +124,7 @@ const routes = [
       return import('../views/ProviderManagement.vue')
     }
   },
-  // 添加默认角色管理路由
+  // Add default role management route
   {
     path: '/agent-template-management',
     name: 'AgentTemplateManagement',
@@ -176,7 +132,7 @@ const routes = [
       return import('../views/AgentTemplateManagement.vue')
     }
   },
-  // 添加模板快速配置路由
+  // Add template quick config route
   {
     path: '/template-quick-config',
     name: 'TemplateQuickConfig',
@@ -184,16 +140,11 @@ const routes = [
       return import('../views/TemplateQuickConfig.vue')
     }
   },
-  // 功能配置页面路由
   {
-    path: '/feature-management',
-    name: 'FeatureManagement',
+    path: '/provider-management',
+    name: 'ProviderManagement',
     component: function () {
-      return import('../views/FeatureManagement.vue')
-    },
-    meta: {
-      requiresAuth: true,
-      title: '功能配置'
+      return import('../views/ProviderManagement.vue')
     }
   },
 ]
@@ -202,31 +153,31 @@ const router = new VueRouter({
   routes
 })
 
-// 全局处理重复导航，改为刷新页面
+// Global handling of duplicate navigation, changed to refresh page
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location) {
   return originalPush.call(this, location).catch(err => {
     if (err.name === 'NavigationDuplicated') {
-      // 如果是重复导航，刷新页面
+      // If it is duplicate navigation, refresh page
       window.location.reload()
     } else {
-      // 其他错误正常抛出
+      // Other errors throw normally
       throw err
     }
   })
 }
 
-// 需要登录才能访问的路由
-const protectedRoutes = ['home', 'RoleConfig', 'DeviceManagement', 'UserManagement', 'ModelConfig', 'KnowledgeBaseManagement', 'KnowledgeFileUpload']
+// Routes that require login to access
+const protectedRoutes = ['home', 'RoleConfig', 'DeviceManagement', 'UserManagement', 'ModelConfig']
 
-// 路由守卫
+// Route guard
 router.beforeEach((to, from, next) => {
-  // 检查是否是需要保护的路由
+  // Check if it is a route that needs protection
   if (protectedRoutes.includes(to.name)) {
-    // 从localStorage获取token
+    // Get token from localStorage
     const token = localStorage.getItem('token')
     if (!token) {
-      // 未登录，跳转到登录页
+      // Not logged in, redirect to login page
       next({ name: 'login', query: { redirect: to.fullPath } })
       return
     }

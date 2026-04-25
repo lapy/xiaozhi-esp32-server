@@ -308,6 +308,7 @@ export default {
   'register.registerButton': 'Registrar',
   'register.agreeTo': 'Ao se registrar, você concorda com nossos',
   'register.userAgreement': 'Termos de Uso',
+  'register.and': 'e',
   'register.privacyPolicy': 'Política de Privacidade',
   'register.notAllowRegister': 'O registro de usuários não é permitido',
   'register.captchaLoadFailed': 'Falha ao carregar captcha',
@@ -657,12 +658,10 @@ export default {
   'common.loading': 'Carregando',
 
   // Troca de idioma
-  'language.zhCN': '中文简体',
-  'language.zhTW': '中文繁體',
   'language.en': 'English',
   'language.de': 'Deutsch',
   'language.vi': 'Tiếng Việt',
-  'language.ptBR': 'Português (Brasil)',
+  'language.pt_BR': 'Português (Brasil)',
 
   // Página inicial
   'home.addAgent': 'Adicionar Agente',
@@ -1320,14 +1319,7 @@ export default {
   'knowledgeFileUpload.totalSlices': 'Total de {total} registros',
   'knowledgeFileUpload.slice': 'Fatia',
   'knowledgeFileUpload.noSliceData': 'Não há dados de fatia disponíveis',
-  'knowledgeFileUpload.firstPage': 'Primeira',
-  'knowledgeFileUpload.prevPage': 'Anterior',
-  'knowledgeFileUpload.nextPage': 'Próxima',
-  'knowledgeFileUpload.totalRecords': 'Total de {total} registros',
-  'knowledgeFileUpload.testQuestion': 'Pergunta de Teste',
-  'knowledgeFileUpload.testQuestionPlaceholder': 'Por favor, insira a pergunta para testar',
   'knowledgeFileUpload.runTest': 'Executar Teste',
-  'knowledgeFileUpload.testResult': 'Resultado do Teste:',
   'knowledgeFileUpload.noRelatedSlices': 'Nenhuma fatia relacionada encontrada',
   'knowledgeFileUpload.comprehensiveSimilarity': 'Similaridade Geral',
   'knowledgeFileUpload.content': 'Conteúdo:',

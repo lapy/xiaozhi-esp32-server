@@ -1,4 +1,4 @@
-//功能配置工具
+// Feature configuration helper
 import Api from "@/apis/api";
 import store from "@/store";
 
@@ -36,13 +36,13 @@ class FeatureManager {
                 description: 'feature.asr.description'
             }
         };
-        this.currentFeatures = { ...this.defaultFeatures }; // 当前内存中的配置
+        this.currentFeatures = { ...this.defaultFeatures }; // Current in-memory configuration
         this.initialized = false;
         this.initPromise = null;
     }
 
     /**
-     * 等待初始化完成
+     * Wait until initialization completes.
      */
     async waitForInitialization() {
         if (!this.initPromise) {
@@ -53,28 +53,28 @@ class FeatureManager {
     }
 
     /**
-     * 初始化功能配置
+     * Initialize feature configuration.
      */
     async init() {
         try {
-            // 从pub-config接口获取配置
+            // Fetch configuration from the pub-config endpoint.
             const config = await this.getConfigFromPubConfig();
             if (config) {
-                this.currentFeatures = { ...config }; // 保存到内存
+                this.currentFeatures = { ...config }; // Persist in memory
                 this.initialized = true;
                 return;
             }
         } catch (error) {
-            console.warn('从pub-config接口获取配置失败:', error);
+            console.warn('Failed to fetch configuration from pub-config:', error);
         }
 
-        // pub-config接口失败，使用默认配置
-        this.currentFeatures = { ...this.defaultFeatures }; // 保存默认配置到内存
+        // Fall back to defaults when the pub-config request fails.
+        this.currentFeatures = { ...this.defaultFeatures }; // Persist default configuration in memory
         this.initialized = true;
     }
 
     /**
-     * 更新config缓存
+     * Update the config cache.
      */
     updateConfigCache(config) {
         store.commit('setPubConfig', config);
@@ -82,93 +82,93 @@ class FeatureManager {
     }
 
     /**
-     * 从pub-config接口获取配置
+     * Fetch configuration from the pub-config endpoint.
      */
     async getConfigFromPubConfig() {
         return new Promise((resolve) => {
-            // 直接调用pub-config接口获取配置
+            // Request config directly from pub-config.
             Api.user.getPubConfig((result) => {
-                // 检查返回结果的结构
+                // Validate the response structure.
                 if (result && result.status === 200) {
-                    // 检查是否有data字段
+                    // Check for a data field.
                     if (result.data) {
                         const configCache = result.data.data || {};
-                        // 检查是否有code字段，如果有则按照code判断
+                        // If a code field is present, validate against it.
                         if (result.data.code !== undefined) {
                             if (result.data.code === 0 && result.data.data && result.data.data.systemWebMenu) {
                                 try {
                                     let config;
                                     if (typeof result.data.data.systemWebMenu === 'string') {
-                                        // 如果是字符串，需要解析JSON
+                                        // Parse JSON when the payload is serialized.
                                         config = JSON.parse(result.data.data.systemWebMenu);
                                     } else {
-                                        // 如果已经是对象，直接使用
+                                        // Use the object directly when already parsed.
                                         config = result.data.data.systemWebMenu;
                                     }
 
-                                    // 检查配置中是否包含features对象
+                                    // Ensure the configuration contains a features object.
                                     if (config && config.features) {
-                                        // 确保knowledgeBase功能存在且配置正确
+                                        // Ensure the knowledgeBase feature exists and is configured.
                                         if (!config.features.knowledgeBase) {
-                                            console.warn('配置中缺少knowledgeBase功能，合并默认配置');
+                                            console.warn('knowledgeBase is missing from config; merging defaults.');
                                             config.features = { ...this.defaultFeatures, ...config.features };
                                         }
                                         resolve(config.features);
                                     } else {
-                                        console.warn('配置中缺少features对象，使用默认配置');
+                                        console.warn('Missing features object in config; using defaults.');
                                         resolve(this.defaultFeatures);
                                     }
                                     configCache.systemWebMenu = config;
                                 } catch (error) {
-                                    console.warn('处理systemWebMenu配置失败:', error);
+                                    console.warn('Failed to process systemWebMenu config:', error);
                                     resolve(null);
                                 }
                             } else {
-                                console.warn('接口返回code不为0或缺少必要数据，使用默认配置');
+                                console.warn('pub-config returned a non-zero code or incomplete data; using defaults.');
                                 resolve(null);
                             }
                         } else {
-                            // 如果没有code字段，直接检查systemWebMenu
+                            // Without a code field, check systemWebMenu directly.
                             if (result.data && result.data.systemWebMenu) {
                                 try {
                                     let config;
                                     if (typeof result.data.systemWebMenu === 'string') {
-                                        // 如果是字符串，需要解析JSON
+                                        // Parse JSON when the payload is serialized.
                                         config = JSON.parse(result.data.systemWebMenu);
                                     } else {
-                                        // 如果已经是对象，直接使用
+                                        // Use the object directly when already parsed.
                                         config = result.data.systemWebMenu;
                                     }
 
-                                    // 检查配置中是否包含features对象
+                                    // Ensure the configuration contains a features object.
                                     if (config && config.features) {
-                                        // 确保knowledgeBase功能存在且配置正确
+                                        // Ensure the knowledgeBase feature exists and is configured.
                                         if (!config.features.knowledgeBase) {
-                                            console.warn('配置中缺少knowledgeBase功能，合并默认配置');
+                                            console.warn('knowledgeBase is missing from config; merging defaults.');
                                             config.features = { ...this.defaultFeatures, ...config.features };
                                         }
                                         resolve(config.features);
                                     } else {
-                                        console.warn('配置中缺少features对象，使用默认配置');
+                                        console.warn('Missing features object in config; using defaults.');
                                         resolve(this.defaultFeatures);
                                     }
                                     configCache.systemWebMenu = config;
                                 } catch (error) {
-                                    console.warn('处理systemWebMenu配置失败:', error);
+                                    console.warn('Failed to process systemWebMenu config:', error);
                                     resolve(null);
                                 }
                             } else {
-                                console.warn('接口返回缺少systemWebMenu数据，使用默认配置');
+                                console.warn('pub-config response is missing systemWebMenu; using defaults.');
                                 resolve(null);
                             }
                         }
                         this.updateConfigCache(configCache)
                     } else {
-                        console.warn('接口返回数据中缺少data字段，使用默认配置');
+                        console.warn('pub-config response is missing the data field; using defaults.');
                         resolve(null);
                     }
                 } else {
-                    console.warn('pub-config接口调用失败，使用默认配置');
+                    console.warn('pub-config request failed; using defaults.');
                     resolve(null);
                 }
             });
@@ -176,43 +176,43 @@ class FeatureManager {
     }
 
     /**
-     * 获取当前配置
+     * Get the current configuration.
      */
     getCurrentConfig() {
-        // 返回内存中的当前配置
+        // Return the in-memory configuration.
         return this.currentFeatures;
     }
 
     /**
-     * 保存配置到后端API
+     * Save configuration to the backend API.
      */
     async saveConfig(config) {
         try {
-            // 更新内存中的配置
+            // Update the in-memory configuration.
             this.currentFeatures = { ...config };
 
-            // 异步保存到后端API
+            // Persist asynchronously to the backend API.
             this.saveConfigToAPI(config).catch(error => {
-                console.warn('保存配置到API失败:', error);
+                console.warn('Failed to save configuration to the API:', error);
             }).finally(() => {
                 this.init()
             });
 
-            // 触发配置变更事件
+            // Emit a configuration change event.
             window.dispatchEvent(new CustomEvent('featureConfigChanged', {
                 detail: config
             }));
         } catch (error) {
-            console.error('保存功能配置失败:', error);
+            console.error('Failed to save feature configuration:', error);
         }
     }
 
     /**
-     * 保存配置到后端API
+     * Save configuration to the backend API.
      */
     async saveConfigToAPI(config) {
         return new Promise((resolve) => {
-            // 直接使用已知的ID（600）更新参数
+            // Update the parameter using the known ID (600).
             Api.admin.updateParam(
                 {
                     id: 600,
@@ -225,20 +225,20 @@ class FeatureManager {
                         }
                     }),
                     valueType: 'json',
-                    remark: '系统功能菜单配置'
+                    remark: 'System feature menu configuration'
                 },
                 (updateResult) => {
                     if (updateResult.code === 0) {
                         resolve();
                     } else {
-                        // 如果更新失败，可能是参数不存在或其他错误，记录但不阻止保存到localStorage
-                        console.warn('更新参数失败:', updateResult.msg);
-                        resolve(); // 不阻止保存到localStorage
+                        // Keep local persistence even if the remote update fails.
+                        console.warn('Failed to update the remote parameter:', updateResult.msg);
+                        resolve(); // Do not block localStorage persistence
                     }
                 },
                 (error) => {
-                    console.warn('更新参数失败:', error);
-                    resolve(); // 不阻止保存到localStorage
+                    console.warn('Failed to update the remote parameter:', error);
+                    resolve(); // Do not block localStorage persistence
                 }
             );
         });
@@ -247,14 +247,14 @@ class FeatureManager {
 
 
     /**
-     * 获取所有功能配置
+     * Get all feature configuration.
      */
     getAllFeatures() {
         return this.getCurrentConfig();
     }
 
     /**
-     * 获取简化的配置对象（用于首页组件）
+     * Get a simplified configuration object for home-page components.
      */
     getConfig() {
         const features = this.getAllFeatures();
@@ -269,7 +269,7 @@ class FeatureManager {
     }
 
     /**
-     * 获取指定功能的状态
+     * Get the status of a specific feature.
      */
     getFeatureStatus(featureKey) {
         const features = this.getAllFeatures();
@@ -277,7 +277,7 @@ class FeatureManager {
     }
 
     /**
-     * 设置功能状态
+     * Set a feature state.
      */
     setFeatureStatus(featureKey, enabled) {
         const features = this.getAllFeatures();
@@ -290,21 +290,21 @@ class FeatureManager {
     }
 
     /**
-     * 启用功能
+     * Enable a feature.
      */
     enableFeature(featureKey) {
         return this.setFeatureStatus(featureKey, true);
     }
 
     /**
-     * 禁用功能
+     * Disable a feature.
      */
     disableFeature(featureKey) {
         return this.setFeatureStatus(featureKey, false);
     }
 
     /**
-     * 切换功能状态
+     * Toggle a feature state.
      */
     toggleFeature(featureKey) {
         const currentStatus = this.getFeatureStatus(featureKey);
@@ -312,14 +312,14 @@ class FeatureManager {
     }
 
     /**
-     * 重置所有功能为默认状态
+     * Reset all features to their default state.
      */
     resetToDefault() {
         this.saveConfig(this.defaultFeatures);
     }
 
     /**
-     * 批量更新功能状态
+     * Batch-update feature states.
      */
     updateFeatures(featureUpdates) {
         const features = this.getAllFeatures();
@@ -332,7 +332,7 @@ class FeatureManager {
     }
 
     /**
-     * 获取已启用的功能列表
+     * Get the list of enabled features.
      */
     getEnabledFeatures() {
         const features = this.getAllFeatures();
@@ -340,14 +340,14 @@ class FeatureManager {
     }
 
     /**
-     * 检查功能是否启用
+     * Check whether a feature is enabled.
      */
     isFeatureEnabled(featureKey) {
         return this.getFeatureStatus(featureKey);
     }
 }
 
-// 创建单例实例
+// Create the singleton instance
 const featureManager = new FeatureManager();
 
 export default featureManager;

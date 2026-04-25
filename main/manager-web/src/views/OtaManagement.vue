@@ -95,7 +95,7 @@
             </div>
         </div>
 
-        <!-- 新增/编辑固件对话框 -->
+        <!-- Add/Edit firmware dialog -->
         <firmware-dialog :title="dialogTitle" :visible.sync="dialogVisible" :form="firmwareForm"
                 :firmware-types="firmwareTypes" @submit="handleSubmit" @cancel="dialogVisible = false" />
         <el-footer>
@@ -125,7 +125,7 @@ export default {
             pageSizeOptions: [10, 20, 50, 100],
             total: 0,
             dialogVisible: false,
-            dialogTitle: "新增固件",
+            dialogTitle: "Add Firmware",
             isAllSelected: false,
             firmwareForm: {
                 id: null,
@@ -173,8 +173,8 @@ export default {
         fetchFirmwareList() {
             this.loading = true;
             const params = {
-                page: this.currentPage,
-                limit: this.pageSize,
+                pageNum: this.currentPage,
+                pageSize: this.pageSize,
                 firmwareName: this.searchName || "",
                 orderField: "create_date",
                 order: "desc"
@@ -212,7 +212,7 @@ export default {
         },
         showAddDialog() {
             this.dialogTitle = this.$t('otaManagement.addFirmware');
-            // 完全重置表单数据
+            // Completely reset form data
             this.firmwareForm = {
                 id: null,
                 firmwareName: "",
@@ -223,7 +223,7 @@ export default {
                 firmwarePath: ""
             };
             this.$nextTick(() => {
-                // 重置表单的校验状态
+                // Reset form validation status
                 if (this.$refs.firmwareDialog && this.$refs.firmwareDialog.$refs.form) {
                     this.$refs.firmwareDialog.$refs.form.clearValidate();
                 }
@@ -237,7 +237,7 @@ export default {
         },
         handleSubmit(form) {
             if (form.id) {
-                // 编辑
+                // Edit
                 Api.ota.updateOta(form.id, form, (res) => {
                     res = res.data;
                     if (res.code === 0) {
@@ -255,7 +255,7 @@ export default {
                     }
                 });
             } else {
-                // 新增
+                // Add
                 Api.ota.saveOta(form, (res) => {
                     res = res.data;
                     if (res.code === 0) {
@@ -287,7 +287,7 @@ export default {
             this.deleteParam(selectedRows);
         },
         deleteParam(row) {
-            // 处理单个参数或参数数组
+            // Handle single parameter or parameter array
             const params = Array.isArray(row) ? row : [row];
 
             if (Array.isArray(row) && row.length === 0) {
@@ -299,9 +299,9 @@ export default {
             }
 
             const paramCount = params.length;
-            this.$confirm(this.$t('otaManagement.confirmBatchDelete', { paramCount }), this.$t('common.warning'), {
-                confirmButtonText: this.$t('common.confirm'),
-                cancelButtonText: this.$t('common.cancel'),
+            this.$confirm(this.$t('otaManagement.confirmBatchDelete', { paramCount }), 'Warning', {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
                 type: 'warning',
                 distinguishCancelAndClose: true
             }).then(() => {
@@ -376,7 +376,7 @@ export default {
                 this.$message.error(this.$t('otaManagement.incompleteFirmwareInfo'));
                 return;
             }
-            // 先获取下载链接
+            // First get download link
             Api.ota.getDownloadUrl(firmware.id, (res) => {
                 if (res.data.code === 0) {
                     const uuid = res.data.data;
@@ -394,7 +394,7 @@ export default {
                 const res = await Api.dict.getDictDataByType('FIRMWARE_TYPE')
                 this.firmwareTypes = res.data
             } catch (error) {
-                console.error('获取固件类型失败:', error)
+                console.error('Failed to get firmware type:', error)
                 this.$message.error(error.message || this.$t('otaManagement.getFirmwareTypesFailed'))
             }
         },
@@ -422,10 +422,11 @@ export default {
 }
 
 .main-wrapper {
-    // 顶部 63px 底部 35px 查询72px
-    height: calc(100vh - 63px - 35px - 72px);
-    margin: 0 22px;
+    margin: 5px 22px;
     border-radius: 15px;
+    min-height: calc(100vh - 24vh);
+    height: auto;
+    max-height: 80vh;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     position: relative;
     background: rgba(237, 242, 255, 0.5);
@@ -504,6 +505,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     margin-top: 10px;
+    padding-bottom: 10px;
 }
 
 .ctrl_btn {
@@ -733,7 +735,7 @@ export default {
 }
 
 .el-table {
-    // --table-max-height: calc(100vh - 40vh);
+    --table-max-height: calc(100vh - 40vh);
     max-height: var(--table-max-height);
 
     .el-table__body-wrapper {
