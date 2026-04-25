@@ -7,25 +7,25 @@ import xiaozhi.common.dao.BaseDao;
 import xiaozhi.modules.knowledge.entity.KnowledgeBaseEntity;
 
 /**
- * 知识库知识库
+ * Knowledge-base DAO.
  */
 @Mapper
 public interface KnowledgeBaseDao extends BaseDao<KnowledgeBaseEntity> {
 
     /**
-     * 根据知识库ID删除相关的插件映射记录
-     * 
-     * @param knowledgeBaseId 知识库ID
+     * Delete plugin-mapping records related to a knowledge base.
+     *
+     * @param knowledgeBaseId knowledge-base ID
      */
     void deletePluginMappingByKnowledgeBaseId(@Param("knowledgeBaseId") String knowledgeBaseId);
 
     /**
-     * 通用维度原子更新知识库统计信息
-     * 
-     * @param datasetId  数据集ID
-     * @param docDelta   文档数增量
-     * @param chunkDelta 分块数增量
-     * @param tokenDelta Token数增量
+     * Atomically update knowledge-base statistics.
+     *
+     * @param datasetId  dataset ID
+     * @param docDelta   document-count delta
+     * @param chunkDelta chunk-count delta
+     * @param tokenDelta token-count delta
      */
     void updateStatsAfterChange(@Param("datasetId") String datasetId,
             @Param("docDelta") Integer docDelta,

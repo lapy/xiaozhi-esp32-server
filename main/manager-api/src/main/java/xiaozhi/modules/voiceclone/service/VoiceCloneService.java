@@ -12,67 +12,67 @@ import xiaozhi.modules.voiceclone.dto.VoiceCloneResponseDTO;
 import xiaozhi.modules.voiceclone.entity.VoiceCloneEntity;
 
 /**
- * 声音克隆管理
+ * Voice-clone management service.
  */
 public interface VoiceCloneService extends BaseService<VoiceCloneEntity> {
 
     /**
-     * 分页查询
+     * Query voice-clone records with pagination.
      */
     PageData<VoiceCloneEntity> page(Map<String, Object> params);
 
     /**
-     * 保存声音克隆
+     * Save a voice-clone record.
      */
     void save(VoiceCloneDTO dto);
 
     /**
-     * 批量删除
+     * Delete records in batch.
      */
     void delete(String[] ids);
 
     /**
-     * 根据用户ID查询声音克隆列表
-     * 
-     * @param userId 用户ID
-     * @return 声音克隆列表
+     * Query voice-clone records by user ID.
+     *
+     * @param userId user ID
+     * @return voice-clone list
      */
     List<VoiceCloneEntity> getByUserId(Long userId);
 
     /**
-     * 分页查询带模型名称和用户名称的声音克隆列表
+     * Query paginated voice-clone records including model and user names.
      */
     PageData<VoiceCloneResponseDTO> pageWithNames(Map<String, Object> params);
 
     /**
-     * 根据ID查询带模型名称和用户名称的声音克隆信息
+     * Query a voice-clone record by ID including model and user names.
      */
     VoiceCloneResponseDTO getByIdWithNames(String id);
 
     /**
-     * 根据用户ID查询带模型名称的声音克隆列表
+     * Query a user's voice-clone records including model names.
      */
     List<VoiceCloneResponseDTO> getByUserIdWithNames(Long userId);
 
     /**
-     * 上传音频文件
+     * Upload an audio file.
      */
     void uploadVoice(String id, MultipartFile voiceFile) throws Exception;
 
     /**
-     * 更新声音克隆名称
+     * Update a voice-clone name.
      */
     void updateName(String id, String name);
 
     /**
-     * 获取音频数据
+     * Get audio data.
      */
     byte[] getVoiceData(String id);
 
     /**
-     * 克隆音频，调用火山引擎进行语音复刻训练
-     * 
-     * @param cloneId 语音克隆记录ID
+     * Clone audio and trigger voice training through the upstream provider integration.
+     *
+     * @param cloneId voice-clone record ID
      */
     void cloneAudio(String cloneId);
 }

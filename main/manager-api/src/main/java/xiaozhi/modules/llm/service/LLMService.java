@@ -1,70 +1,70 @@
 package xiaozhi.modules.llm.service;
 
 /**
- * LLM服务接口
- * 支持多种大模型调用
+ * LLM service interface.
+ * Supports multiple large-model backends.
  */
 public interface LLMService {
 
     /**
-     * 生成聊天记录总结
-     * 
-     * @param conversation   对话内容
-     * @param promptTemplate 提示词模板
-     * @return 总结结果
+     * Generate a chat-history summary.
+     *
+     * @param conversation   conversation content
+     * @param promptTemplate prompt template
+     * @return summary result
      */
     String generateSummary(String conversation, String promptTemplate);
 
     /**
-     * 生成聊天记录总结（使用默认提示词）
-     * 
-     * @param conversation 对话内容
-     * @return 总结结果
+     * Generate a chat-history summary using the default prompt template.
+     *
+     * @param conversation conversation content
+     * @return summary result
      */
     String generateSummary(String conversation);
 
     /**
-     * 生成聊天记录总结（指定模型ID）
-     * 
-     * @param conversation 对话内容
-     * @param modelId      模型ID
-     * @return 总结结果
+     * Generate a chat-history summary with a specific model ID.
+     *
+     * @param conversation conversation content
+     * @param modelId      model ID
+     * @return summary result
      */
     String generateSummaryWithModel(String conversation, String modelId);
 
     /**
-     * 生成聊天记录总结（指定模型ID和提示词模板）
-     * 
-     * @param conversation   对话内容
-     * @param promptTemplate 提示词模板
-     * @param modelId        模型ID
-     * @return 总结结果
+     * Generate a chat-history summary with a specific model ID and prompt template.
+     *
+     * @param conversation   conversation content
+     * @param promptTemplate prompt template
+     * @param modelId        model ID
+     * @return summary result
      */
     String generateSummary(String conversation, String promptTemplate, String modelId);
 
     /**
-     * 生成聊天记录总结（包含历史记忆合并）
-     * 
-     * @param conversation   对话内容
-     * @param historyMemory  历史记忆
-     * @param promptTemplate 提示词模板
-     * @param modelId        模型ID
-     * @return 总结结果
+     * Generate a chat-history summary with historical memory merging.
+     *
+     * @param conversation   conversation content
+     * @param historyMemory  historical memory
+     * @param promptTemplate prompt template
+     * @param modelId        model ID
+     * @return summary result
      */
     String generateSummaryWithHistory(String conversation, String historyMemory, String promptTemplate, String modelId);
 
     /**
-     * 检查服务是否可用
-     * 
-     * @return 是否可用
+     * Check whether the service is available.
+     *
+     * @return whether the service is available
      */
     boolean isAvailable();
 
     /**
-     * 检查指定模型的服务是否可用
-     * 
-     * @param modelId 模型ID
-     * @return 是否可用
+     * Check whether the service is available for the specified model.
+     *
+     * @param modelId model ID
+     * @return whether the service is available
      */
     boolean isAvailable(String modelId);
 

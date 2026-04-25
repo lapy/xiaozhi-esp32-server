@@ -12,7 +12,7 @@ import xiaozhi.modules.agent.entity.AgentChatHistoryEntity;
 import xiaozhi.modules.agent.vo.AgentChatHistoryUserVO;
 
 /**
- * 智能体聊天记录表处理service
+ * Agent chat history table processing service
  *
  * @author Goody
  * @version 1.0, 2025/4/30
@@ -21,54 +21,62 @@ import xiaozhi.modules.agent.vo.AgentChatHistoryUserVO;
 public interface AgentChatHistoryService extends IService<AgentChatHistoryEntity> {
 
     /**
-     * 根据智能体ID获取会话列表
+     * Get session list by agent ID
      *
-     * @param params 查询参数，包含agentId、page、limit
-     * @return 分页的会话列表
+     * @param params Query parameters, including agentId, page, limit
+     * @return Paginated session list
      */
     PageData<AgentChatSessionDTO> getSessionListByAgentId(Map<String, Object> params);
 
     /**
-     * 根据会话ID获取聊天记录列表
+     * Get chat record list by session ID
      *
-     * @param agentId   智能体ID
-     * @param sessionId 会话ID
-     * @return 聊天记录列表
+     * @param agentId   Agent ID
+     * @param sessionId Session ID
+     * @return Chat record list
      */
     List<AgentChatHistoryDTO> getChatHistoryBySessionId(String agentId, String sessionId);
 
     /**
-     * 根据智能体ID删除聊天记录
+     * Delete chat records by agent ID
      *
-     * @param agentId     智能体ID
-     * @param deleteAudio 是否删除音频
-     * @param deleteText  是否删除文本
+     * @param agentId     Agent ID
+     * @param deleteAudio Whether to delete audio
+     * @param deleteText  Whether to delete text
      */
     void deleteByAgentId(String agentId, Boolean deleteAudio, Boolean deleteText);
 
     /**
-     * 根据智能体ID获取最近50条用户的聊天记录数据（带音频数据）
+     * Delete chat session by agent ID and session ID
      *
-     * @param agentId 智能体id
-     * @return 聊天记录列表（只有用户）
+     * @param agentId   Agent ID
+     * @param sessionId Session ID
+     */
+    void deleteBySessionId(String agentId, String sessionId);
+
+    /**
+     * Get recent 50 user chat records by agent ID (with audio data)
+     *
+     * @param agentId Agent ID
+     * @return Chat record list (user only)
      */
     List<AgentChatHistoryUserVO> getRecentlyFiftyByAgentId(String agentId);
 
     /**
-     * 根据音频数据ID获取聊天内容
+     * Get chat content by audio data ID
      *
-     * @param audioId 音频id
-     * @return 聊天内容
+     * @param audioId Audio ID
+     * @return Chat content
      */
     String getContentByAudioId(String audioId);
 
 
     /**
-     * 查询此音频id是否属于此智能体
+     * Check if this audio ID belongs to this agent
      *
-     * @param audioId 音频id
-     * @param agentId 音频id
-     * @return T：属于 F：不属于
+     * @param audioId Audio ID
+     * @param agentId Agent ID
+     * @return T: belongs F: does not belong
      */
     boolean isAudioOwnedByAgent(String audioId,String agentId);
 }
