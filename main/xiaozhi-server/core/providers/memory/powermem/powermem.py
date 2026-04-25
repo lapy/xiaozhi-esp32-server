@@ -28,13 +28,14 @@ class MemoryProvider(MemoryProviderBase):
     efficient memory management for AI agents.
 
     Supports multiple storage backends (sqlite, oceanbase, postgres),
-    LLM providers (qwen, openai, etc.) and embedding providers.
+    LLM providers (openai, etc.) and embedding providers.
 
     Config options:
         - enable_user_profile: bool - Enable UserMemory for user profiling (requires OceanBase)
         - database_provider: str - Storage backend (sqlite, oceanbase, postgres)
-        - llm_provider: str - LLM provider (qwen, openai, etc.)
-        - embedding_provider: str - Embedding provider (qwen, openai, etc.)
+        - llm_provider: str - LLM provider (openai, etc.)
+        - embedding_provider: str - Embedding provider (openai, etc.)
+        - llm_max_tokens: int - Optional; passed to PowerMem LLM config (raise for reasoning models e.g. Qwen3.x)
     """
 
     def __init__(self, config: Dict[str, Any], summary_memory: Optional[str] = None):
@@ -50,8 +51,8 @@ class MemoryProvider(MemoryProviderBase):
             
             # Get configuration parameters
             database_provider = config.get("database_provider", "sqlite")
-            llm_provider = config.get("llm_provider", "qwen")
-            embedding_provider = config.get("embedding_provider", "qwen")
+            llm_provider = config.get("llm_provider", "openai")
+            embedding_provider = config.get("embedding_provider", "openai")
 
             # Build powermem configuration dict
             # PowerMem supports two config styles:
@@ -79,9 +80,8 @@ class MemoryProvider(MemoryProviderBase):
                     llm_config["api_key"] = config["llm_api_key"]
                 if config.get("llm_model"):
                     llm_config["model"] = config["llm_model"]
-                # Handle base_url based on provider type
-                # - qwen provider uses dashscope_base_url
-                # - openai provider uses openai_base_url
+                # Route base_url settings by provider while keeping the
+                # downstream openai-first defaults.
                 if llm_provider == "qwen":
                     base_url = config.get("dashscope_base_url") or config.get("llm_base_url")
                     if base_url:
@@ -90,7 +90,8 @@ class MemoryProvider(MemoryProviderBase):
                     base_url = config.get("openai_base_url") or config.get("llm_base_url")
                     if base_url:
                         llm_config["openai_base_url"] = base_url
-
+                if config.get("llm_max_tokens") is not None:
+                    llm_config["max_tokens"] = int(config["llm_max_tokens"])
                 powermem_config["llm"] = {
                     "provider": llm_provider,
                     "config": llm_config
@@ -105,9 +106,6 @@ class MemoryProvider(MemoryProviderBase):
                     embedder_config["api_key"] = config["embedding_api_key"]
                 if config.get("embedding_model"):
                     embedder_config["model"] = config["embedding_model"]
-                # Handle base_url based on provider type
-                # - qwen provider uses dashscope_base_url
-                # - openai provider uses openai_base_url
                 # Priority: embedding_xxx_base_url > embedding_base_url > xxx_base_url
                 if embedding_provider == "qwen":
                     base_url = config.get("embedding_dashscope_base_url") or config.get("embedding_base_url")
@@ -117,21 +115,28 @@ class MemoryProvider(MemoryProviderBase):
                     base_url = config.get("embedding_openai_base_url") or config.get("embedding_base_url")
                     if base_url:
                         embedder_config["openai_base_url"] = base_url
-
                 powermem_config["embedder"] = {
                     "provider": embedding_provider,
                     "config": embedder_config
                 }
 
+            # Flat llm_max_tokens applies when nested llm.config omits max_tokens (PowerMem default ~2000 is tight for reasoning models)
+            if config.get("llm_max_tokens") is not None:
+                llm_block = powermem_config.get("llm")
+                if isinstance(llm_block, dict):
+                    inner = llm_block.get("config")
+                    if isinstance(inner, dict) and inner.get("max_tokens") is None:
+                        inner["max_tokens"] = int(config["llm_max_tokens"])
+
             # Initialize memory client based on mode
             if self.enable_user_profile:
                 from powermem import UserMemory
                 self.memory_client = UserMemory(config=powermem_config)
-                memory_mode = "UserMemory (用户画像模式)"
+                memory_mode = "UserMemory (profile mode)"
             else:
                 from powermem import AsyncMemory
                 self.memory_client = AsyncMemory(config=powermem_config)
-                memory_mode = "AsyncMemory (普通记忆模式)"
+                memory_mode = "AsyncMemory (standard mode)"
 
             self.use_powermem = True
 
@@ -248,7 +253,7 @@ class MemoryProvider(MemoryProviderBase):
             if self.enable_user_profile:
                 profile = await self.get_user_profile()
                 if profile:
-                    result_parts.append(f"【用户画像】\n{profile}")
+                    result_parts.append(f"[User Profile]\n{profile}")
 
             # Search memories using PowerMem SDK
             if self.enable_user_profile:
@@ -305,7 +310,7 @@ class MemoryProvider(MemoryProviderBase):
                 # Extract only the formatted strings
                 if memories:
                     memories_str = "\n".join(f"- {memory[1]}" for memory in memories)
-                    result_parts.append(f"【相关记忆】\n{memories_str}")
+                    result_parts.append(f"[Related Memories]\n{memories_str}")
 
             final_result = "\n\n".join(result_parts)
             logger.bind(tag=TAG).debug(f"Query results: {final_result}")
@@ -338,4 +343,3 @@ class MemoryProvider(MemoryProviderBase):
             return self.last_profile_content
 
         return ""
-
