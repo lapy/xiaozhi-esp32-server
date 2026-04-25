@@ -105,7 +105,7 @@ public class AgentChatSummaryServiceImpl implements AgentChatSummaryService {
             String memModelId = agentService.getAgentById(agentId).getMemModelId();
 
             if (memModelId == null || memModelId.equals(Constant.MEMORY_MEM_REPORT_ONLY)) {
-                log.info("会话 {} 使用仅上报聊天记录模式，跳过记忆总结", sessionId);
+                log.info("Session {} uses report-only chat history mode; skipping memory summarization", sessionId);
                 return true;
             }
 
@@ -121,12 +121,12 @@ public class AgentChatSummaryServiceImpl implements AgentChatSummaryService {
                             setSummaryMemory(summaryDTO.getSummary());
                         }
                     });
-                    log.info("成功保存会话 {} 的聊天记录总结到智能体 {}", sessionId, agentId);
+                    log.info("Saved chat summary for session {} to agent {}", sessionId, agentId);
                 } else {
-                    log.info("生成总结失败: {}", summaryDTO.getErrorMessage());
+                    log.info("Summary generation failed: {}", summaryDTO.getErrorMessage());
                 }
             } else {
-                log.info("会话 {} 使用 {} 模式，跳过记忆总结", sessionId, memModelId);
+                log.info("Session {} uses {} mode; skipping memory summarization", sessionId, memModelId);
             }
 
             return true;
@@ -140,10 +140,10 @@ public class AgentChatSummaryServiceImpl implements AgentChatSummaryService {
     @Override
     public boolean generateAndSaveChatTitle(String sessionId) {
         try {
-            // 自动获取agentId
+            // Resolve agentId automatically.
             String agentId = findAgentIdBySessionId(sessionId);
             if (StringUtils.isBlank(agentId)) {
-                log.warn("会话 {} 无法获取智能体信息，跳过标题生成", sessionId);
+                log.warn("Unable to resolve agent information for session {}; skipping title generation", sessionId);
                 return false;
             }
 
@@ -159,7 +159,7 @@ public class AgentChatSummaryServiceImpl implements AgentChatSummaryService {
 
             StringBuilder conversation = new StringBuilder();
             for (int i = 0; i < meaningfulMessages.size(); i++) {
-                conversation.append("消息").append(i + 1).append(": ").append(meaningfulMessages.get(i)).append("\n");
+                conversation.append("Message ").append(i + 1).append(": ").append(meaningfulMessages.get(i)).append("\n");
             }
 
             String slmModelId = getSlmModelId(agentId);
@@ -167,12 +167,12 @@ public class AgentChatSummaryServiceImpl implements AgentChatSummaryService {
 
             if (StringUtils.isNotBlank(title)) {
                 agentChatTitleService.saveOrUpdateTitle(sessionId, title);
-                log.info("成功保存会话 {} 的标题: {}", sessionId, title);
+                log.info("Saved title for session {}: {}", sessionId, title);
                 return true;
             }
             return false;
         } catch (Exception e) {
-            log.error("生成会话 {} 的标题时发生错误: {}", sessionId, e.getMessage());
+            log.error("Error while generating title for session {}: {}", sessionId, e.getMessage());
             return false;
         }
     }
@@ -190,21 +190,21 @@ public class AgentChatSummaryServiceImpl implements AgentChatSummaryService {
 
             String slmModelId = agentInfo.getSlmModelId();
             if (StringUtils.isNotBlank(slmModelId)) {
-                log.info("会话 {} 使用SLM模型: {}", agentId, slmModelId);
+                log.info("Agent {} uses SLM model: {}", agentId, slmModelId);
                 return slmModelId;
             }
 
             ModelConfigEntity defaultLlmConfig = getDefaultLLMConfig();
             if (defaultLlmConfig != null) {
-                log.info("会话 {} 使用默认LLM模型: {}", agentId, defaultLlmConfig.getId());
+                log.info("Agent {} uses default LLM model: {}", agentId, defaultLlmConfig.getId());
                 return defaultLlmConfig.getId();
             }
 
             String llmModelId = agentInfo.getLlmModelId();
-            log.info("会话 {} 使用LLM模型(最终回退): {}", agentId, llmModelId);
+            log.info("Agent {} uses LLM model as final fallback: {}", agentId, llmModelId);
             return llmModelId;
         } catch (Exception e) {
-            log.error("获取智能体slm模型ID失败，agentId: {}, 错误: {}", agentId, e.getMessage());
+            log.error("Failed to get agent SLM model ID, agentId: {}, error: {}", agentId, e.getMessage());
             return null;
         }
     }
@@ -224,7 +224,7 @@ public class AgentChatSummaryServiceImpl implements AgentChatSummaryService {
 
             return llmConfigs.get(0);
         } catch (Exception e) {
-            log.error("获取默认LLM配置失败: {}", e.getMessage());
+            log.error("Failed to get default LLM config: {}", e.getMessage());
             return null;
         }
     }
@@ -411,7 +411,7 @@ public class AgentChatSummaryServiceImpl implements AgentChatSummaryService {
             String modelId = getSlmModelId(agentId);
 
             if (StringUtils.isBlank(modelId)) {
-                log.info("未找到SLM模型，使用默认LLM服务");
+                log.info("No SLM model found; using default LLM service");
                 return llmService.generateSummaryWithHistory(conversation, historyMemory, null, null);
             }
 
@@ -439,7 +439,7 @@ public class AgentChatSummaryServiceImpl implements AgentChatSummaryService {
             String modelId = getSlmModelId(agentId);
 
             if (StringUtils.isBlank(modelId)) {
-                log.info("未找到SLM模型，使用默认LLM服务");
+                log.info("No SLM model found; using default LLM service");
                 return llmService.generateSummary(conversation);
             }
 

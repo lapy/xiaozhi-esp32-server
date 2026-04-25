@@ -93,14 +93,14 @@ async function scanWifi() {
         console.log(`Scan successful, found ${data.networks.length} networks`)
       }
       else if (data.aps && Array.isArray(data.aps)) {
-        // 兼容 { data: { support_5g, aps } } 格式
+        // Compatible with the { data: { support_5g, aps } } shape
         wifiNetworks.value = data.aps.map((item: any) => ({
           ssid: item.ssid,
           rssi: item.rssi,
           authmode: item.authmode,
           channel: item.channel || 0,
         }))
-        console.log(`${t('deviceConfig.scanSuccess')}，发现 ${data.aps.length} ${t('deviceConfig.networks')}`)
+        console.log(`${t('deviceConfig.scanSuccess')}, found ${data.aps.length} ${t('deviceConfig.networks')}`)
       }
       else if (Array.isArray(response.data)) {
         // Compatible with old format
@@ -252,7 +252,7 @@ onMounted(() => {
       </view>
     </view>
 
-    <!-- WiFi网络选择器 -->
+    <!-- WiFi network selector -->
     <view class="network-selector">
       <view class="selector-item" @click="showNetworkSelector">
         <text class="selector-label">

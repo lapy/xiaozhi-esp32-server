@@ -99,7 +99,7 @@ async def startToChat(conn: "ConnectionHandler", text):
     # Otherwise continue with the normal chat flow.
     await send_stt_message(conn, actual_text)
 
-    # 准备开始新会话
+    # Prepare to start a new conversation.
     conn.client_abort = False
 
     conn.executor.submit(conn.chat, actual_text)

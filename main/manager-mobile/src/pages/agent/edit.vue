@@ -38,7 +38,7 @@ const formData = ref<Partial<AgentDetail>>({
 
 // Display name data
 const displayNames = ref({
-// 显示名称数据
+// Display-name data
   vad: t('agent.pleaseSelect'),
   asr: t('agent.pleaseSelect'),
   llm: t('agent.pleaseSelect'),
@@ -212,7 +212,7 @@ function updateDisplayNames() {
   displayNames.value.memory = getModelDisplayName('Memory', formData.value.memModelId)
   displayNames.value.tts = getModelDisplayName('TTS', formData.value.ttsModelId)
 
-  // 角色音色特殊处理
+  // Special handling for role voices
   displayNames.value.report = reportOptions.find(item => item.value === formData.value.chatHistoryConf)?.name
 
   console.log('Final voice display name:', displayNames.value.voiceprint)
@@ -333,7 +333,7 @@ async function onPickerConfirm(type: string, value: any, name: string) {
     case 'memory':
       formData.value.memModelId = value
       formData.value.chatHistoryConf = value === 'Memory_nomem' ? 0 : 2
-      displayNames.value.memory = name // 确保显示名称正确更新
+      displayNames.value.memory = name // Ensure the display name updates correctly
       displayNames.value.report = reportOptions[1].name
       isVisibleReport.value = value !== 'Memory_nomem'
       if (value === 'Memory_nomem' || value === 'Memory_mem_report_only') {

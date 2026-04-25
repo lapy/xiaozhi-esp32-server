@@ -19,7 +19,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// 响应式数据
+// Reactive data
 const configuring = ref(false)
 
 // Computed properties
@@ -80,7 +80,7 @@ async function submitConfig() {
 
     if (response.statusCode === 200 && (response.data as any)?.success) {
       toast.success(`${t('deviceConfig.configSuccess')}！${t('deviceConfig.deviceWillConnectTo')} ${props.selectedNetwork.ssid}，${t('deviceConfig.deviceWillRestart')}。${t('deviceConfig.pleaseDisconnectXiaozhiHotspot')}`)
-      // 设备退出配网模式
+      // Device exits network setup mode
       setTimeout(() => {
         uni.request({
           url: 'http://192.168.4.1/exit',

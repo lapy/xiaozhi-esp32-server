@@ -279,7 +279,7 @@
                       </div>
                     </el-form-item>
                     <div class="model-row">
-                      <!-- 语言筛选器 -->
+                      <!-- Language filter -->
                       <el-form-item class="model-item language-select-item">
                         <template #label>
                           <el-tooltip :content="$t('roleConfig.tooltip.language')" placement="top" effect="light" popper-class="custom-tooltip">
@@ -303,7 +303,7 @@
                         </div>
                       </el-form-item>
 
-                      <!-- 音色选择器 -->
+                      <!-- Voice selector -->
                       <el-form-item class="model-item">
                         <template #label>
                           <el-tooltip :content="$t('roleConfig.tooltip.voiceType')" placement="top" effect="light" popper-class="custom-tooltip">

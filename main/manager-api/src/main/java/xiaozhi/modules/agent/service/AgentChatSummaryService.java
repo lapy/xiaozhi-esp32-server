@@ -14,10 +14,10 @@ public interface AgentChatSummaryService {
     boolean generateAndSaveChatSummary(String sessionId);
 
     /**
-     * 根据会话ID生成聊天标题并保存
+     * Generate and save a chat title by session ID.
      *
-     * @param sessionId 会话ID
-     * @return 是否成功
+     * @param sessionId session ID
+     * @return whether generation succeeded
      */
     boolean generateAndSaveChatTitle(String sessionId);
 }

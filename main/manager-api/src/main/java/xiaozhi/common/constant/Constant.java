@@ -157,22 +157,22 @@ public interface Constant {
     String MEMORY_MEM_REPORT_ONLY = "Memory_mem_report_only";
 
     /**
-     * Mem0AI记忆
+     * Mem0AI memory.
      */
     String MEMORY_MEM0AI = "Memory_mem0ai";
 
     /**
-     * PowerMem记忆
+     * PowerMem memory.
      */
     String MEMORY_POWERMEM = "Memory_powermem";
 
     /**
-     * 火山引擎双声道语音克隆
+     * Huoshan double-stream voice clone.
      */
     String VOICE_CLONE_HUOSHAN_DOUBLE_STREAM = "huoshan_double_stream";
 
     /**
-     * RAG配置类型
+     * RAG config type.
      */
     String RAG_CONFIG_TYPE = "RAG";
 

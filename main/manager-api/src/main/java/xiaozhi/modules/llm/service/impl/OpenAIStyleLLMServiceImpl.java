@@ -37,7 +37,7 @@ public class OpenAIStyleLLMServiceImpl implements LLMService {
 
     private static final String DEFAULT_SUMMARY_PROMPT = "You are an experienced memory summarizer. Summarize the conversation using these rules:\n1. Capture important user information so future conversations can be more personalized.\n2. Do not repeat points or discard earlier memory unless it already exceeds 1800 characters.\n3. Do not include device-control details such as volume changes, music playback, weather checks, exits, or other actions unrelated to the user.\n4. Do not store transient details like today's date, time, or weather when they are unrelated to the user's actual events.\n5. Do not include device-operation outcomes, failures, or meaningless filler.\n6. If the conversation contains nothing meaningful, returning the original history is acceptable.\n7. Return only the summary and keep it strictly within 1800 characters.\n8. Do not include code, XML, explanations, annotations, or examples that are not part of the conversation itself.\n9. If historical memory is provided, merge it intelligently with the new conversation while preserving valuable prior information.\n\nHistorical memory:\n{history_memory}\n\nNew conversation:\n{conversation}";
 
-    private static final String DEFAULT_TITLE_PROMPT = "请根据以下对话内容，生成一个简洁的会话标题（约15字以内），只返回标题，不要包含任何解释或标点符号：\n{conversation}";
+    private static final String DEFAULT_TITLE_PROMPT = "Generate a concise conversation title from the following dialogue. Return only the title with no explanation or punctuation:\n{conversation}";
 
     @Override
     public String generateSummary(String conversation) {
@@ -308,7 +308,7 @@ public class OpenAIStyleLLMServiceImpl implements LLMService {
     @Override
     public String generateTitle(String conversation, String modelId) {
         if (!isAvailable()) {
-            log.warn("LLM服务不可用，无法生成标题");
+            log.warn("LLM service is unavailable; cannot generate title");
             return null;
         }
 
@@ -321,7 +321,7 @@ public class OpenAIStyleLLMServiceImpl implements LLMService {
             }
 
             if (llmConfig == null || llmConfig.getConfigJson() == null) {
-                log.error("未找到可用的LLM模型配置，modelId: {}", modelId);
+                log.error("No available LLM model config found, modelId: {}", modelId);
                 return null;
             }
 
@@ -331,7 +331,7 @@ public class OpenAIStyleLLMServiceImpl implements LLMService {
             String apiKey = configJson.getStr("api_key");
 
             if (StringUtils.isBlank(baseUrl) || StringUtils.isBlank(apiKey)) {
-                log.error("LLM配置不完整，baseUrl或apiKey为空");
+                log.error("LLM config is incomplete; baseUrl or apiKey is empty");
                 return null;
             }
 
@@ -383,10 +383,10 @@ public class OpenAIStyleLLMServiceImpl implements LLMService {
                     }
                 }
             } else {
-                log.error("LLM API调用失败，状态码：{}，响应：{}", response.getStatusCode(), response.getBody());
+                log.error("LLM API call failed, status: {}, response: {}", response.getStatusCode(), response.getBody());
             }
         } catch (Exception e) {
-            log.error("调用LLM服务生成标题时发生异常，modelId: {}", modelId, e);
+            log.error("Exception while calling LLM service to generate title, modelId: {}", modelId, e);
         }
 
         return null;

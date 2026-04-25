@@ -196,14 +196,14 @@ async def generate_and_save_chat_summary(session_id: str) -> Optional[Dict]:
 
 
 async def generate_and_save_chat_title(session_id: str) -> Optional[Dict]:
-    """生成并保存聊天标题"""
+    """Generate and save a chat title."""
     try:
         return await ManageApiClient._instance._execute_async_request(
             "POST",
             f"/agent/chat-title/{session_id}/generate",
         )
     except Exception as e:
-        print(f"生成并保存聊天标题失败: {e}")
+        print(f"Failed to generate and save chat title: {e}")
         return None
 
 

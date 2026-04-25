@@ -122,11 +122,11 @@ public interface KnowledgeFilesService {
         void syncRunningDocuments();
 
         /**
-         * 从RAGFlow全量同步文档到本地影子表
-         * 拉取远端所有文档，与本地影子表对比，插入缺失的记录
+         * Fully synchronize documents from RAGFlow into the local shadow table.
+         * Fetch all remote documents, compare with the local shadow table, and insert missing records.
          *
-         * @param datasetId 数据集ID
-         * @return 新同步的文档数量
+         * @param datasetId dataset ID
+         * @return number of newly synchronized documents
          */
         int syncDocumentsFromRAG(String datasetId);
 }

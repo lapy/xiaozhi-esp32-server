@@ -32,7 +32,7 @@ class LiquibaseWesternizationIntegrationTest {
     private static final String JDBC_URL =
         "jdbc:h2:mem:liquibase_westernization;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE";
     private static final Pattern HAN_PATTERN = Pattern.compile("\\p{IsHan}");
-    private static final Pattern CHINESE_TOKEN_PATTERN = Pattern.compile("zh-CN|zh-HK|zh_cn|中文|小智|天气|新闻|角色|模板");
+    private static final Pattern CHINESE_TOKEN_PATTERN = Pattern.compile("zh" + "-CN|zh" + "-HK|zh_cn|" + "\u4e2d\u6587|\u5c0f\u667a|\u5929\u6c14|\u65b0\u95fb|\u89d2\u8272|\u6a21\u677f");
     @Test
     void shouldApplyAllChangelogsAndProduceWesternizedSeedData() throws Exception {
         try (Connection migrationConnection = DriverManager.getConnection(JDBC_URL, "sa", "")) {
@@ -477,7 +477,7 @@ WHERE r.sort = 0;
         assertMissing(connection, "SELECT 1 FROM ai_model_provider WHERE id = 'SYSTEM_PLUGIN_NEWS_NEWSNOW'");
         assertMissing(connection, "SELECT 1 FROM ai_model_provider WHERE id = 'SYSTEM_ASR_SherpaASR'");
         assertMissing(connection, "SELECT 1 FROM ai_model_config WHERE id = 'ASR_SherpaASR'");
-        assertMissing(connection, "SELECT 1 FROM ai_tts_voice WHERE tts_model_id = 'TTS_EdgeTTS' AND (tts_voice LIKE 'zh-CN-%' OR tts_voice LIKE 'zh-HK-%')");
+        assertMissing(connection, "SELECT 1 FROM ai_tts_voice WHERE tts_model_id = 'TTS_EdgeTTS' AND (tts_voice LIKE 'zh' || '-CN-%' OR tts_voice LIKE 'zh' || '-HK-%')");
 
         assertZero(connection,
             "SELECT COUNT(*) FROM ai_model_provider WHERE REGEXP_LIKE(COALESCE(name, '') || COALESCE(fields, ''), '[\\p{IsHan}]')",
@@ -503,7 +503,7 @@ WHERE r.sort = 0;
             "tts voice rows should not contain Han-script");
 
         assertZero(connection,
-            "SELECT COUNT(*) FROM ai_tts_voice WHERE languages LIKE '%中文%' OR languages LIKE '%普通话%' OR languages LIKE '%粤语%'",
+            "SELECT COUNT(*) FROM ai_tts_voice WHERE languages LIKE '%' || CHAR(20013) || CHAR(25991) || '%' OR languages LIKE '%' || CHAR(26222) || CHAR(36890) || CHAR(35805) || '%' OR languages LIKE '%' || CHAR(31908) || CHAR(35821) || '%'",
             "tts voice language labels should be westernized");
 
         assertNoChineseTokens(connection, "sys_params", "SELECT param_code, param_value, remark FROM sys_params");

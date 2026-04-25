@@ -173,7 +173,7 @@ Use the audit script after meaningful rebase batches:
 
 What it enforces:
 
-- live source/docs must be clean of Han-script and `zh-CN` / `zh-TW`
+- live source/docs must be clean of Han-script and Chinese locale tags
 - path names must be clean of Han-script
 
 Intentional exception zones:

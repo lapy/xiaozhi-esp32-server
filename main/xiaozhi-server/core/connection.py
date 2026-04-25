@@ -287,7 +287,7 @@ class ConnectionHandler:
     async def _save_and_close(self, ws):
         """Save memory in the background and then close the connection."""
         try:
-            # 守护线程1：独立生成标题（不依赖记忆模型）
+            # Background thread 1: generate title independently of the memory model.
             if self.session_id:
                 def generate_title_task():
                     try:
@@ -297,7 +297,7 @@ class ConnectionHandler:
                             generate_and_save_chat_title(self.session_id)
                         )
                     except Exception as e:
-                        self.logger.bind(tag=TAG).error(f"生成标题失败: {e}")
+                        self.logger.bind(tag=TAG).error(f"Failed to generate title: {e}")
                     finally:
                         try:
                             loop.close()
@@ -306,7 +306,7 @@ class ConnectionHandler:
 
                 threading.Thread(target=generate_title_task, daemon=True).start()
 
-            # 守护线程2：走老流程记忆保存（仅记忆，不含标题）
+            # Background thread 2: preserve the existing memory-save flow without title generation.
             if self.memory:
                 # Save memory asynchronously using a background thread.
                 def save_memory_task():
@@ -878,7 +878,7 @@ class ConnectionHandler:
         self.dialogue.update_system_message(self.prompt)
 
     def chat(self, query, depth=0):
-        # 保存当前任务的sentence_id到局部变量，避免被新任务覆盖
+        # Copy the current sentence ID locally so a new task cannot overwrite it.
         current_sentence_id = None
 
         if query is not None:
@@ -887,7 +887,7 @@ class ConnectionHandler:
         # Create a new sentence ID and emit the FIRST event for top-level turns.
         if depth == 0:
             current_sentence_id = str(uuid.uuid4().hex)
-            self.sentence_id = current_sentence_id  # 更新共享属性
+            self.sentence_id = current_sentence_id  # Update shared state.
             self.dialogue.put(Message(role="user", content=query))
             self.tts.tts_text_queue.put(
                 TTSMessageDTO(
@@ -897,7 +897,7 @@ class ConnectionHandler:
                 )
             )
         else:
-            # 递归调用时，使用当前的sentence_id
+            # Recursive calls reuse the current sentence ID.
             current_sentence_id = self.sentence_id
 
         # Limit recursive tool-call depth to avoid infinite loops.
@@ -1164,7 +1164,7 @@ class ConnectionHandler:
                     try:
                         result = future.result(timeout=tool_call_timeout)
                         tool_results.append((result, tool_call_data))
-                        # 使用公共方法上报工具调用结果
+                        # Report the tool-call result through the shared helper.
                         enqueue_tool_report(self, tool_call_data['name'], tool_input, str(result.result) if result.result else None, report_tool_call=False)
 
                     except Exception as e:

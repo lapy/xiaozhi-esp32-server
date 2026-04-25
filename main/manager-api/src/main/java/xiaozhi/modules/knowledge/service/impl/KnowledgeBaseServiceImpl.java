@@ -72,8 +72,8 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
         if (pageData != null && pageData.getList() != null) {
             pageData.getList().removeIf(dto -> {
                 enrichDocumentCount(dto);
-                // syncDatasetFromRAG 检测到 RAGFlow 端已删除时，会将本地记录清理
-                // 此时 datasetId 被置空作为标记，需要在列表中移除该条目
+                // syncDatasetFromRAG cleans local records when RAGFlow reports remote deletion.
+                // The datasetId is cleared as a marker, so this row should be removed from the list.
                 return dto.getDatasetId() == null;
             });
         }
@@ -85,8 +85,8 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
     }
 
     /**
-     * 从 RAGFlow 同步数据集信息：检测删除、同步名称/简介、获取文档数量
-     * 每次列表刷新时实时查询 RAGFlow，确保立即感知远端变更
+     * Synchronize dataset information from RAGFlow: deletion status, name/description, and document count.
+     * Query RAGFlow during each list refresh so remote changes are detected immediately.
      */
     private void syncDatasetFromRAG(KnowledgeBaseDTO dto) {
         try {
@@ -102,20 +102,20 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
             DatasetDTO.InfoVO datasetInfo = adapter.getDatasetInfo(dto.getDatasetId());
 
             if (datasetInfo == null) {
-                // RAGFlow 端已删除 → 本地级联清理
-                log.info("数据集 {} 在 RAGFlow 端不存在，执行本地清理", dto.getDatasetId());
+                // Remote dataset was deleted in RAGFlow; perform local cascade cleanup.
+                log.info("Dataset {} no longer exists in RAGFlow, cleaning local records", dto.getDatasetId());
                 cleanupLocalDataset(dto.getDatasetId(), dto.getId());
-                // 标记为已删除，让上层从列表中移除
+                // Mark as deleted so callers remove it from the list.
                 dto.setDatasetId(null);
                 return;
             }
 
-            // 同步名称（去掉 username_ 前缀）
+            // Synchronize name after stripping the username prefix.
             String ragflowName = datasetInfo.getName();
             if (StringUtils.isNotBlank(ragflowName)) {
                 String localName = ragflowName.contains("_") ? ragflowName.substring(ragflowName.indexOf('_') + 1) : ragflowName;
                 if (!localName.equals(dto.getName())) {
-                    log.info("同步知识库名称: {} -> {}", dto.getName(), localName);
+                    log.info("Synchronized knowledge base name: {} -> {}", dto.getName(), localName);
                     KnowledgeBaseEntity entity = knowledgeBaseDao.selectById(dto.getId());
                     if (entity != null) {
                         entity.setName(localName);
@@ -125,12 +125,12 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
                 }
             }
 
-            // 同步简介
+            // Synchronize description.
             String ragflowDesc = datasetInfo.getDescription();
             String localDesc = dto.getDescription();
             boolean descChanged = (ragflowDesc == null && localDesc != null) || (ragflowDesc != null && !ragflowDesc.equals(localDesc));
             if (descChanged) {
-                log.info("同步知识库简介: datasetId={}", dto.getDatasetId());
+                log.info("Synchronized knowledge base description: datasetId={}", dto.getDatasetId());
                 KnowledgeBaseEntity entity = knowledgeBaseDao.selectById(dto.getId());
                 if (entity != null) {
                     entity.setDescription(ragflowDesc);
@@ -139,35 +139,35 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
                 }
             }
 
-            // 设置文档数量（保留原有功能）
+            // Set document count while preserving existing behavior.
             if (datasetInfo.getDocumentCount() != null) {
                 dto.setDocumentCount(datasetInfo.getDocumentCount().intValue());
             }
 
         } catch (Exception e) {
-            log.warn("同步数据集信息失败 {}: {}", dto.getName(), e.getMessage());
+            log.warn("Failed to synchronize dataset information {}: {}", dto.getName(), e.getMessage());
             dto.setDocumentCount(0);
         }
     }
 
     /**
-     * 本地级联清理：RAGFlow 端已删除时，清理本地所有关联数据
-     * 不调用 RAGFlow 删除 API
+     * Local cascade cleanup when the dataset was deleted in RAGFlow.
+     * Does not call the RAGFlow delete API.
      */
     @Transactional(rollbackFor = Exception.class)
     public void cleanupLocalDataset(String datasetId, String entityId) {
         try {
-            // 1. 删除文档影子记录
+            // 1. Delete document shadow records.
             documentDao.delete(new QueryWrapper<DocumentEntity>().eq("dataset_id", datasetId));
-            // 2. 删除插件映射
+            // 2. Delete plugin mappings.
             knowledgeBaseDao.deletePluginMappingByKnowledgeBaseId(entityId);
-            // 3. 删除知识库记录
+            // 3. Delete the knowledge base record.
             knowledgeBaseDao.deleteById(entityId);
-            // 4. 清理缓存
+            // 4. Clear caches.
             redisUtils.delete(RedisKeys.getKnowledgeBaseCacheKey(entityId));
-            log.info("本地级联清理完成: datasetId={}, entityId={}", datasetId, entityId);
+            log.info("Local cascade cleanup completed: datasetId={}, entityId={}", datasetId, entityId);
         } catch (Exception e) {
-            log.error("本地级联清理失败: datasetId={}, entityId={}", datasetId, entityId, e);
+            log.error("Local cascade cleanup failed: datasetId={}, entityId={}", datasetId, entityId, e);
         }
     }
 

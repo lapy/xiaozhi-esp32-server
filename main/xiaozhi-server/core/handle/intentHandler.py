@@ -171,7 +171,7 @@ Please answer the user's question using the information above: {original_text}""
                 except Exception as e:
                     conn.logger.bind(tag=TAG).error(f"Tool call failed: {e}")
                     result = ActionResponse(
-                        action=Action.ERROR, result="工具调用超时，请一会再试下哈", response="工具调用超时，请一会再试下哈"
+                        action=Action.ERROR, result="The tool call timed out. Please try again in a moment.", response="The tool call timed out. Please try again in a moment."
                     )
 
                 # Report the tool-call result.

@@ -173,24 +173,24 @@ public abstract class KnowledgeBaseAdapter {
         public abstract DatasetDTO.BatchOperationVO deleteDataset(DatasetDTO.BatchIdReq req);
 
         /**
-         * 获取数据集的文档数量
+         * Return the document count for a dataset.
          *
-         * @param datasetId 数据集ID
-         * @return 文档数量
+         * @param datasetId dataset ID
+         * @return document count
          */
         public abstract Integer getDocumentCount(String datasetId);
 
         /**
-         * 获取数据集完整信息（名称、简介、文档数量等）
-         * 用于检测 RAGFlow 端是否已删除、同步名称/简介变更
+         * Return full dataset information such as name, description, and document count.
+         * Used to detect remote deletion and synchronize name/description updates from RAGFlow.
          *
-         * @param datasetId 数据集ID
-         * @return 数据集详情，若 RAGFlow 端不存在则返回 null
+         * @param datasetId dataset ID
+         * @return dataset details, or null when it no longer exists in RAGFlow
          */
         public abstract DatasetDTO.InfoVO getDatasetInfo(String datasetId);
 
         /**
-         * 发送流式请求 (SSE)
+         * Send a streaming request over SSE.
          * 
          * @param endpoint API endpoint
          * @param body request body

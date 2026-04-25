@@ -205,7 +205,7 @@ public class ConfigServiceImpl implements ConfigService {
             result.put("mcp_endpoint", mcpEndpoint);
         }
 
-        // 获取上下文源配置
+        // Context-provider configuration.
         AgentContextProviderEntity contextProviderEntity = agentContextProviderService.getByAgentId(agent.getId());
         if (contextProviderEntity != null && contextProviderEntity.getContextProviders() != null
                 && !contextProviderEntity.getContextProviders().isEmpty()) {
@@ -459,7 +459,7 @@ public class ConfigServiceImpl implements ConfigService {
 
                     Map<String, Object> map = (Map<String, Object>) model.getConfigJson();
                     if (Constant.VOICE_CLONE_HUOSHAN_DOUBLE_STREAM.equals(map.get("type"))) {
-                        // 如果voice是”S_”开头的，使用seed-icl-1.0
+                        // Use seed-icl-1.0 when the voice starts with S_.
                         if (voice != null && voice.startsWith("S_")) {
                             map.put("resource_id", "seed-icl-1.0");
                         }
@@ -508,7 +508,7 @@ public class ConfigServiceImpl implements ConfigService {
                             typeConfig.put(memLocalShortLLM.getId(), memLocalShortLLM.getConfigJson());
                         }
                     }
-                    // LLM也返回所选的SLM，如果同名id则不重复显示
+                    // Return the selected SLM with LLM config, avoiding duplicate IDs.
                     if (StringUtils.isNotBlank(slmModelId) && !slmModelId.equals(llmModelId)) {
                         if (!typeConfig.containsKey(slmModelId)) {
                             ModelConfigEntity slmModel = modelConfigService.getModelByIdFromCache(slmModelId);

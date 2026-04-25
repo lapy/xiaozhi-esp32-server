@@ -78,14 +78,14 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
             throw new RenException(ErrorCode.RAG_DATASET_ID_AND_MODEL_ID_NOT_NULL);
         }
 
-        // 全量对账同步: 从RAGFlow拉取远端文档，实时同步确保立即感知远端变更
+        // Full reconciliation: pull remote documents from RAGFlow so remote changes are detected immediately.
         try {
             self.syncDocumentsFromRAG(datasetId);
         } catch (Exception e) {
-            log.warn("从RAGFlow全量同步文档失败(不影响本地查询): datasetId={}, error={}", datasetId, e.getMessage());
+            log.warn("Full document sync from RAGFlow failed; local query can continue: datasetId={}, error={}", datasetId, e.getMessage());
         }
 
-        // 1. 获取本地影子表数据 (MyBatis-Plus 分页)
+        // 1. Load local shadow-table data with MyBatis-Plus pagination.
         Page<DocumentEntity> pageParams = new Page<>(page, limit);
         QueryWrapper<DocumentEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("dataset_id", datasetId);
@@ -419,10 +419,10 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
     }
 
     /**
-     * 原子化保存影子记录（Upsert 语义）
-     * 若 document_id 已存在则更新，不存在则插入，避免 UNIQUE 约束冲突
+     * Save the shadow record atomically with upsert semantics.
+     * Update existing document IDs or insert missing ones to avoid UNIQUE constraint conflicts.
      *
-     * @return true=新插入, false=更新已有记录
+     * @return true for a new insert, false for an existing record update
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean saveDocumentShadow(String datasetId, KnowledgeFilesDTO result, String originalName, String chunkMethod,
@@ -467,21 +467,21 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
         entity.setCreatedAt(result.getCreatedAt() != null ? result.getCreatedAt() : new Date());
         entity.setUpdatedAt(result.getUpdatedAt() != null ? result.getUpdatedAt() : new Date());
 
-        // Upsert: 检查 document_id 是否已存在，存在则更新，不存在则插入
+        // Upsert: update existing document IDs and insert missing ones.
         DocumentEntity existing = documentDao.selectOne(
                 new QueryWrapper<DocumentEntity>().eq("document_id", entity.getDocumentId()));
 
         if (existing != null) {
             entity.setId(existing.getId());
-            entity.setCreatedAt(existing.getCreatedAt()); // 保留原始创建时间
+            entity.setCreatedAt(existing.getCreatedAt()); // Preserve original creation time.
             documentDao.updateById(entity);
-            log.info("影子记录已更新: documentId={}", entity.getDocumentId());
+            log.info("Shadow record updated: documentId={}", entity.getDocumentId());
             return false;
         } else {
             documentDao.insert(entity);
-            // 新增记录时递增数据集文档总数统计
+            // Increment dataset document statistics when inserting a new record.
             knowledgeBaseService.updateStatistics(datasetId, 1, 0L, 0L);
-            log.info("影子记录已插入: documentId={}, datasetId={}", entity.getDocumentId(), datasetId);
+            log.info("Shadow record inserted: documentId={}, datasetId={}", entity.getDocumentId(), datasetId);
             return true;
         }
     }
@@ -769,13 +769,13 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
 
     @Override
     public int syncDocumentsFromRAG(String datasetId) {
-        log.info("=== 开始从RAGFlow全量同步文档到本地影子表: datasetId={} ===", datasetId);
+        log.info("=== Starting full RAGFlow-to-shadow-table document sync: datasetId={} ===", datasetId);
 
-        // 1. 获取适配器
+        // 1. Load adapter.
         Map<String, Object> ragConfig = knowledgeBaseService.getRAGConfigByDatasetId(datasetId);
         KnowledgeBaseAdapter adapter = KnowledgeBaseAdapterFactory.getAdapter(extractAdapterType(ragConfig), ragConfig);
 
-        // 2. 分页拉取远端所有文档
+        // 2. Page through all remote documents.
         List<KnowledgeFilesDTO> allRemoteDocs = new ArrayList<>();
         int pageNum = 1;
         int pageSize = 100;
@@ -795,20 +795,20 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
             pageNum++;
         }
 
-        // 3. 获取本地已有文档
+        // 3. Load existing local documents.
         List<DocumentEntity> localDocs = documentDao.selectList(
                 new QueryWrapper<DocumentEntity>().eq("dataset_id", datasetId));
         Set<String> localDocIds = localDocs.stream()
                 .map(DocumentEntity::getDocumentId)
                 .collect(Collectors.toSet());
 
-        // 4. 远端文档ID集合
+        // 4. Build the set of remote document IDs.
         Set<String> remoteDocIds = allRemoteDocs.stream()
                 .map(KnowledgeFilesDTO::getDocumentId)
                 .filter(id -> id != null)
                 .collect(Collectors.toSet());
 
-        // 5. 补充: 插入远端存在但本地缺失的文档
+        // 5. Insert documents that exist remotely but are missing locally.
         List<KnowledgeFilesDTO> newDocs = allRemoteDocs.stream()
                 .filter(doc -> doc.getDocumentId() != null && !localDocIds.contains(doc.getDocumentId()))
                 .collect(Collectors.toList());
@@ -818,7 +818,7 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
             for (KnowledgeFilesDTO doc : newDocs) {
                 try {
                     self.saveDocumentShadow(datasetId, doc, doc.getName(), doc.getChunkMethod(), doc.getParserConfig());
-                    // 同步远端已有的 token/chunk 统计
+                    // Synchronize remote token/chunk statistics.
                     Long tokenCount = doc.getTokenCount() != null ? doc.getTokenCount() : 0L;
                     long chunkCount = doc.getChunkCount() != null ? doc.getChunkCount().longValue() : 0L;
                     if (tokenCount > 0 || chunkCount > 0) {
@@ -826,13 +826,13 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
                     }
                     syncCount++;
                 } catch (Exception e) {
-                    log.warn("同步单个文档影子记录失败: docId={}, error={}", doc.getDocumentId(), e.getMessage());
+                    log.warn("Failed to synchronize one document shadow record: docId={}, error={}", doc.getDocumentId(), e.getMessage());
                 }
             }
-            log.info("从RAGFlow新增同步 {} 个文档影子记录, datasetId={}", syncCount, datasetId);
+            log.info("Synchronized {} new document shadow records from RAGFlow, datasetId={}", syncCount, datasetId);
         }
 
-        // 6. 清理: 删除远端已不存在但本地仍保留的影子记录
+        // 6. Cleanup: delete local shadow records that no longer exist remotely.
         List<DocumentEntity> deletedDocs = localDocs.stream()
                 .filter(entity -> !remoteDocIds.contains(entity.getDocumentId()))
                 .collect(Collectors.toList());
@@ -849,14 +849,14 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
             }
             try {
                 self.deleteDocumentShadows(deletedDocIds, datasetId, totalChunkDelta, totalTokenDelta);
-                log.info("清理远端已删除的影子记录: {} 个, datasetId={}", deletedDocs.size(), datasetId);
+                log.info("Cleaned shadow records deleted remotely: count={}, datasetId={}", deletedDocs.size(), datasetId);
             } catch (Exception e) {
-                log.warn("清理远端已删除的影子记录失败: datasetId={}, error={}", datasetId, e.getMessage());
+                log.warn("Failed to clean shadow records deleted remotely: datasetId={}, error={}", datasetId, e.getMessage());
             }
         }
 
-        // 7. 全量更新: 远端和本地都存在的文档，以远端为准同步所有字段
-        // 处理 RAGFlow 复用 documentId 重传、远端编辑后元数据变化等场景
+        // 7. Full update: synchronize all fields from remote for documents present in both places.
+        // Handles reused document IDs, retransmits, and remote metadata edits in RAGFlow.
         Map<String, KnowledgeFilesDTO> remoteDocMap = allRemoteDocs.stream()
                 .filter(doc -> doc.getDocumentId() != null)
                 .collect(Collectors.toMap(KnowledgeFilesDTO::getDocumentId, doc -> doc, (a, b) -> b));
@@ -869,11 +869,11 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
             String docId = entry.getKey();
             DocumentEntity local = localDocMap.get(docId);
             if (local == null) {
-                continue; // 不在本地，由步骤5处理
+                continue; // Missing locally, handled by step 5.
             }
             KnowledgeFilesDTO remote = entry.getValue();
 
-            // 全量字段更新（以远端为准），确保本地与 RAGFlow 完全一致
+            // Full field update from remote so local state matches RAGFlow.
             UpdateWrapper<DocumentEntity> updateWrapper = new UpdateWrapper<DocumentEntity>()
                     .set("run", remote.getRun())
                     .set("status", remote.getStatus() != null ? remote.getStatus() : local.getStatus())
@@ -898,13 +898,13 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
                 try {
                     updateWrapper.set("meta_fields", objectMapper.writeValueAsString(remote.getMetaFields()));
                 } catch (Exception e) {
-                    log.warn("同步更新元数据序列化失败: docId={}, error={}", docId, e.getMessage());
+                    log.warn("Failed to serialize synchronized metadata update: docId={}, error={}", docId, e.getMessage());
                 }
             }
 
             documentDao.update(null, updateWrapper);
 
-            // 同步统计差异（chunk/token 计数变化时修正父表）
+            // Synchronize statistic deltas when chunk/token counts change.
             Long remoteTokenCount = remote.getTokenCount() != null ? remote.getTokenCount() : 0L;
             Long localTokenCount = local.getTokenCount() != null ? local.getTokenCount() : 0L;
             long remoteChunkCount = remote.getChunkCount() != null ? remote.getChunkCount().longValue() : 0L;
@@ -913,16 +913,16 @@ public class KnowledgeFilesServiceImpl extends BaseServiceImpl<DocumentDao, Docu
             long chunkDelta = remoteChunkCount - localChunkCount;
             if (tokenDelta != 0 || chunkDelta != 0) {
                 knowledgeBaseService.updateStatistics(datasetId, 0, chunkDelta, tokenDelta);
-                log.info("影子更新: 修正知识库统计, docId={}, chunkDelta={}, tokenDelta={}", docId, chunkDelta, tokenDelta);
+                log.info("Shadow update: corrected knowledge base statistics, docId={}, chunkDelta={}, tokenDelta={}", docId, chunkDelta, tokenDelta);
             }
 
             updateCount++;
         }
 
         if (syncCount == 0 && deletedDocs.isEmpty() && updateCount == 0) {
-            log.info("本地影子表已与RAGFlow完全同步, datasetId={}", datasetId);
+            log.info("Local shadow table is fully synchronized with RAGFlow, datasetId={}", datasetId);
         } else {
-            log.info("同步完成: 新增={}, 清理={}, 更新={}, datasetId={}", syncCount, deletedDocs.size(), updateCount, datasetId);
+            log.info("Sync completed: inserted={}, cleaned={}, updated={}, datasetId={}", syncCount, deletedDocs.size(), updateCount, datasetId);
         }
 
         return syncCount;

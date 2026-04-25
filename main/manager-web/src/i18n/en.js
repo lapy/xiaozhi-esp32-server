@@ -762,7 +762,7 @@ export default {
   'roleConfig.tooltip.contextProvider': 'When XiaoZhi is awakened, fetch external system data and dynamically inject it into the LLM system prompt',
   'roleConfig.tooltip.roleIntroduction': 'Define the AI agent\'s role positioning, personality traits, behavioral norms, and professional knowledge background',
   'roleConfig.tooltip.memoryHis': 'Summarize chat record content',
-  'roleConfig.tooltip.languageCode': 'Set language code such as zh-CN, en-US, etc., used for specific feature recognition',
+  'roleConfig.tooltip.languageCode': 'Set language code such as en-US or en-GB, used for specific feature recognition',
   'roleConfig.tooltip.interactionLanguage': 'Set the interaction language, specifying the primary language the AI agent uses for communication',
   'roleConfig.tooltip.vad': 'Voice Activity Detection: Detects when the user starts or stops speaking, used to determine conversation start and end, enabling interrupt functionality',
   'roleConfig.tooltip.asr': 'Automatic Speech Recognition: Converts user speech to text, the first step in human-computer dialogue, supporting multilingual recognition',

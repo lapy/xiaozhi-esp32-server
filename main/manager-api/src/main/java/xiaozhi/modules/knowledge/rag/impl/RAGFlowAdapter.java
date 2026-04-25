@@ -492,7 +492,7 @@ public class RAGFlowAdapter extends KnowledgeBaseAdapter {
             }
             return 0;
         } catch (Exception e) {
-            log.warn("获取文档数量失败: {}", e.getMessage());
+            log.warn("Failed to load document count: {}", e.getMessage());
             return 0;
         }
     }
@@ -514,10 +514,10 @@ public class RAGFlowAdapter extends KnowledgeBaseAdapter {
                     return objectMapper.convertValue(list.get(0), DatasetDTO.InfoVO.class);
                 }
             }
-            // RAGFlow 端不存在该数据集
+            // Dataset no longer exists in RAGFlow.
             return null;
         } catch (Exception e) {
-            log.warn("获取数据集信息失败: datasetId={}, error={}", datasetId, e.getMessage());
+            log.warn("Failed to load dataset information: datasetId={}, error={}", datasetId, e.getMessage());
             return null;
         }
     }

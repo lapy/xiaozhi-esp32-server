@@ -37,10 +37,10 @@ public class AgentEntity {
     @Schema(description = "LLM model ID")
     private String llmModelId;
 
-    @Schema(description = "小模型标识")
+    @Schema(description = "Small model ID")
     private String slmModelId;
 
-    @Schema(description = "VLLM模型标识")
+    @Schema(description = "VLLM model ID")
     private String vllmModelId;
 
     @Schema(description = "TTS model ID")

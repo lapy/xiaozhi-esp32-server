@@ -133,7 +133,7 @@ public class DatasetDTO {
         private ParserConfig parserConfig;
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        @Schema(description = "PageRank 权重 (0-100)", example = "50")
+        @Schema(description = "PageRank weight (0-100)", example = "50")
         private Integer pagerank;
     }
 

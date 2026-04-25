@@ -13,12 +13,12 @@ const props = withDefaults(defineProps<Props>(), {
   agentId: 'default',
 })
 
-// 接收props
+// Receive props
 interface Props {
   agentId?: string
 }
 
-// 获取屏幕边界到安全区域距离
+// Get safe-area distance from screen bounds
 let safeAreaInsets: any
 let systemInfo: any
 
@@ -52,10 +52,10 @@ const currentAgentId = computed(() => {
   return props.agentId
 })
 
-// 加载聊天会话列表
+// Load chat session list
 async function loadChatSessions(page = 1, isUpdate = false) {
   try {
-    // 检查是否有当前选中的智能体
+    // Check whether an agent is currently selected
     if (!currentAgentId.value) {
       console.warn('No selected agent')
       sessionList.value = []
@@ -171,7 +171,7 @@ function goToChatDetail(session: ChatSession) {
 }
 
 onMounted(async () => {
-  // 智能体已简化为默认
+  // Agent selection has been simplified to the default
   loadChatSessions(1)
 })
 
@@ -181,7 +181,7 @@ onShow(() => {
   }
 })
 
-// 暴露方法给父组件
+// Expose methods to the parent component
 defineExpose({
   refresh,
   loadMore,

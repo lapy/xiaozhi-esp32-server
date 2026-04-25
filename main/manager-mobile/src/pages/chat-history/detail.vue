@@ -127,42 +127,42 @@ function formatTime(timeStr: string) {
   if (!timeStr)
     return t('chatHistory.unknownTime')
 
-  // 处理时间字符串，确保格式正确
-  const date = new Date(timeStr.replace(' ', 'T')) // 转换为ISO格式
+  // Normalize time string format
+  const date = new Date(timeStr.replace(' ', 'T')) // Convert to ISO format
   const now = new Date()
 
-  // 检查日期是否有效
+  // Check whether the date is valid
   if (Number.isNaN(date.getTime())) {
-    return timeStr // 如果解析失败，直接返回原字符串
+    return timeStr // Return the original string if parsing fails
   }
 
   const diff = now.getTime() - date.getTime()
 
-  // 小于1分钟
+  // Less than one minute
   if (diff < 60000)
     return t('chatHistory.justNow')
 
-  // 小于1小时
+  // Less than one hour
   if (diff < 3600000)
     return t('chatHistory.minutesAgo', { minutes: Math.floor(diff / 60000) })
 
-  // 小于1天（24小时）
+  // Less than one day (24 hours)
   if (diff < 86400000)
     return t('chatHistory.hoursAgo', { hours: Math.floor(diff / 3600000) })
 
-  // 小于7天
+  // Less than seven days
   if (diff < 604800000) {
     const days = Math.floor(diff / 86400000)
     return t('chatHistory.daysAgo', { days })
   }
 
-  // 超过7天，显示具体日期
+  // More than seven days, show the date
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   const currentYear = now.getFullYear()
 
-  // 如果是当前年份，不显示年份
+  // Omit the year for the current year
   if (year === currentYear) {
     return `${month}-${day}`
   }
@@ -234,25 +234,25 @@ function extractContentFromString(content: string) {
     return content
   }
 
-  // 尝试解析为 JSON
+  // Try to parse as JSON
   try {
     const jsonObj = JSON.parse(content)
 
-    // 如果是数组格式（包含 text 和 tool）
+    // Array format containing text and tool entries
     if (Array.isArray(jsonObj)) {
       return jsonObj
     }
 
-    // 如果是对象且有 content 字段
+    // Object with a content field
     if (jsonObj && typeof jsonObj === 'object' && jsonObj.content) {
       return jsonObj.content
     }
   }
   catch (e) {
-    // 如果不是有效的 JSON，直接返回原内容
+    // Return original content if JSON parsing fails
   }
 
-  // 如果不是 JSON 格式或没有 content 字段，直接返回原内容
+  // Return original content if it is not JSON or has no content field
   return content
 }
 
@@ -263,7 +263,7 @@ function toggleToolResult(messageIndex, itemIndex) {
 
 function isToolResultCollapsed(messageIndex, itemIndex) {
   const key = `${messageIndex}-${itemIndex}`
-  // 默认折叠（true表示折叠）
+  // Collapsed by default (true means collapsed)
   return !expandedToolResults.value[key]
 }
 
@@ -290,7 +290,7 @@ onShow(() => {
   loadChatHistory()
 })
 
-// 页面销毁时清理音频资源
+// Clean up audio resources when the page is destroyed
 onUnload(() => {
   if (audioContext.value) {
     audioContext.value.stop()
@@ -381,9 +381,9 @@ onUnload(() => {
                   </div>
                 </div>
               </template>
-              <!-- 内容区域 - 使用flex布局让图标和文本对齐 -->
+              <!-- Content area - use flex layout to align icon and text -->
               <view v-else class="flex items-center gap-[12rpx]">
-                <!-- 音频播放图标 -->
+                <!-- Audio playback icon -->
                 <view
                   v-if="message.audioId"
                   class="flex-shrink-0 cursor-pointer transition-transform duration-200 active:scale-90"
