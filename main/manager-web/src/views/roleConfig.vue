@@ -509,8 +509,8 @@ export default {
             showClose: true,
           });
         })
-      }).catch(() => {
-      });
+        .catch(() => {
+        });
     },
     fetchTemplates() {
       Api.agent.getAgentTemplate(({ data }) => {
