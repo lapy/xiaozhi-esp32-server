@@ -398,6 +398,7 @@ export default {
     'deviceConfig.selectedNetwork': 'Mạng đã chọn',
     'deviceConfig.signal': 'Tín hiệu',
     'deviceConfig.openNetwork': 'Mạng mở',
+    'deviceConfig.open': 'Mạng mở',
     'deviceConfig.encryptedNetwork': 'Mạng mã hóa',
     'deviceConfig.password': 'Mật khẩu',
     'deviceConfig.pleaseEnterPassword': 'Vui lòng nhập mật khẩu WiFi',

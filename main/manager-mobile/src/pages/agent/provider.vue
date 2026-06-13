@@ -2,7 +2,7 @@
 {
   "layout": "default",
   "style": {
-    "navigationBarTitleText": "编辑源",
+    "navigationBarTitleText": "Edit Source",
     "navigationStyle": "custom"
   }
 }

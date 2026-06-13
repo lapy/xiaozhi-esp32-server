@@ -182,7 +182,7 @@
 
         <img loading="lazy" alt="" src="@/assets/home/avatar.png" class="avatar-img" @click="handleAvatarClick" />
         <span class="el-user-dropdown" @click="handleAvatarClick">
-          {{ userInfo.username || "加载中..." }}
+          {{ userInfo.username || $t('header.loading') }}
           <i class="el-icon-arrow-down el-icon--right" :class="{ 'rotate-down': userMenuVisible }"></i>
         </span>
         <el-cascader :options="userMenuOptions" trigger="click" :props="cascaderProps"
@@ -201,7 +201,8 @@
 </template>
 
 <script>
-import i18n, { changeLanguage } from "@/i18n";
+import i18n, { changeLanguage, getLanguageLabelKey, supportedLanguages } from "@/i18n";
+import userApi from "@/apis/module/user";
 import featureManager from "@/utils/featureManager"; // 引入功能管理工具类
 import { mapActions, mapState } from "vuex";
 import ChangePasswordDialog from "./ChangePasswordDialog.vue"; // 引入修改密码弹窗组件
@@ -262,48 +263,22 @@ export default {
       }),
       userInfo: (state) => state.userInfo,
     }),
-    // 获取当前语言
     currentLanguage() {
-      return i18n.locale || "zh_CN";
+      return i18n.locale || "en";
     },
-    // 获取当前语言显示文本
     currentLanguageText() {
-      const currentLang = this.currentLanguage;
-      switch (currentLang) {
-        case "zh_CN":
-          return this.$t("language.zhCN");
-        case "zh_TW":
-          return this.$t("language.zhTW");
-        case "en":
-          return this.$t("language.en");
-        case "de":
-          return this.$t("language.de");
-        case "vi":
-          return this.$t("language.vi");
-        case "pt_BR":
-          return this.$t("language.ptBR");
-        default:
-          return this.$t("language.zhCN");
-      }
+      return this.$t(getLanguageLabelKey(this.currentLanguage));
     },
-    // 根据当前语言获取对应的xiaozhi-ai图标
     xiaozhiAiIcon() {
-      const currentLang = this.currentLanguage;
-      switch (currentLang) {
-        case "zh_CN":
-          return require("@/assets/xiaozhi-ai.png");
-        case "zh_TW":
-          return require("@/assets/xiaozhi-ai_zh_TW.png");
-        case "en":
-          return require("@/assets/xiaozhi-ai_en.png");
+      switch (this.currentLanguage) {
         case "de":
           return require("@/assets/xiaozhi-ai_de.png");
         case "vi":
           return require("@/assets/xiaozhi-ai_vi.png");
         case "pt_BR":
-          return require("@/assets/xiaozhi-ai_en.png");
+        case "en":
         default:
-          return require("@/assets/xiaozhi-ai.png");
+          return require("@/assets/xiaozhi-ai_en.png");
       }
     },
     // 用户菜单选项
@@ -312,32 +287,10 @@ export default {
         {
           label: this.currentLanguageText,
           value: "language",
-          children: [
-            {
-              label: this.$t("language.zhCN"),
-              value: "zh_CN",
-            },
-            {
-              label: this.$t("language.zhTW"),
-              value: "zh_TW",
-            },
-            {
-              label: this.$t("language.en"),
-              value: "en",
-            },
-            {
-              label: this.$t("language.de"),
-              value: "de",
-            },
-            {
-              label: this.$t("language.vi"),
-              value: "vi",
-            },
-            {
-              label: this.$t("language.ptBR"),
-              value: "pt_BR",
-            },
-          ],
+          children: supportedLanguages.map((lang) => ({
+            label: this.$t(lang.labelKey),
+            value: lang.code,
+          })),
         },
         {
           label: this.$t("header.changePassword"),
@@ -351,6 +304,7 @@ export default {
     },
   },
   async mounted() {
+    this.fetchUserInfo();
     this.checkScreenSize();
     window.addEventListener("resize", this.checkScreenSize);
     // 从localStorage加载搜索历史
@@ -365,6 +319,13 @@ export default {
   methods: {
     handleRouter(type) {
       this.$router.push(this.routerPaths[type]);
+    },
+    fetchUserInfo() {
+      userApi.getUserInfo(({ data }) => {
+        if (data && data.code === 0 && data.data) {
+          this.$store.commit("setUserInfo", data.data);
+        }
+      });
     },
     // 加载功能状态
     async loadFeatureStatus() {

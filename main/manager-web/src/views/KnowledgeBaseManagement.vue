@@ -59,7 +59,7 @@
                       <div class="kb-card-name">{{ kb.name }}</div>
                       <div class="kb-card-bottom">
                         <div class="kb-card-meta">
-                          <span>{{`文档&nbsp;&nbsp;${kb.documentCount || 0}` }}</span>
+                          <span>{{ $t('knowledgeBaseManagement.documentsLabel') }}&nbsp;&nbsp;{{ kb.documentCount || 0 }}</span>
                           <el-divider direction="vertical" />
                           <span>{{ formatDate(kb.createdAt) }}</span>
                           <el-divider direction="vertical" />
@@ -581,12 +581,12 @@ export default {
           if (data && data.code === 0) {
             this.retrievalTestResult = data.data || data;
           } else {
-            this.$message.error(data?.msg || '召回测试失败');
+            this.$message.error(data?.msg || this.$t('knowledgeBaseManagement.retrievalTestFailed'));
           }
         },
         (err) => {
           this.retrievalTestLoading = false;
-          this.$message.error(err?.data?.msg || '召回测试失败');
+          this.$message.error(err?.data?.msg || this.$t('knowledgeBaseManagement.retrievalTestFailed'));
         }
       );
     },

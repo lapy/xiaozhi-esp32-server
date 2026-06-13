@@ -12,12 +12,12 @@ class FeatureManager {
             },
             voiceClone: {
                 name: 'feature.voiceClone.name',
-                enabled: false,
+                enabled: true,
                 description: 'feature.voiceClone.description'
             },
             knowledgeBase: {
                 name: 'feature.knowledgeBase.name',
-                enabled: false,
+                enabled: true,
                 description: 'feature.knowledgeBase.description'
             },
             mcpAccessPoint: {
@@ -37,7 +37,7 @@ class FeatureManager {
             },
             addressBook: {
                 name: 'feature.addressBook.name',
-                enabled: false,
+                enabled: true,
                 description: 'feature.addressBook.description'
             }
         };

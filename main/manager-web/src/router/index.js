@@ -84,7 +84,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '参数管理'
+      title: 'Parameter Management'
     }
   },
   {
@@ -95,7 +95,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '知识库管理'
+      title: 'Knowledge Base'
     }
   },
   {
@@ -106,7 +106,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '文档上传管理'
+      title: 'Document Upload'
     }
   },
 
@@ -118,7 +118,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '服务端管理'
+      title: 'Server Management'
     }
   },
   {
@@ -129,7 +129,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: 'OTA管理'
+      title: 'OTA Management'
     }
   },
   {
@@ -140,7 +140,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '音色资源开通'
+      title: 'Voice Resource'
     }
   },
   {
@@ -151,7 +151,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '音色克隆管理'
+      title: 'Voice Clone'
     }
   },
   {
@@ -193,7 +193,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '功能配置'
+      title: 'Feature Configuration'
     }
   },
   // 替换词管理
@@ -205,7 +205,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '替换词管理'
+      title: 'Replacement Word Management'
     }
   },
   // 通讯录管理页面路由
@@ -217,7 +217,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
-      title: '通讯录管理'
+      title: 'Address Book Management'
     }
   },
 ]

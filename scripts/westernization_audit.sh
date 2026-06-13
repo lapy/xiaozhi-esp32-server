@@ -203,10 +203,36 @@ section() {
   printf '\n== %s ==\n' "$1"
 }
 
+collect_audit_roots() {
+  AUDIT_SEARCH_ROOTS=()
+  local candidate
+  for candidate in main docs scripts; do
+    if [[ -e "$candidate" ]]; then
+      AUDIT_SEARCH_ROOTS+=("$candidate")
+    fi
+  done
+  shopt -s nullglob
+  for candidate in *.md; do
+    AUDIT_SEARCH_ROOTS+=("$candidate")
+  done
+  shopt -u nullglob
+  if [[ ${#AUDIT_SEARCH_ROOTS[@]} -eq 0 ]]; then
+    echo "No audit search roots found." >&2
+    exit 1
+  fi
+}
+
 run_rg() {
   local pattern="$1"
   shift
-  rg -n "$pattern" . "${@/#/-g }"
+  local -a rg_globs=()
+  local glob
+  for glob in "$@"; do
+    rg_globs+=(-g "$glob")
+  done
+  # Ripgrep matches nothing when every -g is negated and the search root is ".".
+  # Scan explicit roots so negated globs filter within them instead of excluding all files.
+  rg -n --no-messages "$pattern" "${AUDIT_SEARCH_ROOTS[@]}" "${rg_globs[@]}"
 }
 
 show_limited_matches() {
@@ -231,6 +257,7 @@ show_limited_matches() {
 }
 
 section "Live Source And Docs Audit"
+collect_audit_roots
 if run_rg "$CONTENT_PATTERN" "${MAIN_IGNORE[@]}"; then
   echo
   echo "Live source/doc audit: FAIL"

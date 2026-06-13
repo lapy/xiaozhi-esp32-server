@@ -21,11 +21,11 @@
     <slot></slot>
     <template slot="footer">
       <div v-if="footer" class="dialog-footer">
-        <el-button @click="handleCancel">{{ cancelText }}</el-button>
+        <el-button @click="handleCancel">{{ effectiveCancelText }}</el-button>
         <el-button :loading="confirmLoading" type="primary" @click="handleConfirm">
           <span class="confirm-inner">
             <img src="@/assets/knowledge-base/star.png" class="confirm-icon" />
-            {{ confirmText }}
+            {{ effectiveConfirmText }}
           </span>
         </el-button>
       </div>
@@ -79,11 +79,19 @@ export default {
     },
     cancelText: {
       type: String,
-      default: "取消"
+      default: ""
     },
     confirmText: {
       type: String,
-      default: "确认保存"
+      default: ""
+    }
+  },
+  computed: {
+    effectiveCancelText() {
+      return this.cancelText || this.$t("common.cancel");
+    },
+    effectiveConfirmText() {
+      return this.confirmText || this.$t("customDialog.confirmSave");
     }
   },
   data() {

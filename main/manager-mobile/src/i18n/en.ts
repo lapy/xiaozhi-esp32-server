@@ -398,6 +398,7 @@ export default {
   'deviceConfig.selectedNetwork': 'Selected Network',
   'deviceConfig.signal': 'Signal',
   'deviceConfig.openNetwork': 'Open Network',
+  'deviceConfig.open': 'Open Network',
   'deviceConfig.encryptedNetwork': 'Encrypted Network',
   'deviceConfig.password': 'Password',
   'deviceConfig.pleaseEnterPassword': 'Please enter WiFi password',

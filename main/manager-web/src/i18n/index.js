@@ -23,6 +23,9 @@ export const getLanguageLabelKey = (lang) => {
 const getDefaultLanguage = () => {
   const savedLang = localStorage.getItem('userLanguage');
   if (savedLang) {
+    if (savedLang === 'zh_CN' || savedLang === 'zh_TW') {
+      return 'en';
+    }
     return savedLang;
   }
   const browserLang = navigator.language || navigator.userLanguage;

@@ -3,7 +3,7 @@
   "layout": "default",
   "style": {
     "navigationStyle": "custom",
-    "navigationBarTitleText": "聊天详情"
+    "navigationBarTitleText": "Chat Detail"
   }
 }
 </route>

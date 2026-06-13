@@ -2,7 +2,7 @@
 {
   "layout": "default",
   "style": {
-    "navigationBarTitleText": "设置",
+    "navigationBarTitleText": "Settings",
     "navigationStyle": "custom"
   }
 }

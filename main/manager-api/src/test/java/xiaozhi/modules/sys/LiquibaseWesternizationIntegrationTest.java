@@ -166,6 +166,50 @@ WHERE param_code = 'system-web.menu'
 """)
             );
         }
+        if ("202606131400.sql".equals(fileName)) {
+            return """
+UPDATE sys_params
+SET param_value = JSON_SET(
+    CAST(param_value AS VARCHAR),
+    '$.features.addressBook',
+    JSON_UNQUOTE(JSON_EXTRACT(CAST(param_value AS VARCHAR), '$.addressBook'))
+)
+WHERE param_code = 'system-web.menu'
+  AND JSON_EXTRACT(CAST(param_value AS VARCHAR), '$.addressBook') IS NOT NULL
+  AND JSON_EXTRACT(CAST(param_value AS VARCHAR), '$.features.addressBook') IS NULL;
+
+UPDATE sys_params
+SET param_value = JSON_REMOVE(CAST(param_value AS VARCHAR), '$.addressBook')
+WHERE param_code = 'system-web.menu'
+  AND JSON_EXTRACT(CAST(param_value AS VARCHAR), '$.addressBook') IS NOT NULL;
+
+UPDATE sys_params
+SET param_value = JSON_SET(
+    CAST(param_value AS VARCHAR),
+    '$.features.addressBook',
+    '{"name":"feature.addressBook.name","enabled":true,"description":"feature.addressBook.description"}'
+)
+WHERE param_code = 'system-web.menu'
+  AND JSON_EXTRACT(CAST(param_value AS VARCHAR), '$.features.addressBook') IS NULL;
+
+UPDATE sys_params
+SET param_value = JSON_SET(
+    CAST(param_value AS VARCHAR),
+    '$.features.voiceClone.enabled', 'true',
+    '$.features.knowledgeBase.enabled', 'true',
+    '$.features.addressBook.enabled', 'true'
+)
+WHERE param_code = 'system-web.menu';
+
+UPDATE sys_params
+SET param_value = JSON_SET(
+    CAST(param_value AS VARCHAR),
+    '$.groups.featureManagement',
+    '["voiceprintRecognition","voiceClone","knowledgeBase","mcpAccessPoint","addressBook"]'
+)
+WHERE param_code = 'system-web.menu';
+""";
+        }
         if ("202601141645.sql".equals(fileName)) {
             normalized = normalized.replaceAll(
                 "(?s)UPDATE `ai_model_provider` ap\\s+JOIN \\(.*?\\) filtered ON ap\\.id = filtered\\.id\\s+SET ap\\.fields = filtered\\.new_fields;",
@@ -451,7 +495,7 @@ WHERE r.sort = 0;
 
     private void assertLatestChangeSetApplied(Connection connection) throws SQLException {
         String latestId = scalar(connection, "SELECT MAX(ID) FROM DATABASECHANGELOG");
-        Assertions.assertEquals("202606131200", latestId, "latest downstream cleanup migration should be applied");
+        Assertions.assertEquals("202606131400", latestId, "latest downstream cleanup migration should be applied");
     }
 
     private void assertRequiredSeedCoverage(Connection connection) throws SQLException {
