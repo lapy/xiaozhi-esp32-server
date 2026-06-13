@@ -47,6 +47,7 @@ export default {
   addModel(params, callback) {
     const { modelType, provideCode, formData } = params;
     const postData = {
+      id: formData.id,
       modelCode: formData.modelCode,
       modelName: formData.modelName,
       isDefault: formData.isDefault ? 1 : 0,
@@ -92,13 +93,10 @@ export default {
   },
   // Get model name list
   getModelNames(modelType, modelName, callback) {
-    const queryParams = new URLSearchParams({
-      modelType,
-      modelName: modelName || ''
-    }).toString();
     RequestService.sendRequest()
-      .url(`${getServiceUrl()}/models/names?${queryParams}`)
+      .url(`${getServiceUrl()}/models/names`)
       .method('GET')
+      .data({ modelType, modelName })
       .success((res) => {
         RequestService.clearRequestTime();
         callback(res);
@@ -111,12 +109,10 @@ export default {
   },
   // Get LLM model name list
   getLlmModelCodeList(modelName, callback) {
-    const queryParams = new URLSearchParams({
-      modelName: modelName || ''
-    }).toString();
     RequestService.sendRequest()
-      .url(`${getServiceUrl()}/models/llm/names?${queryParams}`)
+      .url(`${getServiceUrl()}/models/llm/names`)
       .method('GET')
+      .data({ modelName })
       .success((res) => {
         RequestService.clearRequestTime();
         callback(res);

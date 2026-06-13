@@ -60,6 +60,10 @@ export default {
       isCDNEnabled: process.env.VUE_APP_USE_CDN === 'true'
     };
   },
+  created() {
+    this.$store.commit('setUserInfo', JSON.parse(localStorage.getItem('userInfo') || '{}'));
+    this.$store.commit('setPubConfig', JSON.parse(localStorage.getItem('pubConfig') || '{}'));
+  },
   mounted() {
     // Check if it is a mobile device and VUE_APP_H5_URL is not empty, if both conditions are met then redirect to H5 page
     if (this.isMobileDevice() && process.env.VUE_APP_H5_URL) {

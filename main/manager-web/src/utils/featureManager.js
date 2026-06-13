@@ -12,12 +12,12 @@ class FeatureManager {
             },
             voiceClone: {
                 name: 'feature.voiceClone.name',
-                enabled: true,
+                enabled: false,
                 description: 'feature.voiceClone.description'
             },
             knowledgeBase: {
                 name: 'feature.knowledgeBase.name',
-                enabled: true,
+                enabled: false,
                 description: 'feature.knowledgeBase.description'
             },
             mcpAccessPoint: {
@@ -27,17 +27,17 @@ class FeatureManager {
             },
             vad: {
                 name: 'feature.vad.name',
-                enabled: true,
+                enabled: false,
                 description: 'feature.vad.description'
             },
             asr: {
                 name: 'feature.asr.name',
-                enabled: true,
+                enabled: false,
                 description: 'feature.asr.description'
             },
             addressBook: {
                 name: 'feature.addressBook.name',
-                enabled: true,
+                enabled: false,
                 description: 'feature.addressBook.description'
             }
         };
@@ -55,15 +55,6 @@ class FeatureManager {
         }
         await this.initPromise;
         return this.initialized;
-    }
-
-    /**
-     * Reload feature configuration from pub-config (e.g. after login).
-     */
-    async refresh() {
-        this.initPromise = this.init();
-        await this.initPromise;
-        return this.currentFeatures;
     }
 
     /**

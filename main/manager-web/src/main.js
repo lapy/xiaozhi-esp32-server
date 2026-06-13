@@ -8,6 +8,7 @@ import store from './store';
 import i18n from './i18n';
 import './styles/global.scss';
 import { register as registerServiceWorker } from './registerServiceWorker';
+import featureManager from './utils/featureManager';
 
 // Create event bus for component communication
 Vue.prototype.$eventBus = new Vue();

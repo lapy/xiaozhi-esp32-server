@@ -774,11 +774,10 @@ export default {
         if (model.type != "LLM") {
           Api.model.getModelNames(model.type, "", ({ data }) => {
             if (data.code === 0) {
-              const models = Array.isArray(data.data) ? data.data : [];
               this.$set(
                 this.modelOptions,
                 model.type,
-                models.map((item) => ({
+                data.data.map((item) => ({
                   value: item.id,
                   label: item.modelName,
                   isHidden: false,
@@ -797,8 +796,7 @@ export default {
           Api.model.getLlmModelCodeList("", ({ data }) => {
             if (data.code === 0) {
               let LLMdata = [];
-              const models = Array.isArray(data.data) ? data.data : [];
-              models.forEach((item) => {
+              data.data.forEach((item) => {
                 LLMdata.push({
                   value: item.id,
                   label: item.modelName,
@@ -1304,26 +1302,11 @@ export default {
         this.form.chatHistoryConf = 0;
       }
     },
-    hasModelOptionsLoaded() {
-      return Object.keys(this.modelOptions).length > 0;
-    },
-    scheduleModelOptionsLoad() {
-      const load = () => {
-        this.fetchModelOptions();
-        this.fetchTemplates();
-      };
-      load();
-      this.$nextTick(() => {
-        if (!this.hasModelOptionsLoaded()) {
-          load();
-        }
-      });
-    },
     // 加载功能状态
     async loadFeatureStatus() {
       try {
+        // 确保featureManager已初始化完成
         await featureManager.waitForInitialization();
-        await featureManager.refresh();
         const config = featureManager.getConfig();
         this.featureStatus.voiceprintRecognition = config.voiceprintRecognition || false;
         this.featureStatus.vad = config.vad || false;
@@ -1400,7 +1383,8 @@ export default {
       this.getAgentTags(agentId);
       this.fetchAllFunctions();
     }
-    this.scheduleModelOptionsLoad();
+    this.fetchModelOptions();
+    this.fetchTemplates();
     // 加载功能状态，确保featureManager已初始化
     await this.loadFeatureStatus();
   },
