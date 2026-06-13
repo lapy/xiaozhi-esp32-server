@@ -15,11 +15,47 @@
             :style="{ filter: $route.path === '/home' || $route.path === '/role-config' || $route.path === '/device-management' ? 'brightness(0) invert(1)' : 'None' }" />
           <span class="nav-text">{{ $t('header.smartManagement') }}</span>
         </div>
+        <div v-if="!isSuperAdmin && featureStatus.voiceClone" class="equipment-management"
+          :class="{ 'active-tab': $route.path === '/voice-clone-management' }" @click="goVoiceCloneManagement">
+          <img loading="lazy" alt="" src="@/assets/header/voice.png"
+            :style="{ filter: $route.path === '/voice-clone-management' ? 'brightness(0) invert(1)' : 'None' }" />
+          <span class="nav-text">{{ $t('header.voiceCloneManagement') }}</span>
+        </div>
+        <el-dropdown v-if="isSuperAdmin && featureStatus.voiceClone" trigger="click"
+          class="equipment-management more-dropdown" :class="{
+            'active-tab': $route.path === '/voice-clone-management' || $route.path === '/voice-resource-management'
+          }" @visible-change="handleVoiceCloneDropdownVisibleChange">
+          <span class="el-dropdown-link">
+            <img loading="lazy" alt="" src="@/assets/header/voice.png" :style="{
+              filter: $route.path === '/voice-clone-management' || $route.path === '/voice-resource-management'
+                ? 'brightness(0) invert(1)' : 'None'
+            }" />
+            <span class="nav-text">{{ $t('header.voiceCloneManagement') }}</span>
+            <i class="el-icon-arrow-down el-icon--right" :class="{ 'rotate-down': voiceCloneDropdownVisible }"></i>
+          </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item @click.native="goVoiceCloneManagement">
+              {{ $t('header.voiceCloneManagement') }}
+            </el-dropdown-item>
+            <el-dropdown-item @click.native="goVoiceResourceManagement">
+              {{ $t('header.voiceResourceManagement') }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
         <div v-if="isSuperAdmin" class="equipment-management" :class="{ 'active-tab': $route.path === '/model-config' }"
           @click="goModelConfig">
           <img loading="lazy" alt="" src="@/assets/header/model_config.png"
             :style="{ filter: $route.path === '/model-config' ? 'brightness(0) invert(1)' : 'None' }" />
           <span class="nav-text">{{ $t('header.modelConfig') }}</span>
+        </div>
+        <div v-if="featureStatus.knowledgeBase" class="equipment-management"
+          :class="{ 'active-tab': $route.path === '/knowledge-base-management' || $route.path === '/knowledge-file-upload' }"
+          @click="goKnowledgeBaseManagement">
+          <img loading="lazy" alt="" src="@/assets/header/knowledge_base.png" :style="{
+            filter: $route.path === '/knowledge-base-management' || $route.path === '/knowledge-file-upload'
+              ? 'brightness(0) invert(1)' : 'None'
+          }" />
+          <span class="nav-text">{{ $t('header.knowledgeBase') }}</span>
         </div>
         <div v-if="isSuperAdmin" class="equipment-management"
           :class="{ 'active-tab': $route.path === '/user-management' }" @click="goUserManagement">
@@ -34,11 +70,11 @@
           <span class="nav-text">{{ $t('header.otaManagement') }}</span>
         </div>
         <el-dropdown v-if="isSuperAdmin" trigger="click" class="equipment-management more-dropdown"
-          :class="{ 'active-tab': $route.path === '/dict-management' || $route.path === '/params-management' || $route.path === '/provider-management' || $route.path === '/server-side-management' || $route.path === '/agent-template-management' }"
+          :class="{ 'active-tab': $route.path === '/dict-management' || $route.path === '/params-management' || $route.path === '/provider-management' || $route.path === '/server-side-management' || $route.path === '/agent-template-management' || $route.path === '/feature-management' }"
           @visible-change="handleParamDropdownVisibleChange">
           <span class="el-dropdown-link">
             <img loading="lazy" alt="" src="@/assets/header/param_management.png"
-              :style="{ filter: $route.path === '/dict-management' || $route.path === '/params-management' || $route.path === '/provider-management' || $route.path === '/server-side-management' || $route.path === '/agent-template-management' ? 'brightness(0) invert(1)' : 'None' }" />
+              :style="{ filter: $route.path === '/dict-management' || $route.path === '/params-management' || $route.path === '/provider-management' || $route.path === '/server-side-management' || $route.path === '/agent-template-management' || $route.path === '/feature-management' ? 'brightness(0) invert(1)' : 'None' }" />
             <span class="nav-text">{{ $t('header.paramDictionary') }}</span>
             <i class="el-icon-arrow-down el-icon--right" :class="{ 'rotate-down': paramDropdownVisible }"></i>
           </span>
@@ -57,6 +93,9 @@
             </el-dropdown-item>
             <el-dropdown-item @click.native="goServerSideManagement">
               {{ $t('header.serverSideManagement') }}
+            </el-dropdown-item>
+            <el-dropdown-item @click.native="goFeatureManagement">
+              {{ $t('header.featureManagement') }}
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -107,8 +146,9 @@
 <script>
 import userApi from '@/apis/module/user';
 import i18n, { changeLanguage, supportedLanguages, getLanguageLabelKey } from '@/i18n';
-import { mapActions, mapGetters } from 'vuex';
-import ChangePasswordDialog from './ChangePasswordDialog.vue'; // Import change password dialog component
+import { mapActions, mapGetters, mapState } from 'vuex';
+import ChangePasswordDialog from './ChangePasswordDialog.vue';
+import featureManager from '@/utils/featureManager';
 
 export default {
   name: 'HeaderBar',
@@ -126,12 +166,19 @@ export default {
       isChangePasswordDialogVisible: false, // Control change password dialog display
       userDropdownVisible: false,
       paramDropdownVisible: false,
+      voiceCloneDropdownVisible: false,
       languageDropdownVisible: false,
       isSmallScreen: false
     }
   },
   computed: {
     ...mapGetters(['getIsSuperAdmin']),
+    ...mapState({
+      featureStatus: (state) => ({
+        voiceClone: state.pubConfig.systemWebMenu?.features?.voiceClone?.enabled,
+        knowledgeBase: state.pubConfig.systemWebMenu?.features?.knowledgeBase?.enabled,
+      }),
+    }),
     isSuperAdmin() {
       return this.getIsSuperAdmin;
     },
@@ -147,10 +194,11 @@ export default {
       return supportedLanguages;
     }
   },
-  mounted() {
+  async mounted() {
     this.fetchUserInfo();
     this.checkScreenSize();
     window.addEventListener('resize', this.checkScreenSize);
+    await featureManager.waitForInitialization();
   },
   // Remove event listener
   beforeDestroy() {
@@ -166,6 +214,15 @@ export default {
     },
     goModelConfig() {
       this.$router.push('/model-config')
+    },
+    goKnowledgeBaseManagement() {
+      this.$router.push('/knowledge-base-management')
+    },
+    goVoiceCloneManagement() {
+      this.$router.push('/voice-clone-management')
+    },
+    goVoiceResourceManagement() {
+      this.$router.push('/voice-resource-management')
     },
     goParamManagement() {
       this.$router.push('/params-management')
@@ -185,6 +242,9 @@ export default {
     // Add default role template management navigation method
     goAgentTemplateManagement() {
       this.$router.push('/agent-template-management')
+    },
+    goFeatureManagement() {
+      this.$router.push('/feature-management')
     },
     // Get user information
     fetchUserInfo() {
@@ -248,6 +308,9 @@ export default {
     // Listen to second dropdown menu visibility change
     handleParamDropdownVisibleChange(visible) {
       this.paramDropdownVisible = visible;
+    },
+    handleVoiceCloneDropdownVisibleChange(visible) {
+      this.voiceCloneDropdownVisible = visible;
     },
     // Listen to language dropdown menu visibility change
     handleLanguageDropdownVisibleChange(visible) {

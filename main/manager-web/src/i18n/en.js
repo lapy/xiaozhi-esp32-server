@@ -14,7 +14,11 @@ export default {
   'header.paramDictionary': 'More',
   'header.paramManagement': 'Params Management',
   'header.dictManagement': 'Dict Management',
-  'header.agentTemplate': 'Default Role Templates', // Add this line
+  'header.agentTemplate': 'Default Role Templates',
+  'header.knowledgeBase': 'Knowledge',
+  'header.voiceCloneManagement': 'Voice Clone',
+  'header.voiceResourceManagement': 'Voice Resource',
+  'header.featureManagement': 'System Feature Management',
 
   // McpToolCallDialog component text
   'mcpToolCall.title': 'Tool Call',

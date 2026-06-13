@@ -87,7 +87,28 @@ const routes = [
       title: 'Parameter Management'
     }
   },
-
+  {
+    path: '/knowledge-base-management',
+    name: 'KnowledgeBaseManagement',
+    component: function () {
+      return import('../views/KnowledgeBaseManagement.vue')
+    },
+    meta: {
+      requiresAuth: true,
+      title: 'Knowledge Base Management'
+    }
+  },
+  {
+    path: '/knowledge-file-upload',
+    name: 'KnowledgeFileUpload',
+    component: function () {
+      return import('../views/KnowledgeFileUpload.vue')
+    },
+    meta: {
+      requiresAuth: true,
+      title: 'Document Upload Management'
+    }
+  },
   {
     path: '/server-side-management',
     name: 'ServerSideManager',
@@ -108,6 +129,28 @@ const routes = [
     meta: {
       requiresAuth: true,
       title: 'OTA Management'
+    }
+  },
+  {
+    path: '/voice-resource-management',
+    name: 'VoiceResourceManagement',
+    component: function () {
+      return import('../views/VoiceResourceManagement.vue')
+    },
+    meta: {
+      requiresAuth: true,
+      title: 'Voice Resource Management'
+    }
+  },
+  {
+    path: '/voice-clone-management',
+    name: 'VoiceCloneManagement',
+    component: function () {
+      return import('../views/VoiceCloneManagement.vue')
+    },
+    meta: {
+      requiresAuth: true,
+      title: 'Voice Clone Management'
     }
   },
   {
@@ -141,10 +184,14 @@ const routes = [
     }
   },
   {
-    path: '/provider-management',
-    name: 'ProviderManagement',
+    path: '/feature-management',
+    name: 'FeatureManagement',
     component: function () {
-      return import('../views/ProviderManagement.vue')
+      return import('../views/FeatureManagement.vue')
+    },
+    meta: {
+      requiresAuth: true,
+      title: 'Feature Management'
     }
   },
 ]
@@ -168,7 +215,7 @@ VueRouter.prototype.push = function push(location) {
 }
 
 // Routes that require login to access
-const protectedRoutes = ['home', 'RoleConfig', 'DeviceManagement', 'UserManagement', 'ModelConfig']
+const protectedRoutes = ['home', 'RoleConfig', 'DeviceManagement', 'UserManagement', 'ModelConfig', 'KnowledgeBaseManagement', 'KnowledgeFileUpload']
 
 // Route guard
 router.beforeEach((to, from, next) => {
