@@ -171,8 +171,9 @@ class ConnectionHandler:
 
         self.cmd_exit = self.config["exit_commands"]
 
-        # 是否在聊天结束后关闭连接
+        # Close the connection after chat when requested.
         self.close_after_chat = False
+        self.is_exiting = False
         self.load_function_plugin = False
         self.intent_type = "nointent"
 
