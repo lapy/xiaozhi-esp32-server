@@ -1,5 +1,5 @@
 import { createPinia } from 'pinia'
-import { createPersistedState } from 'pinia-plugin-persistedstate' // Data persistence
+import { createPersistedState } from 'pinia-plugin-persistedstate' // 数据持久化
 
 const store = createPinia()
 store.use(
@@ -15,6 +15,7 @@ export default store
 
 export * from './config'
 export * from './plugin'
+export * from './provider'
 export * from './speedPitch'
-// Module unified export
+// 模块统一导出
 export * from './user'

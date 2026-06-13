@@ -23,11 +23,6 @@ export function getServerBaseUrlOverride(): string | null {
   return value || null
 }
 
-export function sm2Encrypt(publicKey: string, plainText: string) {
-  const normalizedKey = publicKey.trim().replace(/^0x/i, '').replace(/^04/i, '')
-  return sm2.doEncrypt(plainText, normalizedKey, 1)
-}
-
 export function getLastPage() {
   // getCurrentPages() has at least 1 element, so no additional check needed
   // const lastPage = getCurrentPages().at(-1)
@@ -207,7 +202,6 @@ export function getEnvBaseUploadUrl() {
  * Generate an SM2 key pair (hex-encoded), matching upstream xiaozhi crypto layout.
  */
 export function generateSm2KeyPairHex() {
-  const sm2 = smCrypto.sm2
   const keypair = sm2.generateKeyPairHex()
 
   return {
@@ -230,18 +224,15 @@ export function sm2Encrypt(publicKey: string, plainText: string): string {
     throw new Error('Plaintext cannot be empty')
   }
 
-  const sm2 = smCrypto.sm2
-  const encrypted = sm2.doEncrypt(plainText, publicKey, 1)
-  const result = `04${encrypted}`
-
-  return result
+  const normalizedKey = publicKey.trim().replace(/^0x/i, '').replace(/^04/i, '')
+  const encrypted = sm2.doEncrypt(plainText, normalizedKey, 1)
+  return `04${encrypted}`
 }
 
 /**
  * SM2 private-key decryption (hex). Strips a leading 04 prefix if present.
  */
 export function sm2Decrypt(privateKey: string, cipherText: string): string {
-  const sm2 = smCrypto.sm2
   const dataWithoutPrefix = cipherText.startsWith('04') ? cipherText.substring(2) : cipherText
   return sm2.doDecrypt(dataWithoutPrefix, privateKey, 1)
 }

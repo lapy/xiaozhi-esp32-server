@@ -7,7 +7,7 @@ import type {
 } from './types'
 import { http } from '@/http/request/alova'
 
-// Get agent details
+// 获取智能体详情
 export function getAgentDetail(id: string) {
   return http.Get<AgentDetail>(`/agent/${id}`, {
     meta: {
@@ -20,7 +20,7 @@ export function getAgentDetail(id: string) {
   })
 }
 
-// Get role template list
+// 获取角色模板列表
 export function getRoleTemplates() {
   return http.Get<RoleTemplate[]>('/agent/template', {
     meta: {
@@ -33,7 +33,7 @@ export function getRoleTemplates() {
   })
 }
 
-// Get model options
+// 获取模型选项
 export function getModelOptions(modelType: string, modelName: string = '') {
   return http.Get<ModelOption[]>('/models/names', {
     params: {
@@ -50,7 +50,7 @@ export function getModelOptions(modelType: string, modelName: string = '') {
   })
 }
 
-// Get agent list
+// 获取智能体列表
 export function getAgentList() {
   return http.Get<Agent[]>('/agent/list', {
     meta: {
@@ -63,7 +63,7 @@ export function getAgentList() {
   })
 }
 
-// Create agent
+// 创建智能体
 export function createAgent(data: AgentCreateData) {
   return http.Post<string>('/agent', data, {
     meta: {
@@ -73,7 +73,7 @@ export function createAgent(data: AgentCreateData) {
   })
 }
 
-// Delete agent
+// 删除智能体
 export function deleteAgent(id: string) {
   return http.Delete(`/agent/${id}`, {
     meta: {
@@ -83,7 +83,7 @@ export function deleteAgent(id: string) {
   })
 }
 
-// Get TTS voice list
+// 获取TTS音色列表
 export function getTTSVoices(ttsModelId: string, voiceName: string = '') {
   return http.Get<{ id: string, name: string }[]>(`/models/${ttsModelId}/voices`, {
     params: {
@@ -99,7 +99,7 @@ export function getTTSVoices(ttsModelId: string, voiceName: string = '') {
   })
 }
 
-// Update agent
+// 更新智能体
 export function updateAgent(id: string, data: Partial<AgentDetail>) {
   return http.Put(`/agent/${id}`, data, {
     meta: {
@@ -112,7 +112,7 @@ export function updateAgent(id: string, data: Partial<AgentDetail>) {
   })
 }
 
-// Get plugin list
+// 获取插件列表
 export function getPluginFunctions() {
   return http.Get<any[]>(`/models/provider/plugin/names`, {
     meta: {
@@ -125,17 +125,18 @@ export function getPluginFunctions() {
   })
 }
 
-// Get MCP access point
+// 获取mcp接入点
 export function getMcpAddress(agentId: string) {
   return http.Get<string>(`/agent/mcp/address/${agentId}`, {
     meta: {
       ignoreAuth: false,
       toast: false,
+      isExposeError: true,
     },
   })
 }
 
-// Get MCP tools
+// 获取mcp工具
 export function getMcpTools(agentId: string) {
   return http.Get<string[]>(`/agent/mcp/tools/${agentId}`, {
     meta: {
@@ -148,7 +149,7 @@ export function getMcpTools(agentId: string) {
   })
 }
 
-// Get voiceprint list
+// 获取声纹列表
 export function getVoicePrintList(agentId: string) {
   return http.Get<any[]>(`/agent/voice-print/list/${agentId}`, {
     meta: {
@@ -161,7 +162,7 @@ export function getVoicePrintList(agentId: string) {
   })
 }
 
-// Get voice conversation records
+// 获取语音对话记录
 export function getChatHistoryUser(agentId: string) {
   return http.Get<any[]>(`/agent/${agentId}/chat-history/user`, {
     meta: {
@@ -174,12 +175,48 @@ export function getChatHistoryUser(agentId: string) {
   })
 }
 
-// Add voiceprint speaker
+// 新增声纹说话人
 export function createVoicePrint(data: { agentId: string, audioId: string, sourceName: string, introduce: string }) {
   return http.Post('/agent/voice-print', data, {
     meta: {
       ignoreAuth: false,
       toast: true,
+    },
+  })
+}
+
+// 获取智能体标签
+export function getAgentTags(agentId: string) {
+  return http.Get<any[]>(`/agent/${agentId}/tags`, {
+    meta: {
+      ignoreAuth: false,
+      toast: false,
+    },
+    cacheFor: {
+      expire: 0,
+    },
+  })
+}
+
+// 更新智能体标签
+export function updateAgentTags(agentId: string, data) {
+  return http.Put(`/agent/${agentId}/tags`, data, {
+    meta: {
+      ignoreAuth: false,
+      isExposeError: true,
+    },
+  })
+}
+
+// 获取所有语言
+export function getAllLanguage(modelId: string) {
+  return http.Get<{ id: string, name: string, languages: string }[]>(`/models/${modelId}/voices`, {
+    meta: {
+      ignoreAuth: false,
+      toast: false,
+    },
+    cacheFor: {
+      expire: 0,
     },
   })
 }

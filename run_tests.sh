@@ -63,7 +63,7 @@ if [ -d "main/xiaozhi-server/test" ]; then
     fi
     
     # Run Python tests
-    if $PYTHON_CMD test/test_runner.py; then
+    if PYTHONPATH=. $PYTHON_CMD ../digital-human/test_runner.py; then
         print_success "Python backend tests passed!"
     else
         print_error "Python backend tests failed!"
@@ -173,7 +173,7 @@ case "$1" in
     --python-only)
         print_status "Running Python tests only..."
         cd main/xiaozhi-server
-        $PYTHON_CMD test/test_runner.py
+        PYTHONPATH=. $PYTHON_CMD ../digital-human/test_runner.py
         ;;
     --java-only)
         print_status "Running Java tests only..."

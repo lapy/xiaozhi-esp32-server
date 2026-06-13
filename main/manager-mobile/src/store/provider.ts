@@ -1,14 +1,10 @@
+import type { Providers } from '@/api/agent/types'
 import { defineStore } from 'pinia'
 
-export interface ContextProvider {
-  url: string
-  headers: Record<string, string>
-}
-
 export const useProvider = defineStore('provider', () => {
-  const providers = ref<ContextProvider[]>([])
+  const providers = ref<Providers[]>([])
 
-  const updateProviders = (val: ContextProvider[]) => {
+  const updateProviders = (val: Providers[]) => {
     providers.value = val
   }
 

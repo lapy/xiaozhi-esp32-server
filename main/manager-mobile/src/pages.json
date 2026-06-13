@@ -176,7 +176,7 @@
       "type": "page",
       "layout": "default",
       "style": {
-        "navigationBarTitleText": "Settings",
+        "navigationBarTitleText": "设置",
         "navigationStyle": "custom"
       }
     },

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useToast } from 'wot-design-uni'
+import { t } from '@/i18n'
 
 // Type definitions
 interface WiFiNetwork {
@@ -257,19 +258,6 @@ onMounted(() => {
       <view class="selector-item" @click="showNetworkSelector">
         <text class="selector-label">
           {{ t('deviceConfig.wifiNetwork') }}
-        </text>
-        <text class="selector-value">
-          {{ networkDisplayText }}
-        </text>
-        <wd-icon name="arrow-right" custom-class="arrow-icon" />
-      </view>
-    </view>
-
-    <!-- WiFi network selector -->
-    <view class="network-selector">
-      <view class="selector-item" @click="showNetworkSelector">
-        <text class="selector-label">
-          WiFi Network
         </text>
         <text class="selector-value">
           {{ networkDisplayText }}
