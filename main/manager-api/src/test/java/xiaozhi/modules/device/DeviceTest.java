@@ -9,17 +9,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.annotation.Import;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xiaozhi.common.redis.RedisUtils;
 import xiaozhi.modules.sys.dto.SysUserDTO;
 import xiaozhi.modules.sys.service.SysUserService;
 
 @Slf4j
 @SpringBootTest
-@ActiveProfiles("dev")
-@DisplayName("设备测试")
+@ActiveProfiles("test")
+@Import(xiaozhi.config.TestConfig.class)
+@DisplayName("Device Test")
 public class DeviceTest {
+
+    private static final Logger log = LoggerFactory.getLogger(DeviceTest.class);
 
     @Autowired
     private RedisUtils redisUtils;
@@ -30,23 +36,23 @@ public class DeviceTest {
     public void testSaveUser() {
         SysUserDTO userDTO = new SysUserDTO();
         userDTO.setUsername("test");
-        userDTO.setPassword(UUID.randomUUID().toString());
+        userDTO.setPassword("TestPassword123!");
         sysUserService.save(userDTO);
     }
 
     @Test
-    @DisplayName("测试写入设备信息")
+    @DisplayName("Test writing device information")
     public void testWriteDeviceInfo() {
-        log.info("开始测试写入设备信息...");
-        // 模拟设备MAC地址
+        log.info("Starting test for writing device information...");
+        // Simulate device MAC address
         String macAddress = "00:11:22:33:44:66";
-        // 模拟设备验证码
+        // Simulate device verification code
         String deviceCode = "123456";
 
         HashMap<String, Object> map = new HashMap<>();
         map.put("mac_address", macAddress);
         map.put("activation_code", deviceCode);
-        map.put("board", "硬件型号");
+        map.put("board", "Hardware Model");
         map.put("app_version", "0.3.13");
 
         String safeDeviceId = macAddress.replace(":", "_").toLowerCase();
@@ -56,18 +62,18 @@ public class DeviceTest {
         String redisKey = "ota:activation:code:" + deviceCode;
         log.info("Redis Key: {}", redisKey);
 
-        // 将设备信息写入Redis
+        // Write device information to Redis
         redisUtils.set(redisKey, macAddress, 300);
-        log.info("设备信息已写入Redis");
+        log.info("Device information has been written to Redis");
 
-        // 验证是否写入成功
+        // Verify if write was successful
         String savedMacAddress = (String) redisUtils.get(redisKey);
-        log.info("从Redis读取的MAC地址: {}", savedMacAddress);
+        log.info("MAC address read from Redis: {}", savedMacAddress);
 
-        // 使用断言验证
-        Assertions.assertNotNull(savedMacAddress, "从Redis读取的MAC地址不应为空");
-        Assertions.assertEquals(macAddress, savedMacAddress, "保存的MAC地址与原始MAC地址不匹配");
+        // Use assertions for verification
+        Assertions.assertNotNull(savedMacAddress, "MAC address read from Redis should not be null");
+        Assertions.assertEquals(macAddress, savedMacAddress, "Saved MAC address does not match original MAC address");
 
-        log.info("测试完成");
+        log.info("Test completed");
     }
 }

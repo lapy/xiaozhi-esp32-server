@@ -11,297 +11,297 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.*;
 
 /**
- * 检索与元数据管理聚合 DTO
+ * Aggregate DTOs for retrieval and metadata management.
  */
-@Schema(description = "检索与元数据管理聚合 DTO")
+@Schema(description = "Aggregate DTOs for retrieval and metadata management")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RetrievalDTO {
 
     /**
-     * 文档聚合信息 (VO)
+     * Aggregated document information.
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "文档聚合信息")
+    @Schema(description = "Aggregated document information")
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class DocAggVO implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        @Schema(description = "文档名称")
+        @Schema(description = "Document name")
         @JsonProperty("doc_name")
         private String docName;
 
-        @Schema(description = "文档 ID")
+        @Schema(description = "Document ID")
         @JsonProperty("doc_id")
         private String docId;
 
-        @Schema(description = "数量")
+        @Schema(description = "Count")
         private Integer count;
     }
 
     /**
-     * 检索测试请求参数
+     * Retrieval test request parameters.
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "检索测试请求参数")
+    @Schema(description = "Retrieval test request parameters")
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class TestReq implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        @Schema(description = "知识库 ID 列表", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Knowledge base ID list", requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("dataset_ids")
-        @NotEmpty(message = "知识库ID列表不能为空")
+        @NotEmpty(message = "Knowledge base ID list cannot be empty")
         private List<String> datasetIds;
 
-        @Schema(description = "文档 ID 列表 (可选，用于限定检索范围)")
+        @Schema(description = "Optional document ID list used to restrict retrieval scope")
         @JsonProperty("document_ids")
         private List<String> documentIds;
 
-        @Schema(description = "检索问题", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotBlank(message = "检索问题不能为空")
+        @Schema(description = "Retrieval question", requiredMode = Schema.RequiredMode.REQUIRED)
+        @NotBlank(message = "Retrieval question cannot be empty")
         private String question;
 
-        @Schema(description = "页码 (默认 1)")
+        @Schema(description = "Page number (default: 1)")
         private Integer page;
 
-        @Schema(description = "每页数量 (默认 10)")
+        @Schema(description = "Page size (default: 10)")
         @JsonProperty("page_size")
         private Integer pageSize;
 
-        @Schema(description = "相似度阈值 (默认 0.2)")
+        @Schema(description = "Similarity threshold (default: 0.2)")
         @JsonProperty("similarity_threshold")
         private Float similarityThreshold;
 
-        @Schema(description = "向量相似度权重 (默认 0.3)")
+        @Schema(description = "Vector similarity weight (default: 0.3)")
         @JsonProperty("vector_similarity_weight")
         private Float vectorSimilarityWeight;
 
-        @Schema(description = "返回 Top K 切片 (默认 1024)")
+        @Schema(description = "Top-K chunks to return (default: 1024)")
         @JsonProperty("top_k")
         private Integer topK;
 
-        @Schema(description = "重排序模型 ID")
+        @Schema(description = "Rerank model ID")
         @JsonProperty("rerank_id")
         private String rerankId;
 
-        @Schema(description = "是否高亮关键词")
+        @Schema(description = "Whether keywords should be highlighted")
         private Boolean highlight;
 
-        @Schema(description = "是否启用关键词检索")
+        @Schema(description = "Whether keyword retrieval is enabled")
         private Boolean keyword;
 
-        @Schema(description = "跨语言翻译列表 (可选)")
+        @Schema(description = "Optional cross-language translation list")
         @JsonProperty("cross_languages")
         private List<String> crossLanguages;
 
-        @Schema(description = "元数据过滤条件 (JSON 对象)")
+        @Schema(description = "Metadata filter conditions as a JSON object")
         @JsonProperty("metadata_condition")
         private Map<String, Object> metadataCondition;
     }
 
     /**
-     * 检索命中结果 (VO)
+     * Retrieval hit details.
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "检索命中切片详情")
+    @Schema(description = "Retrieval hit details")
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class HitVO implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        @Schema(description = "切片 ID", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Chunk ID", requiredMode = Schema.RequiredMode.REQUIRED)
         private String id;
 
-        @Schema(description = "切片内容", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Chunk content", requiredMode = Schema.RequiredMode.REQUIRED)
         private String content;
 
-        @Schema(description = "所属文档 ID", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Owning document ID", requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("document_id")
         private String documentId;
 
-        @Schema(description = "所属知识库 ID")
+        @Schema(description = "Owning knowledge base ID")
         @JsonProperty("dataset_id")
         private String datasetId;
 
-        @Schema(description = "文档名称")
+        @Schema(description = "Document name")
         @JsonProperty("document_name")
         private String documentName;
 
-        @Schema(description = "文档关键词")
+        @Schema(description = "Document keywords")
         @JsonProperty("document_keyword")
         private String documentKeyword;
 
-        @Schema(description = "综合相似度", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Overall similarity score", requiredMode = Schema.RequiredMode.REQUIRED)
         private Float similarity;
 
-        @Schema(description = "向量相似度")
+        @Schema(description = "Vector similarity score")
         @JsonProperty("vector_similarity")
         private Float vectorSimilarity;
 
-        @Schema(description = "关键词相似度")
+        @Schema(description = "Keyword similarity score")
         @JsonProperty("term_similarity")
         private Float termSimilarity;
 
-        @Schema(description = "索引位置")
+        @Schema(description = "Index position")
         private Integer index;
 
-        @Schema(description = "高亮内容")
+        @Schema(description = "Highlighted content")
         private String highlight;
 
-        @Schema(description = "重要关键词列表")
+        @Schema(description = "Important keyword list")
         @JsonProperty("important_keywords")
         private List<String> importantKeywords;
 
-        @Schema(description = "预设问题列表")
+        @Schema(description = "Preset question list")
         private List<String> questions;
 
-        @Schema(description = "图片 ID")
+        @Schema(description = "Image ID")
         @JsonProperty("image_id")
         private String imageId;
 
-        @Schema(description = "位置索引 (RAGFlow返回嵌套数组, 如 [[start, end, filename]])")
+        @Schema(description = "Position index. RAGFlow returns nested arrays such as [[start, end, filename]]")
         private Object positions;
     }
 
     /**
-     * 知识库元数据摘要 (VO)
+     * Knowledge base metadata summary.
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "知识库元数据摘要信息")
+    @Schema(description = "Knowledge base metadata summary")
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MetaSummaryVO implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        @Schema(description = "文档总数", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Total document count", requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("total_doc_count")
         private Long totalDocCount;
 
-        @Schema(description = "Token 总数", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Total token count", requiredMode = Schema.RequiredMode.REQUIRED)
         @JsonProperty("total_token_count")
         private Long totalTokenCount;
 
-        @Schema(description = "文件类型分布 (key: 文件后缀, value: 数量)")
+        @Schema(description = "File type distribution keyed by suffix")
         @JsonProperty("file_type_distribution")
         private Map<String, Long> fileTypeDistribution;
 
-        @Schema(description = "文状态分布 (key: 状态码, value: 数量)")
+        @Schema(description = "Document status distribution keyed by status code")
         @JsonProperty("status_distribution")
         private Map<String, Long> statusDistribution;
 
-        @Schema(description = "自定义元数据统计 (key: 字段名, value: 数量/值)")
+        @Schema(description = "Custom metadata statistics keyed by field name")
         @JsonProperty("custom_metadata")
         private Map<String, Object> customMetadata;
     }
 
     /**
-     * 批量更新元数据请求参数
+     * Batch metadata update request parameters.
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "批量更新元数据请求参数")
+    @Schema(description = "Batch metadata update request parameters")
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MetaBatchReq implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        @Schema(description = "筛选器: 用于指定要更新的文档范围 (默认全部)")
+        @Schema(description = "Selector used to specify which documents should be updated")
         private Selector selector;
 
-        @Schema(description = "新增或更新的元数据列表")
+        @Schema(description = "Metadata entries to add or update")
         private List<UpdateItem> updates;
 
-        @Schema(description = "需要删除的元数据键列表")
+        @Schema(description = "Metadata keys to delete")
         private List<DeleteItem> deletes;
 
         /**
-         * 文档筛选器
+         * Document selector.
          */
         @Data
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
-        @Schema(description = "元数据更新筛选器")
+        @Schema(description = "Metadata update selector")
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Selector implements Serializable {
             private static final long serialVersionUID = 1L;
 
-            @Schema(description = "指定文档 ID 列表")
+            @Schema(description = "Explicit document ID list")
             @JsonProperty("document_ids")
             private List<String> documentIds;
 
-            @Schema(description = "元数据条件匹配 (key: 字段名, value: 匹配值)")
+            @Schema(description = "Metadata condition match keyed by field name")
             @JsonProperty("metadata_condition")
             private Map<String, Object> metadataCondition;
         }
 
         /**
-         * 更新项
+         * Update item.
          */
         @Data
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
-        @Schema(description = "元数据更新项")
+        @Schema(description = "Metadata update item")
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class UpdateItem implements Serializable {
             private static final long serialVersionUID = 1L;
 
-            @Schema(description = "元数据键名", requiredMode = Schema.RequiredMode.REQUIRED)
+            @Schema(description = "Metadata key", requiredMode = Schema.RequiredMode.REQUIRED)
             private String key;
 
-            @Schema(description = "元数据值", requiredMode = Schema.RequiredMode.REQUIRED)
+            @Schema(description = "Metadata value", requiredMode = Schema.RequiredMode.REQUIRED)
             private Object value;
         }
 
         /**
-         * 删除项
+         * Delete item.
          */
         @Data
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
-        @Schema(description = "元数据删除项")
+        @Schema(description = "Metadata delete item")
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class DeleteItem implements Serializable {
             private static final long serialVersionUID = 1L;
 
-            @Schema(description = "需删除的元数据键名", requiredMode = Schema.RequiredMode.REQUIRED)
+            @Schema(description = "Metadata key to delete", requiredMode = Schema.RequiredMode.REQUIRED)
             private String key;
         }
     }
 
     /**
-     * 召回测试结果聚合响应
+     * Retrieval-test aggregate response.
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "召回测试结果聚合响应")
+    @Schema(description = "Retrieval-test aggregate response")
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ResultVO implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        @Schema(description = "检索命中的切片列表")
+        @Schema(description = "Retrieved chunk-hit list")
         private List<HitVO> chunks;
 
-        @Schema(description = "文档分布统计")
+        @Schema(description = "Document distribution summary")
         @JsonProperty("doc_aggs")
         private List<DocAggVO> docAggs;
 
-        @Schema(description = "总命中记录数")
+        @Schema(description = "Total hit count")
         private Long total;
     }
 }

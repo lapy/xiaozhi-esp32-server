@@ -1,6 +1,5 @@
 import type { uniappRequestAdapter } from '@alova/adapter-uniapp'
 import type { IResponse } from './types'
-import type { Language } from '@/store/lang'
 import AdapterUniapp from '@alova/adapter-uniapp'
 import { createAlova } from 'alova'
 import { createServerTokenAuthentication } from 'alova/client'
@@ -9,18 +8,8 @@ import { getEnvBaseUrl } from '@/utils'
 import { toast } from '@/utils/toast'
 import { ContentTypeEnum, ResultEnum, ShowMessage } from './enum'
 
-// 语言映射, 用于设置 Accept-language 头
-const langMap: Record<Language, string> = {
-  zh_CN: 'zh-CN',
-  en: 'en-US',
-  zh_TW: 'zh-TW',
-  de: 'de',
-  vi: 'vi',
-  pt_BR: 'pt-BR',
-}
-
 /**
- * 创建请求实例
+ * Create request instance
  */
 const { onAuthRequired, onResponseRefreshToken } = createServerTokenAuthentication<
   typeof VueHook,
@@ -35,7 +24,7 @@ const { onAuthRequired, onResponseRefreshToken } = createServerTokenAuthenticati
         // await authLogin();
       }
       catch (error) {
-        // 切换到登录页
+        // Switch to login page
         await uni.reLaunch({ url: '/pages/login/index' })
         throw error
       }
@@ -44,7 +33,7 @@ const { onAuthRequired, onResponseRefreshToken } = createServerTokenAuthenticati
 })
 
 /**
- * alova 请求实例
+ * Alova request instance
  */
 const alovaInstance = createAlova({
   baseURL: getEnvBaseUrl(),
@@ -53,26 +42,10 @@ const alovaInstance = createAlova({
   statesHook: VueHook,
 
   beforeRequest: onAuthRequired((method) => {
-    // h5动态获取最新的 baseURL，确保使用用户设置的服务器地址
-    const currentBaseUrl = getEnvBaseUrl()
-    if (currentBaseUrl !== method.baseURL) {
-      method.baseURL = currentBaseUrl
-    }
-
-    // 检查混合内容错误（HTTPS页面请求HTTP接口）
-    const currentProtocol = typeof window !== 'undefined' && window.location.protocol
-    const requestProtocol = method.baseURL?.split(':')[0]
-    const currentLang = langMap[uni.getStorageSync('app_language') as Language || 'zh_CN']
-    if (currentProtocol === 'https:' && requestProtocol === 'http') {
-      const errorMessage = '无法配置http协议地址,请检查接口地址'
-      throw new Error(errorMessage)
-    }
-
-    // 设置默认 Content-Type
+    // Set default Content-Type
     method.config.headers = {
       'Content-Type': ContentTypeEnum.JSON,
       'Accept': 'application/json, text/plain, */*',
-      'Accept-language': currentLang,
       ...method.config.headers,
     }
 
@@ -80,22 +53,22 @@ const alovaInstance = createAlova({
     const ignoreAuth = config.meta?.ignoreAuth
     console.log('ignoreAuth===>', ignoreAuth)
 
-    // 处理认证信息
+    // Handle authentication info
     if (!ignoreAuth) {
-      const authInfo = JSON.parse(uni.getStorageSync('token') || '{}')
-      if (!authInfo.token) {
-        // 跳转到登录页
+      const token = uni.getStorageSync('token')
+      if (!token) {
+        // Jump to login page
         uni.reLaunch({ url: '/pages/login/index' })
-        throw new Error('[请求错误]：未登录')
+        throw new Error('[Request Error]: Not logged in')
       }
-      // 添加 Authorization 头
-      method.config.headers.Authorization = `Bearer ${authInfo.token}`
+      // Add Authorization header
+      method.config.headers.Authorization = `Bearer ${token}`
     }
 
-    // 处理动态域名
+    // Handle dynamic domain
     if (config.meta?.domain) {
       method.baseURL = config.meta.domain
-      console.log('当前域名', method.baseURL)
+      console.log('Current domain', method.baseURL)
     }
   }),
 
@@ -110,40 +83,36 @@ const alovaInstance = createAlova({
 
     console.log(response)
 
-    // 处理特殊请求类型（上传/下载）
+    // Handle special request types (upload/download)
     if (requestType === 'upload' || requestType === 'download') {
       return response
     }
 
-    // 处理 HTTP 状态码错误
+    // Handle HTTP status code errors
     if (statusCode !== 200) {
-      const errorMessage = ShowMessage(statusCode) || `HTTP请求错误[${statusCode}]`
+      const errorMessage = ShowMessage(statusCode) || `HTTP request error[${statusCode}]`
       console.error('errorMessage===>', errorMessage)
       toast.error(errorMessage)
       throw new Error(`${errorMessage}：${errMsg}`)
     }
 
-    // 处理业务逻辑错误
+    // Handle business logic errors
     const { code, msg, data } = rawData as IResponse
     if (code !== ResultEnum.Success) {
-      // 检查是否为token失效
+      // Check if token is invalid
       if (code === ResultEnum.Unauthorized) {
-        // 清除token并跳转到登录页
+        // Clear token and redirect to login page
         uni.removeStorageSync('token')
         uni.reLaunch({ url: '/pages/login/index' })
-        throw new Error(`请求错误[${code}]：${msg}`)
-      }
-
-      if (config.meta?.isExposeError) {
-        return Promise.reject(msg)
+        throw new Error(`Request error[${code}]: ${msg}`)
       }
 
       if (config.meta?.toast !== false) {
         toast.warning(msg)
       }
-      throw new Error(`请求错误[${code}]：${msg}`)
+      throw new Error(`Request error[${code}]: ${msg}`)
     }
-    // 处理成功响应，返回业务数据
+    // Handle successful response, return business data
     return data
   }),
 })

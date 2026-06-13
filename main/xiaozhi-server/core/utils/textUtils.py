@@ -40,13 +40,13 @@ EMOJI_RANGES = [
 
 
 def get_string_no_punctuation_or_emoji(s):
-    """去除字符串首尾的空格、标点符号和表情符号"""
+    """Trim surrounding whitespace, punctuation, and emoji from a string."""
     chars = list(s)
-    # 处理开头的字符
+    # Trim characters from the beginning.
     start = 0
     while start < len(chars) and is_punctuation_or_emoji(chars[start]):
         start += 1
-    # 处理结尾的字符
+    # Trim characters from the end.
     end = len(chars) - 1
     while end >= start and is_punctuation_or_emoji(chars[end]):
         end -= 1
@@ -54,27 +54,27 @@ def get_string_no_punctuation_or_emoji(s):
 
 
 def is_punctuation_or_emoji(char):
-    """检查字符是否为空格、指定标点或表情符号"""
-    # 定义需要去除的中英文标点（包括全角/半角）
+    """Check whether a character is whitespace, punctuation, or emoji."""
+    # Punctuation to strip, including ASCII and full-width forms.
     punctuation_set = {
         "，",
-        ",",  # 中文逗号 + 英文逗号
+        ",",  # Comma
         "。",
-        ".",  # 中文句号 + 英文句号
+        ".",  # Period
         "！",
-        "!",  # 中文感叹号 + 英文感叹号
+        "!",  # Exclamation mark
         "“",
         "”",
-        '"',  # 中文双引号 + 英文引号
+        '"',  # Quotation mark
         "：",
-        ":",  # 中文冒号 + 英文冒号
+        ":",  # Colon
         "-",
-        "－",  # 英文连字符 + 中文全角横线
-        "、",  # 中文顿号
+        "－",  # Full-width dash
+        "、",  # Ideographic comma
         "[",
-        "]",  # 方括号
+        "]",  # Square brackets
         "【",
-        "】",  # 中文方括号
+        "】",  # Full-width square brackets
     }
     if char.isspace() or char in punctuation_set:
         return True
@@ -82,7 +82,7 @@ def is_punctuation_or_emoji(char):
 
 
 async def get_emotion(conn: "ConnectionHandler", text):
-    """获取文本内的情绪消息"""
+    """Extract and send the first matching emotion marker from the text."""
     emoji = "🙂"
     emotion = "happy"
     for char in text:
@@ -102,16 +102,16 @@ async def get_emotion(conn: "ConnectionHandler", text):
             )
         )
     except Exception as e:
-        conn.logger.bind(tag=TAG).warning(f"发送情绪表情失败，错误:{e}")
+        conn.logger.bind(tag=TAG).warning(f"Failed to send emotion emoji: {e}")
     return
 
 
 def is_emoji(char):
-    """检查字符是否为emoji表情"""
+    """Check whether a character is an emoji."""
     code_point = ord(char)
     return any(start <= code_point <= end for start, end in EMOJI_RANGES)
 
 
 def check_emoji(text):
-    """去除文本中的所有emoji表情"""
+    """Remove all emoji from the text."""
     return "".join(char for char in text if not is_emoji(char) and char != "\n")

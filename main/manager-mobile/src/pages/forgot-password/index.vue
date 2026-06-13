@@ -3,7 +3,7 @@
   "layout": "default",
   "style": {
     "navigationStyle": "custom",
-    "navigationBarTitleText": "ForgotPassword"
+    "navigationBarTitleText": "Forgot Password"
   }
 }
 </route>
@@ -14,17 +14,17 @@ import { onLoad } from "@dcloudio/uni-app";
 import { useConfigStore } from "@/store";
 import { getEnvBaseUrl, sm2Encrypt } from "@/utils";
 import { toast } from "@/utils/toast";
-// 导入国际化相关功能
+// Import i18n helpers.
 import { t, initI18n } from "@/i18n";
-// 导入API接口
+// Import API methods.
 import { retrievePassword, sendSmsCode } from "@/api/auth";
 
-// 获取屏幕边界到安全区域距离
+// Get the safe-area inset from the screen bounds.
 let safeAreaInsets;
 let systemInfo;
 
 // #ifdef MP-WEIXIN
-// 微信小程序使用新的API
+// WeChat Mini Program uses the newer window API.
 systemInfo = uni.getWindowInfo();
 safeAreaInsets = systemInfo.safeArea
   ? {
@@ -37,12 +37,12 @@ safeAreaInsets = systemInfo.safeArea
 // #endif
 
 // #ifndef MP-WEIXIN
-// 其他平台继续使用uni API
+// Other platforms continue to use the classic uni API.
 systemInfo = uni.getSystemInfoSync();
 safeAreaInsets = systemInfo.safeAreaInsets;
 // #endif
 
-// 表单数据
+// Form data model.
 interface ForgotPasswordData {
   mobile: string;
   captcha: string;
@@ -60,21 +60,21 @@ const formData = ref<ForgotPasswordData>({
   mobileCaptcha: "",
   newPassword: "",
   confirmPassword: "",
-  areaCode: "+86",
+  areaCode: "+1",
 });
 
-// 验证码图片
+// Captcha image.
 const captchaImage = ref("");
 const loading = ref(false);
 
-// 获取配置store
+// Load public configuration from the store.
 const configStore = useConfigStore();
 
 // State for area code action sheet
 const showAreaCodeSheet = ref(false);
-const selectedAreaCode = ref("+86");
+const selectedAreaCode = ref("+1");
 const areaCodeList = computed(() =>
-  (configStore.config.mobileAreaList || []).map((item) => {
+  (configStore.config.mobileAreaList || [{ name: "United States", key: "+1" }]).map((item) => {
     return {
       value: item.key,
       label: `${item.name} (${item.key})`,
@@ -82,39 +82,43 @@ const areaCodeList = computed(() =>
   })
 );
 
+function isValidMobileNumber(value: string) {
+  const normalized = value.replace(/\D/g, "");
+  return normalized.length >= 4 && normalized.length <= 15;
+}
+
 const canSendMobileCaptcha = computed(() => {
   const mobile = formData.value.mobile;
-  const phoneRegex = /^1[3-9]\d{9}$/;
-  return phoneRegex.test(mobile) && smsCountdown.value === 0;
+  return isValidMobileNumber(mobile) && smsCountdown.value === 0;
 });
 
-// SM2公钥
+// SM2 public key.
 const sm2PublicKey = computed(() => {
   return configStore.config.sm2PublicKey;
 });
 
-// 短信验证码倒计时
+// SMS verification countdown.
 const smsCountdown = ref(0);
 const smsLoading = ref(false);
 
-// 打开区号选择弹窗
+// Open the area-code picker.
 function openAreaCodeSheet() {
   showAreaCodeSheet.value = true;
 }
 
-// 选择区号
+// Select an area code.
 function selectAreaCode(item: { value: string; label: string }) {
   selectedAreaCode.value = item.value;
   formData.value.areaCode = item.value;
   showAreaCodeSheet.value = false;
 }
 
-// 关闭区号选择弹窗
+// Close the area-code picker.
 function closeAreaCodeSheet() {
   showAreaCodeSheet.value = false;
 }
 
-// 生成UUID
+// Generate a UUID for the captcha request.
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -123,18 +127,17 @@ function generateUUID() {
   });
 }
 
-// 获取图形验证码
+// Refresh the image captcha.
 async function refreshCaptcha() {
   const uuid = generateUUID();
   formData.value.captchaId = uuid;
   captchaImage.value = `${getEnvBaseUrl()}/user/captcha?uuid=${uuid}&t=${Date.now()}`;
 }
 
-// 发送短信验证码
+// Send the SMS verification code.
 async function handleSendSmsCode() {
-  // 手机号格式验证
-  const phoneRegex = /^1[3-9]\d{9}$/;
-  if (!phoneRegex.test(formData.value.mobile)) {
+  // Validate the phone number format.
+  if (!isValidMobileNumber(formData.value.mobile)) {
     toast.warning(t("retrievePassword.inputCorrectMobile"));
     return;
   }
@@ -146,9 +149,9 @@ async function handleSendSmsCode() {
 
   try {
     smsLoading.value = true;
-    // 将手机号转换为国际格式
+    // Convert the phone number into international format.
     const internationalPhone = formData.value.areaCode + formData.value.mobile;
-    // 调用发送短信验证码API
+    // Call the SMS code endpoint.
     await sendSmsCode({
       phone: internationalPhone,
       captcha: formData.value.captcha,
@@ -157,7 +160,7 @@ async function handleSendSmsCode() {
 
     toast.success(t("retrievePassword.captchaSendSuccess"));
 
-    // 开始倒计时
+    // Start the countdown timer.
     smsCountdown.value = 60;
     const timer = setInterval(() => {
       smsCountdown.value--;
@@ -166,33 +169,32 @@ async function handleSendSmsCode() {
       }
     }, 1000);
   } catch (error: any) {
-    // 处理验证码错误
-    if (error.message.includes("请求错误[10067]")) {
+    // Handle captcha validation errors.
+    if (error.message.includes("10067")) {
       toast.warning(t("login.captchaError"));
     }
-    // 发送失败重新获取图形验证码
+    // Refresh the image captcha after a failed send.
     refreshCaptcha();
   } finally {
     smsLoading.value = false;
   }
 }
 
-// 重置密码
+// Submit the password reset request.
 async function handleResetPassword() {
-  // 表单验证
+  // Validate the form.
   if (!formData.value.mobile) {
     toast.warning(t("retrievePassword.mobileRequired"));
     return;
   }
 
-  // 手机号格式验证
-  const phoneRegex = /^1[3-9]\d{9}$/;
-  if (!phoneRegex.test(formData.value.mobile)) {
+  // Validate the phone number format.
+  if (!isValidMobileNumber(formData.value.mobile)) {
     toast.warning(t("retrievePassword.inputCorrectMobile"));
     return;
   }
 
-  // 将手机号转换为国际格式
+  // Convert the phone number into international format.
   const internationalPhone = formData.value.areaCode + formData.value.mobile;
 
   if (!formData.value.captcha) {
@@ -223,25 +225,25 @@ async function handleResetPassword() {
   try {
     loading.value = true;
 
-    // 检查SM2公钥是否配置
+    // Ensure the SM2 public key is configured.
     if (!sm2PublicKey.value) {
       toast.warning(t("sm2.publicKeyNotConfigured"));
       return;
     }
 
-    // 加密密码
+    // Encrypt the password before sending it.
     let encryptedPassword;
     try {
-      // 拼接图形验证码和新密码进行加密
+      // Concatenate captcha and new password before encryption.
       const captchaAndPassword = formData.value.captcha + formData.value.newPassword;
       encryptedPassword = sm2Encrypt(sm2PublicKey.value, captchaAndPassword);
     } catch (error) {
-      console.error("密码加密失败:", error);
+      console.error("Password encryption failed:", error);
       toast.warning(t("sm2.encryptionFailed"));
       return;
     }
 
-    // 调用重置密码API
+    // Call the password reset API.
     await retrievePassword({
       phone: internationalPhone,
       code: formData.value.mobileCaptcha,
@@ -251,46 +253,46 @@ async function handleResetPassword() {
 
     toast.success(t("retrievePassword.passwordUpdateSuccess"));
 
-    // 跳转到登录页
+    // Redirect back to the login page.
     setTimeout(() => {
       uni.redirectTo({
         url: "/pages/login/index",
       });
     }, 1000);
   } catch (error: any) {
-    // 处理验证码错误
-    if (error.message.includes("请求错误[10067]")) {
+    // Handle captcha validation errors.
+    if (error.message.includes("10067")) {
       toast.warning(t("login.captchaError"));
     }
-    // 重置失败重新获取验证码
+    // Refresh the captcha after a failed reset.
     refreshCaptcha();
   } finally {
     loading.value = false;
   }
 }
 
-// 返回登录
+// Return to the login page.
 function goBack() {
   uni.redirectTo({
     url: "/pages/login/index",
   });
 }
 
-// 页面加载时获取验证码
+// Fetch the captcha when the page loads.
 onLoad(() => {
   refreshCaptcha();
 });
 
-// 组件挂载时确保配置已加载
+// Ensure configuration and i18n are loaded on mount.
 onMounted(async () => {
   if (!configStore.config.name) {
     try {
       await configStore.fetchPublicConfig();
     } catch (error) {
-      console.error("获取配置失败:", error);
+      console.error("Failed to fetch configuration:", error);
     }
   }
-  // 初始化国际化
+  // Initialize i18n for the current locale.
   initI18n();
 });
 </script>
@@ -317,7 +319,7 @@ onMounted(async () => {
 
     <view class="form-container">
       <view class="form">
-        <!-- 手机号输入 -->
+        <!-- Phone number input -->
         <view class="input-group">
           <view class="input-wrapper mobile-wrapper">
             <view class="area-code-selector" @click="openAreaCodeSheet">
@@ -339,7 +341,7 @@ onMounted(async () => {
           </view>
         </view>
 
-        <!-- 图形验证码 -->
+        <!-- Image captcha -->
         <view class="input-group">
           <view class="input-wrapper captcha-wrapper">
             <wd-input
@@ -355,7 +357,7 @@ onMounted(async () => {
           </view>
         </view>
 
-        <!-- 短信验证码 -->
+        <!-- SMS verification code -->
         <view class="input-group">
           <view class="input-wrapper sms-wrapper">
             <wd-input
@@ -377,7 +379,7 @@ onMounted(async () => {
           </view>
         </view>
 
-        <!-- 新密码 -->
+        <!-- New password -->
         <view class="input-group">
           <view class="input-wrapper">
             <wd-input
@@ -391,7 +393,7 @@ onMounted(async () => {
           </view>
         </view>
 
-        <!-- 确认新密码 -->
+        <!-- Confirm new password -->
         <view class="input-group">
           <view class="input-wrapper">
             <wd-input
@@ -405,12 +407,12 @@ onMounted(async () => {
           </view>
         </view>
 
-        <!-- 重置密码按钮 -->
+        <!-- Reset password button -->
         <view class="reset-btn" @click="handleResetPassword">
           {{ loading ? t("common.loading") : t("retrievePassword.resetButton") }}
         </view>
 
-        <!-- 返回登录链接 -->
+        <!-- Return-to-login link -->
         <view class="back-login-hint" @click="goBack">
           <text class="hint-text">
             {{ t("retrievePassword.goToLogin") }}
@@ -419,7 +421,7 @@ onMounted(async () => {
       </view>
     </view>
 
-    <!-- 区号选择弹窗 -->
+    <!-- Area code selection sheet -->
     <wd-action-sheet
       v-model="showAreaCodeSheet"
       :title="t('login.selectCountry')"
@@ -748,7 +750,7 @@ onMounted(async () => {
   }
 }
 
-// 区号选择弹窗样式
+// Area code selection sheet styles.
 .area-code-sheet {
   background: #ffffff;
   border-radius: 24rpx 24rpx 0 0;

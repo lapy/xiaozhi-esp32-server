@@ -21,10 +21,10 @@
       </div>
     </div>
 
-    <!-- 主体内容 -->
+    <!-- Main content -->
     <div class="main-wrapper">
       <div class="content-panel">
-        <!-- 左侧导航 -->
+        <!-- Left navigation -->
         <el-menu
           :default-active="activeTab"
           class="nav-panel"
@@ -52,12 +52,9 @@
           <el-menu-item index="memory">
             <span class="menu-text">{{ $t("modelConfig.memory") }}</span>
           </el-menu-item>
-          <el-menu-item index="rag">
-            <span class="menu-text">{{ $t("modelConfig.rag") }}</span>
-          </el-menu-item>
         </el-menu>
 
-        <!-- 右侧内容 -->
+        <!-- Right content -->
         <div class="content-area">
           <el-card class="model-card" shadow="never">
             <el-table
@@ -69,7 +66,7 @@
               element-loading-background="rgba(255, 255, 255, 0.7)"
               :header-cell-style="{ background: 'transparent' }"
               :data="modelList"
-              class="transparent-table"
+              class="data-table"
               header-row-class-name="table-header"
               :header-cell-class-name="headerCellClassName"
               @selection-change="handleSelectionChange"
@@ -97,23 +94,7 @@
               </el-table-column>
               <el-table-column :label="$t('modelConfig.isEnabled')" align="center">
                 <template slot-scope="scope">
-                  <el-tooltip
-                    v-if="scope.row.isDefault === 1 && scope.row.isEnabled === 1"
-                    :content="$t('modelConfig.defaultModelCannotDisable')"
-                    placement="top"
-                    effect="light"
-                  > 
-                    <el-switch
-                      v-model="scope.row.isEnabled"
-                      class="custom-switch"
-                      :active-value="1"
-                      :inactive-value="0"
-                      disabled
-                      @change="handleStatusChange(scope.row)"
-                    />
-                  </el-tooltip>
                   <el-switch
-                    v-else
                     v-model="scope.row.isEnabled"
                     class="custom-switch"
                     :active-value="1"
@@ -317,14 +298,14 @@ export default {
   },
 
   mounted() {
-    // 在组件挂载后确保表头翻译文本正确显示
+    // Ensure table header translation text displays correctly after component mount
     setTimeout(() => {
       this.updateSelectionHeaderText();
     }, 100);
   },
 
   updated() {
-    // 在组件更新后重新设置表头翻译文本
+    // Reset table header translation text after component update
     this.updateSelectionHeaderText();
   },
 
@@ -355,7 +336,7 @@ export default {
   },
 
   methods: {
-    // 更新选择列表头翻译文本
+    // Update selection list header translation text
     updateSelectionHeaderText() {
       const thElement = document.querySelector(`.el-table__header th:nth-child(1) .cell`);
       if (thElement) {
@@ -379,9 +360,9 @@ export default {
       return "";
     },
     selectionCellClassName({ row, column, rowIndex, columnIndex }) {
-      // 只对表头行设置data-content
+      // Only set data-content for header rows
       if (rowIndex === undefined) {
-        // 使用setTimeout确保DOM已经渲染完成
+        // Use setTimeout to ensure DOM has finished rendering
         setTimeout(() => {
           const thElement = document.querySelector(
             `.el-table__header th:nth-child(1) .cell`
@@ -395,15 +376,15 @@ export default {
     },
     handleMenuSelect(index) {
       this.activeTab = index;
-      this.currentPage = 1; // 重置到第一页
-      this.pageSize = 10; // 可选：重置每页条数
+      this.currentPage = 1; // Reset to first page
+      this.pageSize = 10; // Optional: reset items per page
       this.loadData();
     },
     handleSearch() {
       this.currentPage = 1;
       this.loadData();
     },
-    // 批量删除
+    // Batch delete
     batchDelete() {
       if (this.selectedModels.length === 0) {
         this.$message.warning(this.$t("modelConfig.selectModelsFirst"));
@@ -454,7 +435,7 @@ export default {
       this.editModelData.duplicateMode = true;
       this.editDialogVisible = true;
     },
-    // 删除单个模型
+    // Delete single model
     deleteModel(model) {
       this.$confirm(this.$t("modelConfig.confirmDelete"), this.$t("message.info"), {
         confirmButtonText: this.$t("common.confirm"),
@@ -490,7 +471,6 @@ export default {
       const id = formData.id;
 
       if (this.editModelData.duplicateMode) {
-        formData.id = "";
         Api.model.addModel({ modelType, provideCode, formData }, ({ data }) => {
           if (data.code === 0) {
             this.$message.success(this.$t("modelConfig.duplicateSuccess"));
@@ -499,7 +479,7 @@ export default {
           } else {
             this.$message.error(data.msg || this.$t("modelConfig.duplicateFailed"));
           }
-          done && done(); // 调用done回调关闭加载状态
+          done && done(); // Call done callback to close loading state
         });
       } else {
         Api.model.updateModel({ modelType, provideCode, id, formData }, ({ data }) => {
@@ -510,7 +490,7 @@ export default {
           } else {
             this.$message.error(data.msg || this.$t("modelConfig.saveFailed"));
           }
-          done && done(); // 调用done回调关闭加载状态
+          done && done(); // Call done callback to close loading state
         });
       }
     },
@@ -529,7 +509,7 @@ export default {
       }
     },
 
-    // 新增模型配置
+    // Add new model configuration
     handleAddConfirm(newModel) {
       const params = {
         modelType: this.activeTab,
@@ -558,7 +538,7 @@ export default {
       });
     },
 
-    // 分页器
+    // Pagination
     goFirst() {
       this.currentPage = 1;
       this.loadData();
@@ -580,9 +560,9 @@ export default {
       this.loadData();
     },
 
-    // 获取模型配置列表
+    // Get model configuration list
     loadData() {
-      this.loading = true; // 开始加载
+      this.loading = true; // Start loading
       const params = {
         modelType: this.activeTab,
         modelName: this.search,
@@ -591,7 +571,7 @@ export default {
       };
 
       Api.model.getModelList(params, ({ data }) => {
-        this.loading = false; // 结束加载
+        this.loading = false; // End loading
         if (data.code === 0) {
           this.modelList = data.data.list;
           this.total = data.data.total;
@@ -600,7 +580,7 @@ export default {
         }
       });
     },
-    // 处理启用/禁用状态变更
+    // Handle enable/disable status change
     handleStatusChange(model) {
       const newStatus = model.isEnabled ? 1 : 0;
       const originalStatus = model.isEnabled;
@@ -614,12 +594,12 @@ export default {
               ? this.$t("modelConfig.enableSuccess")
               : this.$t("modelConfig.disableSuccess")
           );
-          // 保持新状态
+          // Keep new state
           model.isEnabled = newStatus;
-          // 刷新表格数据
+          // Refresh table data
           this.loadData();
         } else {
-          // 操作失败时恢复原状态
+          // Restore original state when operation fails
           model.isEnabled = originalStatus;
           this.$message.error(data.msg || this.$t("modelConfig.operationFailed"));
         }
@@ -637,7 +617,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .el-switch {
   height: 23px;
 }
@@ -660,10 +640,11 @@ export default {
 }
 
 .main-wrapper {
-  // 顶部 63px 底部 35px 查询72px
-  height: calc(100vh - 63px - 35px - 72px);
-  margin: 0 22px;
+  margin: 5px 22px;
   border-radius: 15px;
+  min-height: calc(100vh - 26vh);
+  height: auto;
+  max-height: 80vh;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   position: relative;
   background: rgba(237, 242, 255, 0.5);
@@ -688,6 +669,7 @@ export default {
   height: 100%;
   border-radius: 15px;
   background: transparent;
+  border: 1px solid #fff;
 }
 
 .nav-panel {
@@ -750,14 +732,13 @@ export default {
 
 .content-area {
   flex: 1;
-  padding: 24px 24px 0;
+  padding: 24px;
   height: 100%;
   min-width: 600px;
   overflow: hidden;
   background-color: white;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
 }
 
 .action-group {
@@ -842,15 +823,15 @@ export default {
   outline: none;
 }
 
-// .data-table {
-//   border-radius: 6px;
-//   overflow: hidden;
-//   background-color: transparent !important;
-// }
+.data-table {
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: transparent !important;
+}
 
-// .data-table ::v-deep .el-table__row {
-//   background-color: transparent !important;
-// }
+.data-table /deep/ .el-table__row {
+  background-color: transparent !important;
+}
 
 .table-header th {
   background-color: transparent !important;
@@ -862,7 +843,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  // padding: 16px 0;
+  padding: 16px 0;
   width: 100%;
   flex-shrink: 0;
   min-height: 60px;
@@ -917,7 +898,7 @@ export default {
   background: linear-gradient(135deg, #3a8ee6, #5a7cff);
 }
 
-.el-table th ::v-deep .el-table__cell {
+.el-table th /deep/ .el-table__cell {
   overflow: hidden;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -934,10 +915,10 @@ export default {
   display: block;
   text-align: center;
   line-height: 32px;
-  /* 设置合适的行高，确保文本完整显示 */
+  /* Set appropriate line height to ensure text displays completely */
   color: black;
   margin-top: 0;
-  /* 移除可能导致偏移的上边距 */
+  /* Remove top margin that may cause offset */
   height: 32px;
   position: absolute;
   top: 50%;
@@ -950,7 +931,7 @@ export default {
   position: relative;
 }
 
-/* 已移除可能影响文本显示的空伪元素 */
+/* Removed empty pseudo-elements that may affect text display */
 
 ::v-deep .el-table__body .el-checkbox__inner {
   display: inline-block !important;
@@ -965,6 +946,21 @@ export default {
   color: #fff !important;
 }
 
+::v-deep .data-table {
+  &.el-table::before,
+  &.el-table::after,
+  &.el-table__inner-wrapper::before {
+    display: none !important;
+  }
+}
+
+::v-deep .data-table .el-table__header-wrapper {
+  border-bottom: 1px solid rgb(224, 227, 237);
+}
+
+::v-deep .data-table .el-table__body td {
+  border-bottom: 1px solid rgb(224, 227, 237) !important;
+}
 
 .el-button img {
   height: 1em;
@@ -995,7 +991,7 @@ export default {
 
 .voice-management-btn:hover {
   background: #8aa2e0;
-  /* 悬停时颜色加深 */
+  /* Darken color on hover */
   transform: scale(1.05);
 }
 
@@ -1018,13 +1014,13 @@ export default {
   padding-right: 10px;
 }
 
-/* 分页器 */
+/* Pagination */
 .custom-pagination {
   display: flex;
   align-items: center;
   gap: 8px;
 
-  /* 导航按钮样式 (首页、上一页、下一页) */
+  /* Navigation button styles (first page, previous page, next page) */
   .pagination-btn:first-child,
   .pagination-btn:nth-child(2),
   .pagination-btn:nth-child(3),
@@ -1050,7 +1046,7 @@ export default {
     }
   }
 
-  /* 数字按钮样式 */
+  /* Number button styles */
   .pagination-btn:not(:first-child):not(:nth-child(2)):not(:nth-child(3)):not(:nth-last-child(2)) {
     min-width: 28px;
     height: 32px;
@@ -1102,55 +1098,16 @@ export default {
   flex: 1;
   overflow: hidden;
 }
-:deep(.transparent-table) {
-    background: white;
-    flex: 1;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
 
-    .el-table__body-wrapper {
-        flex: 1;
-        overflow-y: auto;
-        max-height: none !important;
-    }
-
-    .el-table__header-wrapper {
-        flex-shrink: 0;
-    }
-
-    .el-table__header th {
-        background: white !important;
-        color: black;
-        font-weight: 600;
-        height: 40px;
-        padding: 8px 0;
-        font-size: 14px;
-        border-bottom: 1px solid #e4e7ed;
-    }
-
-    .el-table__body tr {
-        background-color: white;
-
-        td {
-            border-top: 1px solid rgba(0, 0, 0, 0.04);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-            padding: 8px 0;
-            height: 40px;
-            color: #606266;
-            font-size: 14px;
-        }
-    }
-
-    .el-table__row:hover>td {
-        background-color: #f5f7fa !important;
-    }
-
-    &::before {
-        display: none;
-    }
+.data-table {
+  --table-max-height: calc(100vh - 45vh);
+  max-height: var(--table-max-height);
 }
 
+.data-table ::v-deep .el-table__body-wrapper {
+  max-height: calc(var(--table-max-height) - 80px);
+  overflow-y: auto;
+}
 
 ::v-deep .el-loading-mask {
   background-color: rgba(255, 255, 255, 0.6) !important;

@@ -1,9 +1,9 @@
 import type { PublicConfig } from '@/api/auth'
-import { getPublicConfig } from '@/api/auth'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { getPublicConfig } from '@/api/auth'
 
-// 初始化状态
+// Initialize state
 const initialConfigState: PublicConfig = {
   enableMobileRegister: false,
   version: '',
@@ -12,22 +12,21 @@ const initialConfigState: PublicConfig = {
   mobileAreaList: [],
   beianIcpNum: '',
   beianGaNum: '',
-  sm2PublicKey: '',
   name: import.meta.env.VITE_APP_TITLE,
 }
 
 export const useConfigStore = defineStore(
   'config',
   () => {
-    // 定义全局配置
+    // Define global configuration
     const config = ref<PublicConfig>({ ...initialConfigState })
 
-    // 设置配置信息
+    // Set configuration info
     const setConfig = (val: PublicConfig) => {
       config.value = val
     }
 
-    // 获取公共配置
+    // Get public configuration
     const fetchPublicConfig = async () => {
       try {
         const configData = await getPublicConfig()
@@ -37,12 +36,12 @@ export const useConfigStore = defineStore(
         return configData
       }
       catch (error) {
-        console.error('获取公共配置失败:', error)
+        console.error('Failed to get public configuration:', error)
         throw error
       }
     }
 
-    // 重置配置
+    // Reset configuration
     const resetConfig = () => {
       config.value = { ...initialConfigState }
     }

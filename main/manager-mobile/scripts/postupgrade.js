@@ -1,13 +1,13 @@
-// # 执行 `pnpm upgrade` 后会升级 `uniapp` 相关依赖
-// # 在升级完后，会自动添加很多无用依赖，这需要删除以减小依赖包体积
-// # 只需要执行下面的命令即可
+// # After executing `pnpm upgrade`, uniapp related dependencies will be upgraded
+// # After upgrade, many useless dependencies will be automatically added, which need to be deleted to reduce package size
+// # Just execute the following command
 
 const { exec } = require('node:child_process')
 
-// 定义要执行的命令
+// Define commands to execute
 const dependencies = [
   '@dcloudio/uni-app-harmony',
-  // TODO: 如果不需要某个平台的小程序，请手动删除或注释掉
+  // TODO: If you don't need mini programs for certain platforms, please manually delete or comment out
   '@dcloudio/uni-mp-alipay',
   '@dcloudio/uni-mp-baidu',
   '@dcloudio/uni-mp-jd',
@@ -17,19 +17,19 @@ const dependencies = [
   '@dcloudio/uni-mp-toutiao',
   '@dcloudio/uni-mp-xhs',
   '@dcloudio/uni-quickapp-webview',
-  // i18n模板要注释掉下面的
+  // i18n template should comment out the following
   'vue-i18n',
 ]
 
-// 使用exec执行命令
+// Use exec to execute commands
 exec(`pnpm un ${dependencies.join(' ')}`, (error, stdout, stderr) => {
   if (error) {
-    // 如果有错误，打印错误信息
-    console.error(`执行出错: ${error}`)
+    // If there is an error, print error information
+    console.error(`Execution error: ${error}`)
     return
   }
-  // 打印正常输出
+  // Print normal output
   console.log(`stdout: ${stdout}`)
-  // 如果有错误输出，也打印出来
+  // If there is error output, print it out too
   console.error(`stderr: ${stderr}`)
 })

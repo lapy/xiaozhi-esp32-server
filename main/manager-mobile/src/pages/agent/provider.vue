@@ -2,25 +2,29 @@
 {
   "layout": "default",
   "style": {
-    "navigationBarTitleText": "编辑源",
+    "navigationBarTitleText": "Edit Sources",
     "navigationStyle": "custom"
   }
 }
 </route>
 
 <script lang="ts" setup>
-import type { Providers } from '@/api/agent/types'
 import { onMounted, ref } from 'vue'
 import { t } from '@/i18n'
-import { useProvider } from '@/store/provider'
+import { useProvider, type ContextProvider } from '@/store/provider'
 
 defineOptions({
   name: 'Provider',
 })
 
+interface EditableContextProvider {
+  url: string
+  headers: { key: string, value: string }[]
+}
+
 const providerStore = useProvider()
 
-const localProviders = ref<Providers[]>([])
+const localProviders = ref<EditableContextProvider[]>([])
 
 function initLocalData() {
   localProviders.value = providerStore.providers.map((p) => {
@@ -59,7 +63,7 @@ function handleConfirm() {
   const result = localProviders.value
     .filter(p => p.url.trim() !== '')
     .map((p) => {
-      const headersObj = {}
+      const headersObj: Record<string, string> = {}
       p.headers.forEach((h) => {
         if (h.key.trim()) {
           headersObj[h.key.trim()] = h.value
@@ -71,7 +75,7 @@ function handleConfirm() {
       }
     })
 
-  providerStore.updateProviders(result as Providers[])
+  providerStore.updateProviders(result)
   goBack()
 }
 
@@ -86,7 +90,7 @@ onMounted(() => {
 
 <template>
   <view class="h-screen flex flex-col bg-[#f5f7fb]">
-    <!-- 头部导航 -->
+    <!-- Header navigation -->
     <wd-navbar
       :title="t('contextProviderDialog.title')"
       safe-area-inset-top

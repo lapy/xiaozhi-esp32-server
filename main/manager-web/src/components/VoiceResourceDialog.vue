@@ -112,18 +112,18 @@ export default {
     },
 
     handleOpen() {
-      // 对话框打开时加载平台列表
+      // Load platform options when the dialog opens.
       this.fetchPlatformList();
-      // 重置音色ID列表
+      // Reset the available voice ID list.
       this.voiceIdList = [];
     },
 
     handlePlatformChange(modelId) {
-      // 清空音色ID选择
+      // Clear the selected voice IDs when the platform changes.
       this.form.voiceIds = [];
     },
 
-    // 获取TTS平台列表
+    // Fetch the TTS platform list.
     fetchPlatformList() {
       Api.voiceResource.getTtsPlatformList((res) => {
         if (res.data.code === 0) {
@@ -132,7 +132,7 @@ export default {
       });
     },
 
-    // 远程搜索用户
+    // Search users remotely by mobile number.
     remoteSearchUser(query) {
       if (query !== '') {
         this.userLoading = true;

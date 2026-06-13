@@ -1,7 +1,9 @@
-# 生产镜像，仅包含应用代码
-FROM ghcr.io/xinnan-tech/xiaozhi-esp32-server:server-base
+# Production image: application code on top of the published server-base image.
+# CI should pass SERVER_BASE_IMAGE=ghcr.io/${{ github.repository }}:server-base.
+# Local default pulls the lapy org base (build server-base first if missing).
+ARG SERVER_BASE_IMAGE=ghcr.io/lapy/xiaozhi-esp32-server:server-base
+FROM ${SERVER_BASE_IMAGE}
 
 COPY main/xiaozhi-server .
 
-# 启动应用
 CMD ["python", "app.py"]

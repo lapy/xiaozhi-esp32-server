@@ -16,8 +16,8 @@ import jakarta.annotation.Resource;
 import xiaozhi.common.utils.ResourcesUtils;
 
 /**
- * Redis工具类
- * Copyright (c) 人人开源 All rights reserved.
+ * Redis utility class
+ * Copyright (c) Renren Open Source All rights reserved.
  * Website: https://www.renren.io
  */
 @Component
@@ -29,19 +29,19 @@ public class RedisUtils {
     private ResourcesUtils resourceUtils;
 
     /**
-     * 默认过期时长为24小时，单位：秒
+     * Default expiration time is 24 hours, unit: seconds
      */
     public final static long DEFAULT_EXPIRE = 60 * 60 * 24L;
     /**
-     * 过期时长为1小时，单位：秒
+     * Expiration duration is 1 hour, unit: seconds
      */
     public final static long HOUR_ONE_EXPIRE = (long) 60 * 60;
     /**
-     * 过期时长为6小时，单位：秒
+     * Expiration duration is 6 hours, unit: seconds
      */
     public final static long HOUR_SIX_EXPIRE = 60 * 60 * 6L;
     /**
-     * 不设置过期时长
+     * Do not set expiration duration
      */
     public final static long NOT_EXPIRE = -1L;
 
@@ -153,39 +153,39 @@ public class RedisUtils {
 
 
     /**
-     * 清空所有 Redis 数据库中的所有键
+     * Clear all keys in all Redis databases
      */
     public void emptyAll() {
-        // Lua 脚本 FLUSHALL是redis清空所有库的命令
+        // Lua script FLUSHALL is redis command to clear all databases
         String luaScript =resourceUtils.loadString("lua/emptyAll.lua");
 
-        // 创建 DefaultRedisScript 对象
+        // Create DefaultRedisScript object
         DefaultRedisScript<Void> redisScript = new DefaultRedisScript<>();
-        redisScript.setScriptText(luaScript); // 设置 Lua 脚本内容
-        redisScript.setResultType(Void.class); // 设置返回值类型
+        redisScript.setScriptText(luaScript); // Set Lua script content
+        redisScript.setResultType(Void.class); // Set return value type
 
-        // 执行 Lua 脚本
-        List<String> keys = Collections.emptyList(); // 如果脚本不依赖 key，可以传入空列表
+        // Execute Lua script
+        List<String> keys = Collections.emptyList(); // If script doesn't depend on key, can pass empty list
         redisTemplate.execute(redisScript, keys);
 
     }
 
     /**
-     * 获取在redis指定key的值，如果值为空，着设置key的默认值
-     * @param key redis的key
-     * @param defaultValue 默认值
-     * @param expiresInSecond 过期时间
-     * @return 返回key的值
+     * Get value for specified key in redis, if value is empty, set default value for key
+     * @param key Redis key
+     * @param defaultValue Default value
+     * @param expiresInSecond Expiration time
+     * @return Return key value
      */
     public String getKeyOrCreate(String key, String defaultValue,Long expiresInSecond) {
-        // Lua 脚本
+        // Lua script
         String luaScript = resourceUtils.loadString("lua/getKeyOrCreate.lua");
 
         DefaultRedisScript<String> redisScript = new DefaultRedisScript<>();
         redisScript.setScriptText(luaScript);
         redisScript.setResultType(String.class);
 
-        // 执行 Lua 脚本
+        // Execute Lua script
         List<String> keys = Collections.singletonList(key);
         return redisTemplate.execute(redisScript, keys, defaultValue,expiresInSecond);
     }

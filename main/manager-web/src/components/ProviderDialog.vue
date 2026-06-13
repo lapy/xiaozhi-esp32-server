@@ -141,7 +141,7 @@ export default {
     return {
       saving: false,
       isAllFieldsSelected: false,
-      tableKey: 0 // 用于强制表格重新渲染
+      tableKey: 0 // Used to force table re-render
     };
   },
   computed: {
@@ -165,8 +165,7 @@ export default {
         'number': this.$t('providerDialog.numberType'),
         'boolean': this.$t('providerDialog.booleanType'),
         'dict': this.$t('providerDialog.dictType'),
-        'array': this.$t('providerDialog.arrayType'),
-        'RAG': this.$t('providerDialog.ragType')
+        'array': this.$t('providerDialog.arrayType')
       };
       return typeMap[type];
     },
@@ -276,7 +275,7 @@ export default {
           });
       }).catch(() => {
         this.$message.info({
-          message: '已取消删除',
+          message: 'Delete cancelled',
           showClose: true
         });
       });
@@ -288,7 +287,7 @@ export default {
     },
 
     forceTableRerender() {
-      this.tableKey += 1; // 改变key值强制表格重新渲染
+      this.tableKey += 1; // Change key value to force table re-render
     },
 
     submit() {

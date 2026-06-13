@@ -11,7 +11,7 @@ class LLMProviderBase(ABC):
         pass
 
     def response_no_stream(self, system_prompt, user_prompt, **kwargs):
-        # 构造对话格式
+        # Build a standard two-message dialogue payload.
         dialogue = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -31,4 +31,3 @@ class LLMProviderBase(ABC):
         # For providers that don't support functions, just return regular response
         for token in self.response(session_id, dialogue):
             yield token, None
-

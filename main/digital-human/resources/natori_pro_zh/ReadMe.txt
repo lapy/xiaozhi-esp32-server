@@ -1,79 +1,77 @@
+============================================================
+
+Sample Model
+Natori Jin - PRO
 
 ============================================================
 
-示例模型
-名执 尽 - PRO
+This sample is useful for studying more advanced production techniques that are commonly used in commercial games and apps, especially arm switching.
 
-============================================================
+The character design was created by Makoto Senzaki.
+The model uses gradient-based transitions to switch between arm parts, a technique often seen in production applications.
+It is a good reference for learning richer animation through part switching.
 
-　该示例可用于学习商用的游戏和App中常用到的手臂切换等难度较高的制作方法。
-
-　该模型角色由画师先崎真琴设计。
-　模型的手臂通过渐变实现不同部件间的切换，这种制作方法经常应用于商用的游戏和App中。
-　通过该模型，可以学习部件的切换来实现更丰富的动画。
-
-　另外，可以通过Cubism3 Viewer (for OW)来查看嵌入式文件组的动画，了解完整的工作流程中使用到的数据结构。
+You can also inspect the embedded animation set in Cubism3 Viewer (for OW) to better understand the data used in the full workflow.
 
 
 ------------------------------
-素材使用许可
+Usage License
 ------------------------------
 
-　普通用户以及小规模企业在同意授权协议的情况下可用于商业用途。
-　中/大规模的企业只能用于非公开的内部试用。
-　在使用该素材时，请确认以下的【无偿提供素材使用授权协议】中的“授权类型”、“Live2D原创角色”等的相关内容，
-　并必须接受【Live2D Cubism 示例模型的使用授权要求】中的利用条件。
+Individual users and small businesses may use this asset commercially if they agree to the relevant license terms.
+Medium and large businesses may use it only for non-public internal evaluation.
+Before using this asset, review the license terms for the free sample materials, including the sections covering license type and original Live2D characters, and make sure your usage complies with the Live2D Cubism sample model conditions.
 
-　有关许可证的更多信息，请参阅以下页面。
-　https://www.live2d.com/zh-CHS/download/sample-data/
-
-
-------------------------------
-创作者
-------------------------------
-
-　插画：先崎 真琴【http://senzakimakoto.com/】
-　配音：小野友树【https://web.onoyuki.com/】
-　（※配音数据的发布为限定发布，已于2018/06/04结束。）
-　模型：Live2D
+For more information about the license, refer to:
+https://www.live2d.com/en/download/sample-data/
 
 
 ------------------------------
-素材内容
+Credits
 ------------------------------
 
-　模型文件(cmo3) ※包含物理模拟的设定
-　表情动画文件(can3)
-　基本动画文件(can3)
-　嵌入文件组(runtime文件夹)
-  ・模型数据(moc3)
-  ・表情数据(exp3.json)
-  ・动作数据(motion3.json)
-  ・模型设定文件(model3.json)
-  ・姿势设定文件(pose3.json)
-  ・物理模拟设定文件(physics3.json)
-  ・辅助显示的文件(cdi3.json)
+Illustration: Makoto Senzaki
+Voice: Yuki Ono
+Note: distribution of the voice data ended on 2018-06-04.
+Model: Live2D
 
 
 ------------------------------
-更新记录
+Included Assets
 ------------------------------
-　※配音数据的发布已于2018/06/04结束。
 
-【cmo3】
+Model file (`cmo3`) with physics settings
+Expression animation file (`can3`)
+Base animation file (`can3`)
+Embedded runtime files
+- Model data (`moc3`)
+- Expression data (`exp3.json`)
+- Motion data (`motion3.json`)
+- Model settings (`model3.json`)
+- Pose settings (`pose3.json`)
+- Physics settings (`physics3.json`)
+- Display-assist data (`cdi3.json`)
 
-　natori_pro_t06.cmo3
-　2021年6月10日 公开
+
+------------------------------
+Revision History
+------------------------------
+
+Note: distribution of the voice data ended on 2018-06-04.
+
+[cmo3]
+
+`natori_pro_t06.cmo3`
+June 10, 2021: Published
 
 
-【can3】
+[can3]
 
-　natori_pro_exp_t03.can3
-　2021年6月10日 公开
+`natori_pro_exp_t03.can3`
+June 10, 2021: Published
 
 
-【can3】
+[can3]
 
-　natori_pro_motions_t03.can3
-　2021年6月10日 公开
-
+`natori_pro_motions_t03.can3`
+June 10, 2021: Published

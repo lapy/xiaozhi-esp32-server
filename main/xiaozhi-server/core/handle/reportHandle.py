@@ -1,12 +1,12 @@
 """
-TTS上报功能已集成到ConnectionHandler类中。
+TTS reporting has been integrated into the ConnectionHandler class.
 
-上报功能包括：
-1. 每个连接对象拥有自己的上报队列和处理线程
-2. 上报线程的生命周期与连接对象绑定
-3. 使用ConnectionHandler.enqueue_tts_report方法进行上报
+The reporting flow includes:
+1. Each connection object owns its own report queue and worker thread.
+2. The worker thread lifecycle is tied to the connection object.
+3. Reporting is triggered through `ConnectionHandler.enqueue_tts_report`.
 
-具体实现请参考core/connection.py中的相关代码。
+For the implementation details, see the related code in `core/connection.py`.
 """
 
 import time
@@ -23,21 +23,21 @@ TAG = __name__
 
 
 async def report(conn: "ConnectionHandler", type, text, opus_data, report_time):
-    """执行聊天记录上报操作
+    """Send a chat-history report.
 
     Args:
-        conn: 连接对象
-        type: 上报类型，1为用户，2为智能体，3为工具调用
-        text: 合成文本
-        opus_data: opus音频数据
-        report_time: 上报时间
+        conn: Connection object.
+        type: Report type. `1` for user, `2` for assistant, `3` for tool call.
+        text: Text content.
+        opus_data: Opus audio data.
+        report_time: Report timestamp.
     """
     try:
         if opus_data:
             audio_data = opus_to_wav(conn, opus_data)
         else:
             audio_data = None
-        # 执行异步上报
+        # Execute the async report request.
         await manage_report(
             mac_address=conn.device_id,
             session_id=conn.session_id,
@@ -47,39 +47,41 @@ async def report(conn: "ConnectionHandler", type, text, opus_data, report_time):
             report_time=report_time,
         )
     except Exception as e:
-        conn.logger.bind(tag=TAG).error(f"聊天记录上报失败: {e}")
+        conn.logger.bind(tag=TAG).error(f"Failed to report chat history: {e}")
 
 
 def opus_to_wav(conn: "ConnectionHandler", opus_data):
-    """将Opus数据转换为WAV格式的字节流
+    """Convert Opus packets into a WAV byte stream.
 
     Args:
-        output_dir: 输出目录（保留参数以保持接口兼容）
-        opus_data: opus音频数据
+        output_dir: Output directory placeholder kept for interface compatibility.
+        opus_data: Opus audio data.
 
     Returns:
-        bytes: WAV格式的音频数据
+        bytes: WAV-format audio data.
     """
     decoder = None
     try:
-        decoder = opuslib_next.Decoder(16000, 1)  # 16kHz, 单声道
+        decoder = opuslib_next.Decoder(16000, 1)  # 16 kHz, mono
         pcm_data = []
 
         for opus_packet in opus_data:
             try:
-                pcm_frame = decoder.decode(opus_packet, 960)  # 960 samples = 60ms
+                pcm_frame = decoder.decode(opus_packet, 960)  # 960 samples = 60 ms
                 pcm_data.append(pcm_frame)
             except opuslib_next.OpusError as e:
-                conn.logger.bind(tag=TAG).error(f"Opus解码错误: {e}", exc_info=True)
+                conn.logger.bind(tag=TAG).error(
+                    f"Opus decode error: {e}", exc_info=True
+                )
 
         if not pcm_data:
-            raise ValueError("没有有效的PCM数据")
+            raise ValueError("No valid PCM data was produced")
 
-        # 创建WAV文件头
+        # Build the WAV header.
         pcm_data_bytes = b"".join(pcm_data)
         num_samples = len(pcm_data_bytes) // 2  # 16-bit samples
 
-        # WAV文件头
+        # WAV header
         wav_header = bytearray()
         wav_header.extend(b"RIFF")  # ChunkID
         wav_header.extend((36 + len(pcm_data_bytes)).to_bytes(4, "little"))  # ChunkSize
@@ -95,14 +97,16 @@ def opus_to_wav(conn: "ConnectionHandler", opus_data):
         wav_header.extend(b"data")  # Subchunk2ID
         wav_header.extend(len(pcm_data_bytes).to_bytes(4, "little"))  # Subchunk2Size
 
-        # 返回完整的WAV数据
+        # Return the full WAV payload.
         return bytes(wav_header) + pcm_data_bytes
     finally:
         if decoder is not None:
             try:
                 del decoder
             except Exception as e:
-                conn.logger.bind(tag=TAG).debug(f"释放decoder资源时出错: {e}")
+                conn.logger.bind(tag=TAG).debug(
+                    f"Failed to release decoder resources: {e}"
+                )
 
 
 def enqueue_tts_report(conn: "ConnectionHandler", text, opus_data):
@@ -110,38 +114,39 @@ def enqueue_tts_report(conn: "ConnectionHandler", text, opus_data):
         return
     if conn.chat_history_conf == 0:
         return
-    """将TTS数据加入上报队列
+    """Push TTS data into the report queue.
 
     Args:
-        conn: 连接对象
-        text: 合成文本
-        opus_data: opus音频数据
+        conn: Connection object.
+        text: Synthesized text.
+        opus_data: Opus audio data.
     """
     try:
-        # 使用连接对象的队列，传入文本和二进制数据而非文件路径
+        # Use the connection queue and pass text plus binary data directly.
         if conn.chat_history_conf == 2:
             conn.report_queue.put((2, text, opus_data, int(time.time() * 1000)))
             conn.logger.bind(tag=TAG).debug(
-                f"TTS数据已加入上报队列: {conn.device_id}, 音频大小: {len(opus_data)} "
+                f"TTS data queued for reporting: {conn.device_id}, audio size: {len(opus_data)} "
             )
         else:
             conn.report_queue.put((2, text, None, int(time.time() * 1000)))
             conn.logger.bind(tag=TAG).debug(
-                f"TTS数据已加入上报队列: {conn.device_id}, 不上报音频"
+                f"TTS data queued for reporting: {conn.device_id}, audio upload disabled"
             )
     except Exception as e:
-        conn.logger.bind(tag=TAG).error(f"加入TTS上报队列失败: {text}, {e}")
+        conn.logger.bind(tag=TAG).error(f"Failed to queue TTS report: {text}, {e}")
 
 
 def enqueue_tool_report(conn: "ConnectionHandler", tool_name: str, tool_input: dict, tool_result: str = None, report_tool_call: bool = True):
-    """将工具调用数据加入上报队列
+    """Push tool-call data into the report queue.
 
     Args:
-        conn: 连接对象
-        tool_name: 工具名称
-        tool_input: 工具输入参数
-        tool_result: 工具执行结果（可选）
-        report_tool_call: 是否上报工具调用本身，默认True；仅上报结果时设为False
+        conn: Connection object.
+        tool_name: Tool name.
+        tool_input: Tool input arguments.
+        tool_result: Tool execution result, if available.
+        report_tool_call: Whether to report the tool call itself. Defaults to
+            `True`; set to `False` to report only the result.
     """
     if not conn.read_config_from_api or conn.need_bind:
         return
@@ -151,7 +156,7 @@ def enqueue_tool_report(conn: "ConnectionHandler", tool_name: str, tool_input: d
     try:
         timestamp = int(time.time() * 1000)
 
-        # 构建工具调用内容
+        # Build the tool-call record.
         if report_tool_call:
             tool_text = json.dumps(
                 [
@@ -163,13 +168,13 @@ def enqueue_tool_report(conn: "ConnectionHandler", tool_name: str, tool_input: d
             )
             conn.report_queue.put((3, tool_text, None, timestamp))
 
-        # 构建工具结果内容
+        # Build the tool-result record.
         if tool_result:
             result_display = f'{{"result":"{str(tool_result)}"}}'
             result_content = json.dumps([{"type": "tool_result", "text": result_display}], ensure_ascii=False)
             conn.report_queue.put((3, result_content, None, timestamp + 1))
     except Exception as e:
-        conn.logger.bind(tag=TAG).error(f"加入工具上报队列失败: {e}")
+        conn.logger.bind(tag=TAG).error(f"Failed to queue tool report: {e}")
 
 
 def enqueue_asr_report(conn: "ConnectionHandler", text, opus_data):
@@ -177,24 +182,24 @@ def enqueue_asr_report(conn: "ConnectionHandler", text, opus_data):
         return
     if conn.chat_history_conf == 0:
         return
-    """将ASR数据加入上报队列
+    """Push ASR data into the report queue.
 
     Args:
-        conn: 连接对象
-        text: 合成文本
-        opus_data: opus音频数据
+        conn: Connection object.
+        text: Recognized text.
+        opus_data: Opus audio data.
     """
     try:
-        # 使用连接对象的队列，传入文本和二进制数据而非文件路径
+        # Use the connection queue and pass text plus binary data directly.
         if conn.chat_history_conf == 2:
             conn.report_queue.put((1, text, opus_data, int(time.time() * 1000)))
             conn.logger.bind(tag=TAG).debug(
-                f"ASR数据已加入上报队列: {conn.device_id}, 音频大小: {len(opus_data)} "
+                f"ASR data queued for reporting: {conn.device_id}, audio size: {len(opus_data)} "
             )
         else:
             conn.report_queue.put((1, text, None, int(time.time() * 1000)))
             conn.logger.bind(tag=TAG).debug(
-                f"ASR数据已加入上报队列: {conn.device_id}, 不上报音频"
+                f"ASR data queued for reporting: {conn.device_id}, audio upload disabled"
             )
     except Exception as e:
-        conn.logger.bind(tag=TAG).debug(f"加入ASR上报队列失败: {text}, {e}")
+        conn.logger.bind(tag=TAG).debug(f"Failed to queue ASR report: {text}, {e}")

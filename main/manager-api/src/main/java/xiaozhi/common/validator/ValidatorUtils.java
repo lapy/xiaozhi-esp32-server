@@ -15,8 +15,8 @@ import jakarta.validation.Validator;
 import xiaozhi.common.exception.RenException;
 
 /**
- * hibernate-validator校验工具类
- * 参考文档：http://docs.jboss.org/hibernate/validator/6.0/reference/en-US/html_single/
+ * hibernate-validator validation utility class
+ * Reference documentation: http://docs.jboss.org/hibernate/validator/6.0/reference/en-US/html_single/
  */
 public class ValidatorUtils {
 
@@ -28,10 +28,10 @@ public class ValidatorUtils {
     }
 
     /**
-     * 校验对象
+     * Validate object
      *
-     * @param object 待校验对象
-     * @param groups 待校验的组
+     * @param object Object to be validated
+     * @param groups Groups to be validated
      */
     public static void validateEntity(Object object, Class<?>... groups)
             throws RenException {
@@ -48,9 +48,9 @@ public class ValidatorUtils {
     }
 
     /**
-     * 国际手机号正则表达式
-     * 要求必须带国际区号，格式：+[国家代码][手机号]
-     * 例如：
+     * International phone number regular expression
+     * Must include international area code, format: +[country code][phone number]
+     * For example:
      * - +8613800138000
      * - +12345678900
      * - +447123456789
@@ -58,11 +58,11 @@ public class ValidatorUtils {
     private static final String INTERNATIONAL_PHONE_REGEX = "^\\+[1-9]\\d{0,3}[1-9]\\d{4,14}$";
 
     /**
-     * 校验手机号是否有效
-     * 要求必须带国际区号，格式：+[国家代码][手机号]
-     * 例如：+8613800138000
+     * Validate if phone number is valid
+     * Must include international area code, format: +[country code][phone number]
+     * For example: +8613800138000
      * 
-     * @param phone 手机号
+     * @param phone Phone number
      * @return boolean
      */
     public static boolean isValidPhone(String phone) {
@@ -70,7 +70,7 @@ public class ValidatorUtils {
             return false;
         }
 
-        // 验证必须带国际区号的手机号格式
+        // Validate phone number format with international area code
         Pattern pattern = Pattern.compile(INTERNATIONAL_PHONE_REGEX);
         return pattern.matcher(phone).matches();
     }

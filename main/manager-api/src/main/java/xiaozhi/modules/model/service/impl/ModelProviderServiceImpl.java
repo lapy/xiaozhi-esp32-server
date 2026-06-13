@@ -2,20 +2,15 @@ package xiaozhi.modules.model.service.impl;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-
-import cn.hutool.json.JSONArray;
 import lombok.AllArgsConstructor;
-import xiaozhi.common.constant.Constant;
 import xiaozhi.common.exception.ErrorCode;
 import xiaozhi.common.exception.RenException;
 import xiaozhi.common.page.PageData;
@@ -28,6 +23,7 @@ import xiaozhi.modules.model.dao.ModelProviderDao;
 import xiaozhi.modules.model.dto.ModelProviderDTO;
 import xiaozhi.modules.model.entity.ModelProviderEntity;
 import xiaozhi.modules.model.service.ModelProviderService;
+import xiaozhi.modules.model.support.ProviderPolicy;
 import xiaozhi.modules.security.user.SecurityUser;
 
 @Service
@@ -40,28 +36,31 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
 
     @Override
     public List<ModelProviderDTO> getPluginList() {
-        // 1. 获取插件列表
+        // 1. Fetch plugin list
         LambdaQueryWrapper<ModelProviderEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ModelProviderEntity::getModelType, "Plugin");
-        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper);
+        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper)
+                .stream()
+                .filter(ProviderPolicy::isAllowedProvider)
+                .collect(Collectors.toList());
         List<ModelProviderDTO> resultList = ConvertUtils.sourceToTarget(providerEntities, ModelProviderDTO.class);
 
-        // 2. 获取当前用户的知识库列表并追加到结果中
+        // 2. Append knowledge bases owned by the current user
         UserDetail userDetail = SecurityUser.getUser();
         if (userDetail != null && userDetail.getId() != null) {
-            // 查询当前用户的知识库
+            // Query knowledge bases for the current user
             LambdaQueryWrapper<KnowledgeBaseEntity> kbQueryWrapper = new LambdaQueryWrapper<>();
             kbQueryWrapper.eq(KnowledgeBaseEntity::getCreator, userDetail.getId());
-            kbQueryWrapper.eq(KnowledgeBaseEntity::getStatus, 1); // 只获取启用状态的知识库
+            kbQueryWrapper.eq(KnowledgeBaseEntity::getStatus, 1); // Only enabled knowledge bases
             List<KnowledgeBaseEntity> knowledgeBases = knowledgeBaseDao.selectList(kbQueryWrapper);
 
-            // 将知识库转换为ModelProviderDTO格式并添加到结果列表
+            // Convert knowledge bases to ModelProviderDTO and append to the list
             for (KnowledgeBaseEntity kb : knowledgeBases) {
                 ModelProviderDTO dto = new ModelProviderDTO();
                 dto.setId(kb.getId());
                 dto.setModelType("Rag");
-                dto.setName("[知识库]" + kb.getName());
-                dto.setProviderCode("ragflow"); // 假设所有RAG都使用ragflow
+                dto.setName("[Knowledge Base] " + kb.getName());
+                dto.setProviderCode("ragflow"); // Assume all RAG uses ragflow
                 dto.setFields("[]");
                 dto.setSort(0);
                 dto.setCreateDate(kb.getCreatedAt());
@@ -86,7 +85,10 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
         LambdaQueryWrapper<ModelProviderEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(ModelProviderEntity::getId, ids);
         queryWrapper.eq(ModelProviderEntity::getModelType, "Plugin");
-        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper);
+        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper)
+                .stream()
+                .filter(ProviderPolicy::isAllowedProvider)
+                .collect(Collectors.toList());
         return ConvertUtils.sourceToTarget(providerEntities, ModelProviderDTO.class);
     }
 
@@ -96,21 +98,15 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
         QueryWrapper<ModelProviderEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("model_type", StringUtils.isBlank(modelType) ? "" : modelType);
         queryWrapper.orderByAsc("sort");
-        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper);
+        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper)
+                .stream()
+                .filter(ProviderPolicy::isAllowedProvider)
+                .collect(Collectors.toList());
         return ConvertUtils.sourceToTarget(providerEntities, ModelProviderDTO.class);
     }
 
     @Override
     public PageData<ModelProviderDTO> getListPage(ModelProviderDTO modelProviderDTO, String page, String limit) {
-
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put(Constant.PAGE, page);
-        params.put(Constant.LIMIT, limit);
-        params.put(Constant.ORDER_FIELD, List.of("model_type", "sort"));
-        params.put(Constant.ORDER, "asc");
-
-        IPage<ModelProviderEntity> pageParam = getPage(params, null, true);
-
         QueryWrapper<ModelProviderEntity> wrapper = new QueryWrapper<ModelProviderEntity>();
 
         if (StringUtils.isNotBlank(modelProviderDTO.getModelType())) {
@@ -122,7 +118,21 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
                     .or()
                     .like("provider_code", modelProviderDTO.getName()));
         }
-        return getPageData(modelProviderDao.selectPage(pageParam, wrapper), ModelProviderDTO.class);
+        wrapper.orderByAsc("model_type", "sort");
+
+        List<ModelProviderEntity> allRecords = modelProviderDao.selectList(wrapper);
+        List<ModelProviderEntity> filteredRecords = allRecords.stream()
+                .filter(ProviderPolicy::isAllowedProvider)
+                .collect(Collectors.toList());
+
+        long currentPage = Long.parseLong(page);
+        long pageSize = Long.parseLong(limit);
+        int total = filteredRecords.size();
+        int fromIndex = (int) Math.min((currentPage - 1) * pageSize, total);
+        int toIndex = (int) Math.min(fromIndex + pageSize, total);
+
+        List<ModelProviderEntity> pageRecords = filteredRecords.subList(fromIndex, toIndex);
+        return new PageData<>(ConvertUtils.sourceToTarget(pageRecords, ModelProviderDTO.class), total);
     }
 
     @Override
@@ -132,7 +142,7 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
         modelProviderDTO.setUpdater(user.getId());
         modelProviderDTO.setCreateDate(new Date());
         modelProviderDTO.setUpdateDate(new Date());
-        // 去除Fields左右的双引号
+        // Remove double quotes around Fields.
 
         modelProviderDTO.setFields(modelProviderDTO.getFields());
         ModelProviderEntity entity = ConvertUtils.sourceToTarget(modelProviderDTO, ModelProviderEntity.class);
@@ -174,7 +184,10 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
         QueryWrapper<ModelProviderEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("model_type", StringUtils.isBlank(modelType) ? "" : modelType);
         queryWrapper.eq("provider_code", StringUtils.isBlank(providerCode) ? "" : providerCode);
-        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper);
+        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper)
+                .stream()
+                .filter(ProviderPolicy::isAllowedProvider)
+                .collect(Collectors.toList());
         return ConvertUtils.sourceToTarget(providerEntities, ModelProviderDTO.class);
     }
 }

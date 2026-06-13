@@ -1,20 +1,22 @@
 {
   "compilerOptions": {
     "composite": true,
+    "target": "ES2015",
     "lib": ["esnext", "dom"],
     "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "Node",
     "paths": {
       "@/*": ["./src/*"],
-      "@img/*": ["./src/static/*"]
+      "@img/*": ["./src/static/*"],
+      "wot-design-uni": ["./src/types/wot-design-uni-api.d.ts"],
+      "wot-design-uni/components/wd-toast": ["./src/types/wot-design-uni-toast.d.ts"]
     },
     "resolveJsonModule": true,
     "types": [
       "@dcloudio/types",
       "@uni-helper/uni-types",
       "@types/wechat-miniprogram",
-      "wot-design-uni/global.d.ts",
       "z-paging/types",
       "./src/typings.d.ts"
     ],

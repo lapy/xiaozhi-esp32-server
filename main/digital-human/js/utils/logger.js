@@ -1,28 +1,27 @@
-// 日志记录函数
+// Log helper for the test harness UI.
 export function log(message, type = 'info') {
-    // 将消息按换行符分割成多行
+    // Split multi-line messages so each line keeps a consistent prefix.
     const lines = message.split('\n');
     const now = new Date();
     // const timestamp = `[${now.toLocaleTimeString()}] `;
     const timestamp = `[${now.toLocaleTimeString()}.${now.getMilliseconds().toString().padStart(3, '0')}] `;
 
-    // 检查是否存在日志容器
+    // Fall back to the console if the log container does not exist.
     const logContainer = document.getElementById('logContainer');
     if (!logContainer) {
-        // 如果日志容器不存在，只输出到控制台
         console.log(`[${type.toUpperCase()}] ${message}`);
         return;
     }
 
-    // 为每一行创建日志条目
+    // Create a log entry for each line.
     lines.forEach((line, index) => {
         const logEntry = document.createElement('div');
         logEntry.className = `log-entry log-${type}`;
-        // 如果是第一条日志，显示时间戳
+        // Only the first line shows the timestamp.
         const prefix = index === 0 ? timestamp : ' '.repeat(timestamp.length);
         logEntry.textContent = `${prefix}${line}`;
         // logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        // logEntry.style 保留起始的空格
+        // Preserve leading spaces in wrapped lines.
         logEntry.style.whiteSpace = 'pre';
         if (type === 'error') {
             logEntry.style.color = 'red';

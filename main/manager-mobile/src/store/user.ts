@@ -5,7 +5,7 @@ import {
   getUserInfo as _getUserInfo,
 } from '@/api/auth'
 
-// 初始化状态
+// Initialize state
 const userInfoState: UserInfo & { avatar?: string, token?: string } = {
   id: 0,
   username: '',
@@ -19,14 +19,14 @@ const userInfoState: UserInfo & { avatar?: string, token?: string } = {
 }
 
 export const useUserStore = defineStore(
-  'userInfo',
+  'user',
   () => {
-    // 定义用户信息
+    // Define user info
     const userInfo = ref<UserInfo & { avatar?: string, token?: string }>({ ...userInfoState })
-    // 设置用户信息
+    // Set user info
     const setUserInfo = (val: UserInfo & { avatar?: string, token?: string }) => {
-      console.log('设置用户信息', val)
-      // 若头像为空 则使用默认头像
+      console.log('Set user info', val)
+      // If avatar is empty, use default avatar
       if (!val.avatar) {
         val.avatar = userInfoState.avatar
       }
@@ -37,25 +37,32 @@ export const useUserStore = defineStore(
     }
     const setUserAvatar = (avatar: string) => {
       userInfo.value.avatar = avatar
-      console.log('设置用户头像', avatar)
+      console.log('Set user avatar', avatar)
       console.log('userInfo', userInfo.value)
     }
-    // 删除用户信息
+    // Delete user info
     const removeUserInfo = () => {
       userInfo.value = { ...userInfoState }
       uni.removeStorageSync('userInfo')
       uni.removeStorageSync('token')
     }
     /**
-     * 获取用户信息
+     * Get user info
      */
     const getUserInfo = async () => {
       const userData = await _getUserInfo()
-      setUserInfo(userData)
-      return userData
+      const userInfoWithExtras = {
+        ...userData,
+        avatar: userInfoState.avatar,
+        token: uni.getStorageSync('token') || '',
+      }
+      setUserInfo(userInfoWithExtras)
+      uni.setStorageSync('userInfo', userInfoWithExtras)
+      // TODO Can add method to get user routes here, dynamically generate routes based on user role
+      return userInfoWithExtras
     }
     /**
-     * 退出登录 并 删除用户信息
+     * Logout and delete user info
      */
     const logout = async () => {
       removeUserInfo()
@@ -71,12 +78,6 @@ export const useUserStore = defineStore(
     }
   },
   {
-    persist: {
-      key: 'userInfo',
-      serializer: {
-        serialize: state => JSON.stringify(state.userInfo),
-        deserialize: value => ({ userInfo: JSON.parse(value) }),
-      },
-    },
+    persist: true,
   },
 )

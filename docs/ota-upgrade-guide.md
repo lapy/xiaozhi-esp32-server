@@ -1,142 +1,143 @@
-# 单模块部署固件OTA自动升级配置指南
+# OTA Firmware Upgrade Guide for Single-Module Deployments
 
-本教程将指导你如何在**单模块部署**场景下配置固件OTA自动升级功能，实现设备固件的自动更新。
+This guide explains how to configure automatic OTA firmware upgrades when you are running the single-module `xiaozhi-server` deployment.
 
-如果你已经使用**全模块部署**，请忽略本教程。
+If you are using the full-module deployment, you can skip this guide.
 
-## 功能介绍
+## Overview
 
-在单模块部署中，xiaozhi-server内置了OTA固件管理功能，可以自动检测设备版本并下发升级固件。系统会根据设备型号和当前版本，自动匹配并推送最新的固件版本。
+In single-module mode, `xiaozhi-server` includes built-in OTA firmware management. It can check device versions, match the correct firmware for the device model, and serve updated firmware automatically.
 
-## 前提条件
+## Prerequisites
 
-- 你已经成功进行**单模块部署**并运行xiaozhi-server
-- 设备能够正常连接到服务器
+- You already have a working single-module deployment of `xiaozhi-server`
+- Your device can connect to the server successfully
 
-## 第一步 准备固件文件
+## Step 1: Prepare the firmware file
 
-### 1. 创建固件存放目录
+### 1. Create the firmware directory
 
-固件文件需要放在`data/bin/`目录下。如果该目录不存在，请手动创建：
+Firmware files must be placed in `data/bin/`. Create it if it does not already exist:
 
 ```bash
 mkdir -p data/bin
 ```
 
-### 2. 固件文件命名规则
+### 2. Follow the required filename format
 
-固件文件必须遵循以下命名格式：
+Firmware files must follow this format:
 
+```text
+{device_model}_{version}.bin
 ```
-{设备型号}_{版本号}.bin
-```
 
-**命名规则说明：**
-- `设备型号`：设备的型号名称，例如 `lichuang-dev`、`bread-compact-wifi` 等
-- `版本号`：固件版本号，必须以数字开头，支持数字、字母、点号、下划线和短横线，例如 `1.6.6`、`2.0.0` 等
-- 文件扩展名必须是 `.bin`
+Rules:
 
-**命名示例：**
-```
+- `device_model`: the device model name, for example `lichuang-dev` or `bread-compact-wifi`
+- `version`: must begin with a number and may contain letters, dots, underscores, and hyphens
+- the file extension must be `.bin`
+
+Examples:
+
+```text
 bread-compact-wifi_1.6.6.bin
 lichuang-dev_2.0.0.bin
 ```
 
-### 3. 放置固件文件
+### 3. Copy the correct firmware artifact
 
-将准备好的固件文件（.bin文件）复制到`data/bin/`目录下：
+Copy the OTA upgrade artifact into `data/bin/`:
 
-重要的事情说三遍：升级的bin文件是`xiaozhi.bin`，不是全量固件文件`merged-binary.bin`!
-
-重要的事情说三遍：升级的bin文件是`xiaozhi.bin`，不是全量固件文件`merged-binary.bin`!
-
-重要的事情说三遍：升级的bin文件是`xiaozhi.bin`，不是全量固件文件`merged-binary.bin`!
+Important: use `xiaozhi.bin`, not the full firmware image `merged-binary.bin`.
 
 ```bash
-cp xiaozhi.bin data/bin/设备型号_版本号.bin
+cp xiaozhi.bin data/bin/device_model_version.bin
 ```
 
-例如：
+Example:
+
 ```bash
 cp xiaozhi.bin data/bin/bread-compact-wifi_1.6.6.bin
 ```
 
-## 第二步 配置公网访问地址（仅公网部署需要）
+## Step 2: Configure the public access address
 
-**注意：此步骤仅适用于单模块公网部署的场景。**
+This step is required only for public internet deployments.
 
-如果你的xiaozhi-server是公网部署（使用公网IP或域名），**必须**配置`server.vision_explain`参数，因为OTA固件下载地址会使用该配置的域名和端口。
+If your `xiaozhi-server` instance is exposed through a public IP or domain, you must configure `server.vision_explain` because the OTA download URL is derived from that address.
 
-如果你是局域网部署，可以跳过此步骤。
+If your deployment is LAN-only, you can skip this step.
 
-### 为什么要配置这个参数？
+### Why this is required
 
-在单模块部署中，系统生成固件下载地址时，会使用`vision_explain`配置的域名和端口作为基础地址。如果不配置或配置错误，设备将无法访问固件下载地址。
+When `xiaozhi-server` builds OTA download URLs, it uses the host and port from the `vision_explain` setting. If that value is missing or incorrect, devices will not be able to download firmware updates.
 
-### 配置方法
+### How to configure it
 
-打开`data/.config.yaml`文件，找到`server`配置段，设置`vision_explain`参数：
+Open `data/.config.yaml`, find the `server` section, and set `vision_explain`:
 
 ```yaml
 server:
-  vision_explain: http://你的域名或IP:端口号/mcp/vision/explain
+  vision_explain: http://your-domain-or-ip:8003/mcp/vision/explain
 ```
 
-**配置示例：**
+Examples:
 
-局域网部署（默认）：
+LAN deployment:
+
 ```yaml
 server:
   vision_explain: http://192.168.1.100:8003/mcp/vision/explain
 ```
 
-公网域名部署：
+Public domain deployment:
+
 ```yaml
 server:
   vision_explain: http://yourdomain.com:8003/mcp/vision/explain
 ```
 
-### 注意事项
+### Notes
 
-- 域名或IP必须是设备能够访问的地址
-- 如果使用Docker部署，不能使用Docker内部地址（如127.0.0.1或localhost）
-- 如果你使用了nginx反向代理，请填写对外的地址和端口号，不是本项目运行的端口号
+- The domain or IP must be reachable by the device
+- If you use Docker, do not use internal-only addresses such as `127.0.0.1` or `localhost`
+- If you use `nginx` as a reverse proxy, enter the externally reachable host and port, not the internal service port
 
+## Troubleshooting
 
-## 常见问题
+### 1. The device does not receive an update
 
-### 1. 设备收不到固件更新
+Check the following:
 
-**可能原因和解决方法：**
+- the firmware file name matches `{model}_{version}.bin`
+- the firmware file is in `data/bin/`
+- the device model matches the model segment in the file name
+- the firmware version is newer than the current device version
+- the server logs show OTA requests being handled
 
-- 检查固件文件命名是否符合规则：`{型号}_{版本号}.bin`
-- 检查固件文件是否正确放置在`data/bin/`目录
-- 检查设备型号是否与固件文件名中的型号匹配
-- 检查固件版本号是否高于设备当前版本
-- 查看服务器日志，确认OTA请求是否正常处理
+### 2. The device cannot reach the download URL
 
-### 2. 设备报告下载地址无法访问
+Check the following:
 
-**可能原因和解决方法：**
+- `server.vision_explain` points to the correct public host or IP
+- the configured port is correct, usually `8003`
+- the device can reach that public address
+- you are not using a Docker-internal address such as `127.0.0.1`
+- the firewall allows the required port
+- if you use `nginx`, you entered the public host and port rather than the internal app port
 
-- 检查`server.vision_explain`配置的域名或IP是否正确
-- 确认端口号配置正确（默认8003）
-- 如果是公网部署，确保设备能够访问该公网地址
-- 如果是Docker部署，确保不是使用了内部地址（127.0.0.1）
-- 检查防火墙是否开放了对应端口
-- 如果你使用了nginx反向代理，请填写对外的地址和端口号，不是本项目运行的端口号
+### 3. How to confirm the device's current version
 
-### 3. 如何确认设备当前版本
+Look at the OTA request logs. They include the version reported by the device:
 
-查看OTA请求日志，日志中会显示设备上报的版本号：
-
+```text
+[ota_handler] - Device AA:BB:CC:DD:EE:FF firmware is already up to date: 1.6.6
 ```
-[ota_handler] - 设备 AA:BB:CC:DD:EE:FF 固件已是最新: 1.6.6
-```
 
-### 4. 固件文件放置后没有生效
+### 4. The new firmware file is not detected immediately
 
-系统有30秒的缓存时间（默认），可以：
-- 等待30秒后再让设备发起OTA请求
-- 重启xiaozhi-server服务
-- 调整`firmware_cache_ttl`配置为更短的时间
+There is a cache window of 30 seconds by default. You can:
+
+- wait 30 seconds and try the OTA request again
+- restart the `xiaozhi-server` service
+- reduce the `firmware_cache_ttl` setting if you want faster refreshes
