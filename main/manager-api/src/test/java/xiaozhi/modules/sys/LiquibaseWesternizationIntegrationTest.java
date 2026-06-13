@@ -210,6 +210,37 @@ SET param_value = JSON_SET(
 WHERE param_code = 'system-web.menu';
 """;
         }
+        if ("202606131500.sql".equals(fileName)) {
+            return """
+UPDATE ai_model_config
+SET is_enabled = 1
+WHERE id IN (
+    'LLM_OpenAILLM',
+    'TTS_EdgeTTS',
+    'VAD_SileroVAD',
+    'ASR_VoskASR',
+    'ASR_GroqASR',
+    'ASR_OpenaiASR',
+    'Intent_function_call',
+    'Memory_nomem',
+    'VLLM_OpenAILLMVLLM'
+)
+  AND is_enabled = 0;
+
+UPDATE ai_model_config
+SET config_json = JSON_SET(CAST(config_json AS VARCHAR), '$.llm', 'LLM_OpenAILLM')
+WHERE id = 'Memory_mem_local_short'
+  AND JSON_UNQUOTE(JSON_EXTRACT(CAST(config_json AS VARCHAR), '$.llm')) = 'LLM_ChatGLMLLM';
+
+UPDATE sys_params
+SET param_value = JSON_SET(
+    CAST(param_value AS VARCHAR),
+    '$.features.vad.enabled', 'true',
+    '$.features.asr.enabled', 'true'
+)
+WHERE param_code = 'system-web.menu';
+""";
+        }
         if ("202601141645.sql".equals(fileName)) {
             normalized = normalized.replaceAll(
                 "(?s)UPDATE `ai_model_provider` ap\\s+JOIN \\(.*?\\) filtered ON ap\\.id = filtered\\.id\\s+SET ap\\.fields = filtered\\.new_fields;",
@@ -495,11 +526,15 @@ WHERE r.sort = 0;
 
     private void assertLatestChangeSetApplied(Connection connection) throws SQLException {
         String latestId = scalar(connection, "SELECT MAX(ID) FROM DATABASECHANGELOG");
-        Assertions.assertEquals("202606131400", latestId, "latest downstream cleanup migration should be applied");
+        Assertions.assertEquals("202606131500", latestId, "latest downstream cleanup migration should be applied");
     }
 
     private void assertRequiredSeedCoverage(Connection connection) throws SQLException {
         assertExists(connection, "SELECT 1 FROM sys_params WHERE param_code = 'server.name' AND param_value = 'xiaozhi-esp32-server'");
+        assertExists(connection, "SELECT 1 FROM ai_model_config WHERE id = 'LLM_OpenAILLM' AND is_enabled = 1");
+        assertExists(connection, "SELECT 1 FROM ai_model_config WHERE id = 'TTS_EdgeTTS' AND is_enabled = 1");
+        assertExists(connection, "SELECT 1 FROM ai_model_config WHERE id = 'VAD_SileroVAD' AND is_enabled = 1");
+        assertExists(connection, "SELECT 1 FROM ai_model_config WHERE id = 'ASR_VoskASR' AND is_enabled = 1");
         assertExists(connection, "SELECT 1 FROM sys_params WHERE param_code = 'exit_commands' AND param_value = 'exit;close'");
         assertExists(connection, "SELECT 1 FROM sys_params WHERE param_code = 'plugins.get_weather.default_location' AND param_value = 'New York'");
         assertExists(connection, "SELECT 1 FROM sys_params WHERE param_code = 'plugins.get_news.default_rss_url' AND param_value = 'https://feeds.reuters.com/reuters/worldNews'");

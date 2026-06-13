@@ -27,12 +27,12 @@ class FeatureManager {
             },
             vad: {
                 name: 'feature.vad.name',
-                enabled: false,
+                enabled: true,
                 description: 'feature.vad.description'
             },
             asr: {
                 name: 'feature.asr.name',
-                enabled: false,
+                enabled: true,
                 description: 'feature.asr.description'
             },
             addressBook: {
@@ -55,6 +55,15 @@ class FeatureManager {
         }
         await this.initPromise;
         return this.initialized;
+    }
+
+    /**
+     * Reload feature configuration from pub-config (e.g. after login).
+     */
+    async refresh() {
+        this.initPromise = this.init();
+        await this.initPromise;
+        return this.currentFeatures;
     }
 
     /**

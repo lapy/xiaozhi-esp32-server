@@ -67,7 +67,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     public List<LlmModelBasicInfoDTO> getLlmModelCodeList(String modelName) {
         List<ModelConfigEntity> entities = modelConfigDao.selectList(
                 new QueryWrapper<ModelConfigEntity>()
-                        .eq("model_type", "llm")
+                        .eq("model_type", "LLM")
                         .eq("is_enabled", 1)
                         .like(StringUtils.isNotBlank(modelName), "model_name", modelName)
                         .select("id", "model_name", "config_json"));
@@ -78,7 +78,8 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                     LlmModelBasicInfoDTO dto = new LlmModelBasicInfoDTO();
                     dto.setId(item.getId());
                     dto.setModelName(item.getModelName());
-                    String type = item.getConfigJson().getOrDefault("type", "").toString();
+                    JSONObject configJson = item.getConfigJson();
+                    String type = configJson != null ? configJson.getOrDefault("type", "").toString() : "";
                     dto.setType(type);
                     return dto;
                 })
