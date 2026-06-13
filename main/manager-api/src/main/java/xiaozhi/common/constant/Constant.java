@@ -239,31 +239,31 @@ public interface Constant {
     }
 
     /**
-     * 系统短信
+     * System SMS parameters
      */
     enum SysMSMParam {
         /**
-         * 阿里云授权keyID
+         * Twilio account SID
          */
-        ALIYUN_SMS_ACCESS_KEY_ID("aliyun.sms.access_key_id"),
+        TWILIO_SMS_ACCOUNT_SID("twilio.sms.account_sid"),
         /**
-         * 阿里云授权密钥
+         * Twilio auth token
          */
-        ALIYUN_SMS_ACCESS_KEY_SECRET("aliyun.sms.access_key_secret"),
+        TWILIO_SMS_AUTH_TOKEN("twilio.sms.auth_token"),
         /**
-         * 阿里云短信签名
+         * Twilio phone number (from)
          */
-        ALIYUN_SMS_SIGN_NAME("aliyun.sms.sign_name"),
+        TWILIO_SMS_PHONE_NUMBER("twilio.sms.phone_number"),
         /**
-         * 阿里云短信模板
+         * Twilio SMS template message
          */
-        ALIYUN_SMS_SMS_CODE_TEMPLATE_CODE("aliyun.sms.sms_code_template_code"),
+        TWILIO_SMS_TEMPLATE_MESSAGE("twilio.sms.template_message"),
         /**
-         * 单号码最大短信发送条数
+         * Max SMS per phone number per day
          */
         SERVER_SMS_MAX_SEND_COUNT("server.sms_max_send_count"),
         /**
-         * 是否开启手机注册
+         * Enable mobile registration
          */
         SERVER_ENABLE_MOBILE_REGISTER("server.enable_mobile_register");
 

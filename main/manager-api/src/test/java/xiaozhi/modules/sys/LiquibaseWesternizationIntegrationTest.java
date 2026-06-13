@@ -142,6 +142,7 @@ class LiquibaseWesternizationIntegrationTest {
         normalized = normalized.replaceAll("(?im)^\\s*START\\s+TRANSACTION\\s*;?\\s*$", "");
         normalized = normalized.replaceAll("(?im)^\\s*COMMIT\\s*;?\\s*$", "");
         normalized = normalized.replaceAll("(?i)\\s+AFTER\\s+`[^`]+`", "");
+        normalized = rewriteConditionalInsertBlocks(normalized);
         normalized = rewriteConditionalAddColumnBlocks(normalized);
         normalized = normalized.replace("TINYINT UNSIGNED", "TINYINT");
         normalized = normalized.replace("INT UNSIGNED", "INT");
@@ -150,6 +151,21 @@ class LiquibaseWesternizationIntegrationTest {
         normalized = normalized.replace("int unsigned", "int");
         normalized = normalized.replace("bigint unsigned", "bigint");
         normalized = rewriteCreateTableIndexNames(normalized);
+        if ("202605251426.sql".equals(fileName)) {
+            normalized = normalized.replaceAll(
+                "(?s)UPDATE sys_params\\s*SET param_value = CAST\\(\\s*JSON_SET\\(.*?\\) AS CHAR\\s*\\)\\s*WHERE param_code = 'system-web\\.menu'\\s*AND NOT JSON_CONTAINS_PATH\\([^;]+;",
+                Matcher.quoteReplacement("""
+UPDATE sys_params
+SET param_value = JSON_SET(
+    CAST(param_value AS VARCHAR),
+    '$.addressBook',
+    '{"name":"feature.addressBook.name","enabled":false,"description":"feature.addressBook.description"}'
+)
+WHERE param_code = 'system-web.menu'
+  AND JSON_EXTRACT(CAST(param_value AS VARCHAR), '$.addressBook') IS NULL;
+""")
+            );
+        }
         if ("202601141645.sql".equals(fileName)) {
             normalized = normalized.replaceAll(
                 "(?s)UPDATE `ai_model_provider` ap\\s+JOIN \\(.*?\\) filtered ON ap\\.id = filtered\\.id\\s+SET ap\\.fields = filtered\\.new_fields;",
@@ -226,6 +242,38 @@ WHERE r.sort = 0;
             normalized.append("JSON_SET(").append(rewriteJsonSetBody(body)).append(")");
             cursor = end + 1;
         }
+    }
+
+    private String rewriteConditionalInsertBlocks(String sql) {
+        Pattern pattern = Pattern.compile(
+            "(?s)SET @data_exists = \\(SELECT COUNT\\(\\*\\) FROM ([^)]+)\\);\\s*" +
+                "SET @sql = IF\\(@data_exists = 0,\\s*'(INSERT INTO .*?)',\\s*'SELECT .*?' AS msg'\\);\\s*" +
+                "PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;"
+        );
+
+        Matcher matcher = pattern.matcher(sql);
+        StringBuffer rewritten = new StringBuffer();
+        while (matcher.find()) {
+            String tableClause = matcher.group(1).trim();
+            String insertStatement = matcher.group(2).replace("''", "'").replaceAll("\\s+", " ");
+            Pattern valuesPattern = Pattern.compile(
+                "(?is)^INSERT INTO\\s+(`[^`]+`\\s*\\([^)]+\\))\\s*VALUES\\s*(\\(.+\\))\\s*$"
+            );
+            Matcher valuesMatcher = valuesPattern.matcher(insertStatement.trim());
+            String replacement;
+            if (valuesMatcher.matches()) {
+                String valuesBody = valuesMatcher.group(2);
+                replacement =
+                    "INSERT INTO " + valuesMatcher.group(1) +
+                        " SELECT " + valuesBody.substring(1, valuesBody.length() - 1) +
+                        " WHERE NOT EXISTS (SELECT 1 FROM " + tableClause + ");";
+            } else {
+                replacement = insertStatement + ";";
+            }
+            matcher.appendReplacement(rewritten, Matcher.quoteReplacement(replacement));
+        }
+        matcher.appendTail(rewritten);
+        return rewritten.toString();
     }
 
     private String rewriteConditionalAddColumnBlocks(String sql) {
@@ -403,7 +451,7 @@ WHERE r.sort = 0;
 
     private void assertLatestChangeSetApplied(Connection connection) throws SQLException {
         String latestId = scalar(connection, "SELECT MAX(ID) FROM DATABASECHANGELOG");
-        Assertions.assertEquals("202604021100", latestId, "latest downstream cleanup migration should be applied");
+        Assertions.assertEquals("202606131200", latestId, "latest downstream cleanup migration should be applied");
     }
 
     private void assertRequiredSeedCoverage(Connection connection) throws SQLException {
