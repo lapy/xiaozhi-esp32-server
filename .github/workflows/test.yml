@@ -33,10 +33,16 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install pytest pytest-asyncio freezegun
-      - name: Run smoke test
+      - name: Run tests
         working-directory: main/xiaozhi-server
         run: |
-          pytest tests/test_smoke.py -x -q
+          pytest tests/ -q
+      - name: Run unittest-only lifecycle tests
+        working-directory: main/xiaozhi-server
+        env:
+          PYTHONPATH: .
+        run: |
+          python3 -B -m unittest discover -s tests -p 'test_*lifecycle*.py'
 
   java:
     name: Java (manager-api)
@@ -66,4 +72,8 @@ jobs:
         working-directory: main/manager-web
         run: |
           npm ci --no-audit --no-fund
+          node scripts/integrity-check.js
+          npm run check:i18n
+          npm run test:snapshot
+          npm run test:contract
           npm run test:unit

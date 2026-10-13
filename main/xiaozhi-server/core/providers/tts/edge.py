@@ -1,12 +1,29 @@
 import os
 import uuid
 import edge_tts
+import edge_tts.communicate  # explicit import; WSS_URL is reassigned on this module below
 from datetime import datetime
 from core.providers.tts.base import TTSProviderBase
 from config.logger import setup_logging
 
 TAG = __name__
 logger = setup_logging()
+
+# Since 2026-10 Microsoft returns 403 for the legacy consumer endpoint, and
+# edge-tts 7.2.8 still talks to speech.platform.bing.com, which no longer works.
+# Upstream PR rany2/edge-tts#491 fixes it by switching to api.msedgeservices.com,
+# but 7.2.8 is still the newest release on PyPI, so temporarily override WSS_URL.
+# TODO(7.2.9): remove this monkey patch once edge-tts >= 7.2.9 is available.
+_NEW_WSS_URL = (
+    "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1"
+    f"?Ocp-Apim-Subscription-Key={edge_tts.constants.TRUSTED_CLIENT_TOKEN}"
+)
+# Line 35 of communicate.py, `from .constants import WSS_URL`, copies WSS_URL
+# into a module-local name at import time, so patching only
+# edge_tts.constants.WSS_URL has no effect. __stream() resolves WSS_URL via LEGB
+# to edge_tts.communicate.WSS_URL, so both names must be patched here.
+edge_tts.constants.WSS_URL = _NEW_WSS_URL
+edge_tts.communicate.WSS_URL = _NEW_WSS_URL
 
 
 class TTSProvider(TTSProviderBase):

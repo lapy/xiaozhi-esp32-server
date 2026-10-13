@@ -524,6 +524,7 @@ export default {
   'message.error': 'Operation Failed',
   'message.warning': 'Warning',
   'message.info': 'Information',
+  'message.searchFailed': 'Search failed, please try again later',
 
   // Cache related
   'cache.viewer': 'Cache Viewer',
@@ -701,6 +702,9 @@ export default {
   'common.updateSuccess': 'Update Success',
   'common.addSuccess': 'Add Success',
   'common.deleteSuccess': 'Delete Success',
+  'common.noData': 'No data',
+  'common.addFailure': 'Failed to add',
+  'common.updateFailure': 'Failed to update',
   'common.deleteFailure': 'Delete Failed, Please Try Again',
   'common.deleteCancelled': 'Delete Cancelled',
   'common.warning': 'Warning',
@@ -714,12 +718,10 @@ export default {
   'common.copyAddress': 'Copy address',
 
   // Language switch
-  'language.zhCN': 'Simplified Chinese',
-  'language.zhTW': 'Traditional Chinese',
   'language.en': 'English',
   'language.de': 'Deutsch',
   'language.vi': 'Tiếng Việt',
-  'language.ptBR': 'Português (Brasil)',
+  'language.pt_BR': 'Português (Brasil)',
 
   // Home page text
   'home.addAgent': 'Add Agent',
@@ -833,7 +835,6 @@ export default {
   'roleConfig.saveConfig': 'Save Configuration',
   'roleConfig.snapshotHistory': 'History',
   'roleConfig.currentVersion': 'Current Version {version}',
-  'roleConfig.functionName': 'Function Name',
   'roleConfig.reset': 'Reset',
   'roleConfig.agentName': 'Nickname',
   'roleConfig.roleTemplate': 'Template',
