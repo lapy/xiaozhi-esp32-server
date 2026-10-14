@@ -12,6 +12,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.incrementer.DefaultIdentifierGenerator;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONObject;
 import lombok.AllArgsConstructor;
@@ -35,7 +37,6 @@ import xiaozhi.modules.model.entity.ModelConfigEntity;
 import xiaozhi.modules.model.service.ModelConfigService;
 import xiaozhi.modules.model.service.ModelProviderService;
 import lombok.extern.slf4j.Slf4j;
-import xiaozhi.modules.model.support.ProviderPolicy;
 
 @Service
 @AllArgsConstructor
@@ -57,10 +58,7 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                         .like(StringUtils.isNotBlank(modelName), "model_name", modelName)
                         .select("id", "model_name", "model_code", "config_json")
                         .orderByAsc("sort"));
-        List<ModelConfigEntity> filtered = entities.stream()
-                .filter(ProviderPolicy::isAllowedModelConfig)
-                .collect(Collectors.toList());
-        return ConvertUtils.sourceToTarget(filtered, ModelBasicInfoDTO.class);
+        return ConvertUtils.sourceToTarget(entities, ModelBasicInfoDTO.class);
     }
 
     @Override
@@ -73,7 +71,6 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                         .select("id", "model_name", "config_json"));
 
         return entities.stream()
-                .filter(ProviderPolicy::isAllowedModelConfig)
                 .map(item -> {
                     LlmModelBasicInfoDTO dto = new LlmModelBasicInfoDTO();
                     dto.setId(item.getId());
@@ -90,31 +87,18 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
     public PageData<ModelConfigDTO> getPageList(String modelType, String modelName, String page, String limit) {
         long curPage = Long.parseLong(page);
         long pageSize = Long.parseLong(limit);
+        Page<ModelConfigEntity> pageInfo = new Page<>(curPage, pageSize);
 
-        QueryWrapper<ModelConfigEntity> wrapper = new QueryWrapper<ModelConfigEntity>()
-                .eq("model_type", modelType)
-                .like(StringUtils.isNotBlank(modelName), "model_name", modelName)
-                .orderByDesc("is_enabled")
-                .orderByAsc("sort");
+        // Sort: enabled models first, then by ascending sort order.
+        pageInfo.addOrder(OrderItem.desc("is_enabled"), OrderItem.asc("sort"));
 
-        List<ModelConfigEntity> allRecords = modelConfigDao.selectList(wrapper);
-        List<ModelConfigEntity> filteredRecords = allRecords.stream()
-                .filter(ProviderPolicy::isAllowedModelConfig)
-                .collect(Collectors.toList());
+        IPage<ModelConfigEntity> modelConfigEntityIPage = modelConfigDao.selectPage(
+                pageInfo,
+                new QueryWrapper<ModelConfigEntity>()
+                        .eq("model_type", modelType)
+                        .like(StringUtils.isNotBlank(modelName), "model_name", modelName));
 
-        int total = filteredRecords.size();
-        int fromIndex = (int) Math.min((curPage - 1) * pageSize, total);
-        int toIndex = (int) Math.min(fromIndex + pageSize, total);
-        List<ModelConfigEntity> pageRecords = filteredRecords.subList(fromIndex, toIndex);
-
-        for (ModelConfigEntity entity : pageRecords) {
-            if (entity.getConfigJson() != null) {
-                entity.setConfigJson(maskSensitiveFields(entity.getConfigJson()));
-            }
-        }
-
-        List<ModelConfigDTO> dtoList = ConvertUtils.sourceToTarget(pageRecords, ModelConfigDTO.class);
-        return new PageData<>(dtoList, total);
+        return getPageData(modelConfigEntityIPage, ModelConfigDTO.class);
     }
 
     @Override
@@ -568,8 +552,6 @@ public class ModelConfigServiceImpl extends BaseServiceImpl<ModelConfigDao, Mode
                         .eq("is_enabled", 1)
                         .orderByAsc("sort"));
 
-        return entities.stream()
-                .filter(ProviderPolicy::isAllowedModelConfig)
-                .collect(Collectors.toList());
+        return entities;
     }
 }

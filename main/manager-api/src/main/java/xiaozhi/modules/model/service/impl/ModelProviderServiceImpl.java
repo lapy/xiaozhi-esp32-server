@@ -2,15 +2,18 @@ package xiaozhi.modules.model.service.impl;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.AllArgsConstructor;
+import xiaozhi.common.constant.Constant;
 import xiaozhi.common.exception.ErrorCode;
 import xiaozhi.common.exception.RenException;
 import xiaozhi.common.page.PageData;
@@ -23,7 +26,6 @@ import xiaozhi.modules.model.dao.ModelProviderDao;
 import xiaozhi.modules.model.dto.ModelProviderDTO;
 import xiaozhi.modules.model.entity.ModelProviderEntity;
 import xiaozhi.modules.model.service.ModelProviderService;
-import xiaozhi.modules.model.support.ProviderPolicy;
 import xiaozhi.modules.security.user.SecurityUser;
 
 @Service
@@ -39,10 +41,7 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
         // 1. Fetch plugin list
         LambdaQueryWrapper<ModelProviderEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ModelProviderEntity::getModelType, "Plugin");
-        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper)
-                .stream()
-                .filter(ProviderPolicy::isAllowedProvider)
-                .collect(Collectors.toList());
+        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper);
         List<ModelProviderDTO> resultList = ConvertUtils.sourceToTarget(providerEntities, ModelProviderDTO.class);
 
         // 2. Append knowledge bases owned by the current user
@@ -85,10 +84,7 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
         LambdaQueryWrapper<ModelProviderEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(ModelProviderEntity::getId, ids);
         queryWrapper.eq(ModelProviderEntity::getModelType, "Plugin");
-        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper)
-                .stream()
-                .filter(ProviderPolicy::isAllowedProvider)
-                .collect(Collectors.toList());
+        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper);
         return ConvertUtils.sourceToTarget(providerEntities, ModelProviderDTO.class);
     }
 
@@ -98,15 +94,21 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
         QueryWrapper<ModelProviderEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("model_type", StringUtils.isBlank(modelType) ? "" : modelType);
         queryWrapper.orderByAsc("sort");
-        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper)
-                .stream()
-                .filter(ProviderPolicy::isAllowedProvider)
-                .collect(Collectors.toList());
+        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper);
         return ConvertUtils.sourceToTarget(providerEntities, ModelProviderDTO.class);
     }
 
     @Override
     public PageData<ModelProviderDTO> getListPage(ModelProviderDTO modelProviderDTO, String page, String limit) {
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(Constant.PAGE, page);
+        params.put(Constant.LIMIT, limit);
+        params.put(Constant.ORDER_FIELD, List.of("model_type", "sort"));
+        params.put(Constant.ORDER, "asc");
+
+        IPage<ModelProviderEntity> pageParam = getPage(params, null, true);
+
         QueryWrapper<ModelProviderEntity> wrapper = new QueryWrapper<ModelProviderEntity>();
 
         if (StringUtils.isNotBlank(modelProviderDTO.getModelType())) {
@@ -118,21 +120,7 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
                     .or()
                     .like("provider_code", modelProviderDTO.getName()));
         }
-        wrapper.orderByAsc("model_type", "sort");
-
-        List<ModelProviderEntity> allRecords = modelProviderDao.selectList(wrapper);
-        List<ModelProviderEntity> filteredRecords = allRecords.stream()
-                .filter(ProviderPolicy::isAllowedProvider)
-                .collect(Collectors.toList());
-
-        long currentPage = Long.parseLong(page);
-        long pageSize = Long.parseLong(limit);
-        int total = filteredRecords.size();
-        int fromIndex = (int) Math.min((currentPage - 1) * pageSize, total);
-        int toIndex = (int) Math.min(fromIndex + pageSize, total);
-
-        List<ModelProviderEntity> pageRecords = filteredRecords.subList(fromIndex, toIndex);
-        return new PageData<>(ConvertUtils.sourceToTarget(pageRecords, ModelProviderDTO.class), total);
+        return getPageData(modelProviderDao.selectPage(pageParam, wrapper), ModelProviderDTO.class);
     }
 
     @Override
@@ -184,10 +172,7 @@ public class ModelProviderServiceImpl extends BaseServiceImpl<ModelProviderDao, 
         QueryWrapper<ModelProviderEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("model_type", StringUtils.isBlank(modelType) ? "" : modelType);
         queryWrapper.eq("provider_code", StringUtils.isBlank(providerCode) ? "" : providerCode);
-        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper)
-                .stream()
-                .filter(ProviderPolicy::isAllowedProvider)
-                .collect(Collectors.toList());
+        List<ModelProviderEntity> providerEntities = modelProviderDao.selectList(queryWrapper);
         return ConvertUtils.sourceToTarget(providerEntities, ModelProviderDTO.class);
     }
 }
