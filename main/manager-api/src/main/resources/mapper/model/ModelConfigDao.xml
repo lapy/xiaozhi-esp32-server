@@ -24,9 +24,10 @@
             <if test="modelName != null">and model_name = #{modelName}</if>
     </select>
 
-    <!-- Voice clone platforms are disabled in the westernized build -->
+    <!-- Get TTS platforms eligible for voice cloning -->
     <select id="getTtsPlatformList" resultType="map">
         select id, model_name as modelName from ai_model_config
-        where model_type = 'TTS' and 1 = 0
+        where model_type = 'TTS'
+        and JSON_EXTRACT(config_json, '$.type') = 'huoshan_double_stream'
     </select>
 </mapper>

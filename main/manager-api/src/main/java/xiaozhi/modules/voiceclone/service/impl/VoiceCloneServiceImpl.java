@@ -1,8 +1,14 @@
 package xiaozhi.modules.voiceclone.service.impl;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,11 +21,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cn.hutool.core.collection.CollUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import xiaozhi.common.constant.Constant;
 import xiaozhi.common.exception.ErrorCode;
 import xiaozhi.common.exception.RenException;
 import xiaozhi.common.page.PageData;
@@ -42,8 +50,6 @@ import xiaozhi.modules.voiceclone.service.VoiceCloneService;
 @RequiredArgsConstructor
 public class VoiceCloneServiceImpl extends BaseServiceImpl<VoiceCloneDao, VoiceCloneEntity>
         implements VoiceCloneService {
-
-    private static final Set<String> SUPPORTED_VOICE_CLONE_TYPES = Set.of();
 
     private final ModelConfigService modelConfigService;
     private final SysUserService sysUserService;
@@ -90,8 +96,10 @@ public class VoiceCloneServiceImpl extends BaseServiceImpl<VoiceCloneDao, VoiceC
             if (StringUtils.isBlank(voiceId)) {
                 continue;
             }
-            if (!SUPPORTED_VOICE_CLONE_TYPES.contains(type)) {
-                throw new RenException(ErrorCode.VOICE_CLONE_MODEL_TYPE_NOT_FOUND);
+            if (Constant.VOICE_CLONE_HUOSHAN_DOUBLE_STREAM.equals(type)) {
+                if (voiceId.indexOf("S_") == -1) {
+                    throw new RenException(ErrorCode.VOICE_CLONE_HUOSHAN_VOICE_ID_ERROR);
+                }
             }
 
             QueryWrapper<VoiceCloneEntity> wrapper = new QueryWrapper<>();
@@ -285,8 +293,11 @@ public class VoiceCloneServiceImpl extends BaseServiceImpl<VoiceCloneDao, VoiceC
             }
             Map<String, Object> config = modelConfig.getConfigJson();
             String type = (String) config.get("type");
-            if (StringUtils.isBlank(type) || !SUPPORTED_VOICE_CLONE_TYPES.contains(type)) {
+            if (StringUtils.isBlank(type)) {
                 throw new RenException(ErrorCode.VOICE_CLONE_MODEL_TYPE_NOT_FOUND);
+            }
+            if (Constant.VOICE_CLONE_HUOSHAN_DOUBLE_STREAM.equals(type)) {
+                huoshanClone(config, entity);
             }
         } catch (RenException re) {
             entity.setTrainStatus(3);
@@ -302,4 +313,85 @@ public class VoiceCloneServiceImpl extends BaseServiceImpl<VoiceCloneDao, VoiceC
         }
     }
 
+    /**
+     * Runs voice-cloning training against the Volcano Engine API.
+     *
+     * @param config model configuration
+     * @param entity voice clone record entity
+     * @throws Exception
+     */
+    private void huoshanClone(Map<String, Object> config, VoiceCloneEntity entity) throws Exception {
+        String appid = (String) config.get("appid");
+        String accessToken = (String) config.get("access_token");
+
+        if (StringUtils.isAnyBlank(appid, accessToken)) {
+            throw new RenException(ErrorCode.VOICE_CLONE_HUOSHAN_CONFIG_MISSING);
+        }
+
+        String audioBase64 = Base64.getEncoder().encodeToString(entity.getVoice());
+        Map<String, Object> reqBody = new HashMap<>();
+        reqBody.put("appid", appid);
+        List<Map<String, String>> audios = new ArrayList<>();
+        Map<String, String> audioMap = new HashMap<>();
+        audioMap.put("audio_bytes", audioBase64);
+        audioMap.put("audio_format", "wav");
+        audios.add(audioMap);
+        reqBody.put("audios", audios);
+        reqBody.put("source", 2);
+        reqBody.put("language", 0);
+        reqBody.put("model_type", 1);
+        reqBody.put("speaker_id", entity.getVoiceId());
+
+        String apiUrl = "https://openspeech.bytedance.com/api/v1/mega_tts/audio/upload";
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer;" + accessToken)
+                .header("Resource-Id", "seed-icl-1.0")
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(reqBody)))
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        log.info(">>> HTTP status = {}", response.statusCode());
+        log.info(">>> response body = {}", response.body());
+
+        Map<String, Object> rsp = objectMapper.readValue(response.body(),
+                new TypeReference<Map<String, Object>>() {
+                });
+
+        // Extract the BaseResp object
+        Map<String, Object> baseResp = objectMapper.convertValue(rsp.get("BaseResp"),
+                new TypeReference<Map<String, Object>>() {
+                });
+        if (baseResp != null) {
+            Integer statusCode = objectMapper.convertValue(baseResp.get("StatusCode"), Integer.class);
+            String statusMessage = objectMapper.convertValue(baseResp.getOrDefault("StatusMessage", ""),
+                    String.class);
+
+            // Extract speaker_id
+            String speakerId = objectMapper.convertValue(rsp.get("speaker_id"), String.class);
+
+            // StatusCode == 0 means success
+            if (statusCode != null && statusCode == 0 && StringUtils.isNotBlank(speakerId)) {
+                entity.setTrainStatus(2);
+                entity.setVoiceId(speakerId);
+                entity.setTrainError("");
+                baseDao.updateById(entity);
+            } else {
+                // Use StatusMessage as the error message on failure
+                String errorMsg = StringUtils.isNotBlank(statusMessage) ? statusMessage : "Training failed";
+                throw new RenException(errorMsg);
+            }
+        } else {
+            String errorMsg = objectMapper.convertValue(rsp.get("message"),
+                    new TypeReference<String>() {
+                    });
+            if (StringUtils.isNotBlank(errorMsg)) {
+                throw new RenException(errorMsg);
+            }
+            throw new RenException(ErrorCode.VOICE_CLONE_RESPONSE_FORMAT_ERROR);
+        }
+    }
 }

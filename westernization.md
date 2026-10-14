@@ -81,11 +81,18 @@ Files and areas:
 
 Actions:
 
-- preserve provider filtering and downstream westernized metadata
+- enforce westernization through the append-only Liquibase cleanup queue ONLY
+  (delete/relabel Chinese built-in seed rows); never filter at the code level
 - never rewrite Liquibase history destructively
 - add follow-up migrations only; keep changelog append-only
-- keep Chinese-only providers out of surfaced configs, selectors, and defaults
+- keep Chinese-only built-in providers out of surfaced configs, selectors, and
+  defaults by deleting their seeded rows in a follow-up migration
 - keep upstream backend fixes even when downstream surface differs
+- do NOT reintroduce a runtime provider blocklist / allowlist in Java
+  (`ProviderPolicy` and any `Set.of(...)` provider token filter are removed on
+  purpose). The service layer must return whatever is in the DB, so user-added
+  models are never silently hidden. See the "No code-level provider filtering"
+  rule below for why.
 
 Important:
 
@@ -93,6 +100,27 @@ Important:
 - do not "clean it up" casually if it would rewrite shipped history
 - if a new migration adds Chinese-facing defaults, add a downstream cleanup
   migration rather than editing old history
+
+#### No code-level provider filtering
+
+Westernization of the model/provider catalog is a DATA concern, not a runtime
+filter. The `LiquibaseWesternizationIntegrationTest` already proves, against a
+real H2 database, that after every changelog runs the seeded catalog is
+westernized and Chinese-only built-ins are gone. A second, runtime token match
+in Java is therefore both redundant and destructive:
+
+- it scanned user-entered `model_name`, `model_code`, `doc_link`, `base_url`,
+  and `config_json.type`, so a perfectly legitimate model a user created named
+  e.g. `qwen3.8` was written to the DB but hidden from every list, selector,
+  and the runtime model resolver. The UI showed the save succeed (HTTP `code:0`)
+  and then the row "disappeared" with no error.
+- it also gated the runtime path (`getEnabledModelsByType`) used by chat, so a
+  valid model could not be selected even if it were visible.
+
+The invariant is: **if a row exists in the DB, it is a legitimate row and the
+API must return it.** Chinese built-ins are removed by deleting their seed rows
+in a follow-up migration; upstream re-seeds are countered by another cleanup
+migration — never by a name matcher in service code.
 
 ### 3. Admin Web And Mobile
 
@@ -413,7 +441,8 @@ When upstream moves a lot, use this order:
 2. scan the merge result for the five corruption shapes listed under "Known
    merge-corruption failure classes" (`integrity-check.js` finds 1, 2, 4, 5)
 3. restore provider/runtime deletions and relocalization
-4. restore admin API provider filtering and downstream cleanup migrations
+4. restore admin API downstream cleanup migrations (NOT a runtime provider
+   filter: seed-row deletion only — see "No code-level provider filtering")
 5. restore web/mobile surface cleanup
 6. restore docs/branding cleanup
 7. rebuild generator from source if needed
